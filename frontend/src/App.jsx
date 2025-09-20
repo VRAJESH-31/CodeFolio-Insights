@@ -1,10 +1,14 @@
 import React from 'react'
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Landing from "./pages/Landing.jsx";
+
+
 
 const App = () => {
   return (
-    <div>
-      <button class="bg-sky-500 hover:bg-sky-700 ...">Save changes</button>
-    </div>
+    <Routes>
+        <Route path="/" element={<Landing />} />
+      </Routes>
   )
 }
 
