@@ -1,7 +1,17 @@
-import express from "express";
-
+const express = require('express');
 const app = express();
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const AuthRouter = require('./routes/AuthRouter');
+require('dotenv').config();
+require('./models/db');
 
-app.listen(8000, ()=>{
-    console.log("App running on PORT 8000");
+const PORT = process.env.PORT || 8080;
+
+app.use(bodyParser.json());
+app.use(cors());
+app.use('/auth', AuthRouter);
+
+app.listen(PORT, () => {
+    console.log(`Server is running on ${PORT}`)
 })
