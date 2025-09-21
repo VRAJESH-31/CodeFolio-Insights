@@ -2,6 +2,9 @@ import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 const UserSchema = new Schema({
+    googleId: {
+        type: String,
+    },
     name: {
         type: String,
         required: true,
@@ -13,7 +16,6 @@ const UserSchema = new Schema({
     },
     password: {
         type: String,
-        required: true,
     }
 });
 

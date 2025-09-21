@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 
 // Helper component for SVG icons to keep the main component cleaner
 const Icon = ({ name, className }) => {
@@ -77,12 +78,16 @@ export default function App() {
                             <a href="#faq" className="hover:text-indigo-400 transition-colors">FAQ</a>
                         </div>
                         <div className="flex items-center space-x-4">
-                            <button className="px-4 py-2 rounded-full border border-indigo-500 hover:bg-indigo-500/10 transition-all transform hover:scale-105">
-                                Login
-                            </button>
-                            <button className="px-4 py-2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg shadow-indigo-600/30">
-                                Sign Up
-                            </button>
+                            <Link to="/login">
+                                <button className="px-4 py-2 rounded-full border border-indigo-500 hover:bg-indigo-500/10 transition-all transform hover:scale-105">
+                                    Login
+                                </button>
+                            </Link>
+                            <Link to="/signup">
+                                <button className="px-4 py-2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg shadow-indigo-600/30">
+                                    Sign Up
+                                </button>
+                            </Link>
                         </div>
                     </nav>
 
@@ -103,10 +108,12 @@ export default function App() {
                             </Animated>
                             <Animated delay={200}>
                                 <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 pt-4">
-                                    <button className="px-6 py-3 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all flex items-center justify-center space-x-2 shadow-lg shadow-indigo-600/30 hover:shadow-indigo-600/50 transform hover:-translate-y-1">
-                                        <span>Start Free Analysis</span>
-                                        <span className="material-symbols-outlined">arrow_forward</span>
-                                    </button>
+                                    <Link to="/signup">
+                                        <button className="px-6 py-3 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all flex items-center justify-center space-x-2 shadow-lg shadow-indigo-600/30 hover:shadow-indigo-600/50 transform hover:-translate-y-1">
+                                            <span>Start Free Analysis</span>
+                                            <span className="material-symbols-outlined">arrow_forward</span>
+                                        </button>
+                                    </Link>
                                     <button className="px-6 py-3 rounded-full border border-gray-400 hover:bg-white/10 transition-all flex items-center justify-center space-x-2 transform hover:-translate-y-1">
                                         <span className="material-symbols-outlined">play_circle</span>
                                         <span>Watch Demo</span>
