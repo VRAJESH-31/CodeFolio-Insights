@@ -1,6 +1,7 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const UserModel = require("../models/User");
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import UserModel from "../models/user.model.js";
+import { JWT_SECRET } from '../utils/config.js';
 
 const signup = async (req, res) => {
     try {
@@ -28,7 +29,7 @@ const signup = async (req, res) => {
 
         jwt.sign(
             payload,
-            process.env.JWT_SECRET,
+            JWT_SECRET,
             { expiresIn: 3600 },
             (err, token) => {
                 if (err) throw err;
@@ -62,7 +63,7 @@ const login = async (req, res) => {
 
         jwt.sign(
             payload,
-            process.env.JWT_SECRET,
+            JWT_SECRET,
             { expiresIn: 3600 },
             (err, token) => {
                 if (err) throw err;
@@ -75,7 +76,7 @@ const login = async (req, res) => {
     }
 }
 
-module.exports = {
+export { 
     signup,
-    login
-}
+    login 
+};

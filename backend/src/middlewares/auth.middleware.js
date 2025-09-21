@@ -1,17 +1,17 @@
-const { check, validationResult } = require('express-validator');
+import { check, validationResult } from 'express-validator';
 
-const signupValidation = [
+export const signupValidation = [
     check('name', 'Name is required').not().isEmpty(),
     check('email', 'Please include a valid email').isEmail(),
     check('password', 'Password must be 6 or more characters').isLength({ min: 6 })
 ];
 
-const loginValidation = [
+export const loginValidation = [
     check('email', 'Please include a valid email').isEmail(),
     check('password', 'Password is required').exists()
 ];
 
-const validate = (req, res, next) => {
+export const validate = (req, res, next) => {
     const errors = validationResult(req);
     if (errors.isEmpty()) {
         return next();
@@ -22,10 +22,4 @@ const validate = (req, res, next) => {
     return res.status(422).json({
         errors: extractedErrors,
     });
-}
-
-module.exports = {
-    signupValidation,
-    loginValidation,
-    validate,
 };
