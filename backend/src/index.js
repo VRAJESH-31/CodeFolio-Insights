@@ -1,17 +1,25 @@
-const express = require('express');
-const app = express();
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const AuthRouter = require('./routes/AuthRouter');
-require('dotenv').config();
-require('./models/db');
+import express from 'express';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import AuthRouter from './routes/auth.route.js';
+import AnalyzeRouter from './routes/analyze.route.js';
+import {connectToDB} from './utils/db.js';
+import { PORT } from './utils/config.js';
 
-const PORT = process.env.PORT || 8080;
+const app = express();
 
 app.use(bodyParser.json());
 app.use(cors());
-app.use('/auth', AuthRouter);
 
-app.listen(PORT, () => {
-    console.log(`Server is running on ${PORT}`)
+app.use('/auth', AuthRouter);
+app.use('/analyze', AnalyzeRouter);
+
+connectToDB()
+.then(()=>{
+    app.listen(PORT, ()=>{
+        console.log(`Listening to app on PORT no ${PORT}`);
+    })
+})
+.catch((error)=>{
+    console.log("MongoDB Database Failed to connect! ", error);
 })
