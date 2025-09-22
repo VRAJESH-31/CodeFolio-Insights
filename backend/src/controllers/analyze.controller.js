@@ -1,6 +1,5 @@
-import { getRepoCountScore, getFollowersCountScore, getFollowingRatioScore, getLanguagesCountScore, getTotalCommitsScore, getForksCountScore, getStarsCountScore, getProfileReadmeScore, getIssuesCountScore, getPinnedReposCountScore, getPullRequestsCountScore, getStreakScore } from "../utils/githubScore.js";
-import { PAGE_SIZE, getCommitsPerRepo, getPinnedReposCount, getContributionCount, getUserStreak, getUserProfileData, getUserRepos, getRepoLanguages } from "../utils/githubFetch.js"
-import { githubAPI } from "../utils/axiosInstance.js";
+import { getRepoCountScore, getFollowersCountScore, getFollowingRatioScore, getLanguagesCountScore, getTotalCommitsScore, getForksCountScore, getStarsCountScore, getProfileReadmeScore, getIssuesCountScore, getPinnedReposCountScore, getPullRequestsCountScore, getStreakScore, getCommitsQualityScore } from "../utils/githubScore.js";
+import { PAGE_SIZE, getCommitsPerRepo, getLastYearCommitsCount, getPinnedReposCount, getContributionCount, getUserStreak, getUserProfileData, getUserRepos, getRepoLanguages, getCommitsQualityReport } from "../utils/githubFetch.js"
 
 const analyzeGithub = async (req, res) => {
 
@@ -17,11 +16,10 @@ const analyzeGithub = async (req, res) => {
         const pinnedRepoCount = await getPinnedReposCount(username);
         let starsCount = 0;
         let forksCount = 0;
-        let commitsCount = 0;
+        let lastYearCommitsCount = 0;
         let userReposStat = [];
         let userReposLanguageStat = [];
         let uniqueLanguages = new Set();
-
 
         userReposStat = await getUserRepos(username, repoCount);
 
@@ -37,8 +35,7 @@ const analyzeGithub = async (req, res) => {
             }))
         );
 
-        const repoCommitsArray = await Promise.all(userReposStat.filter(repoData => !repoData["fork"]).map(repoData => getCommitsPerRepo(repoData["name"], username)));
-        commitsCount = repoCommitsArray.reduce((sum, val) => sum + val, 0);
+        lastYearCommitsCount = await getLastYearCommitsCount(username);
 
         uniqueLanguages = Array.from(userReposLanguageStat.reduce((languages, repoLanguageStats)=>{
             Object.keys(repoLanguageStats.languageUsedInBytes).forEach(lang => languages.add(lang));
@@ -49,20 +46,23 @@ const analyzeGithub = async (req, res) => {
         const pullRequestsCount = contributionCount["pullRequestContributions"]["totalCount"];
         const issueRequestsCount = contributionCount["issueContributions"]["totalCount"];
 
-        const {currentStreak, maxStreak} = await getUserStreak(username);
+        const {currentStreak, maxStreak, activeDays} = await getUserStreak(username);
+
+        const commitsQualityReport = Object.values(JSON.parse(await getCommitsQualityReport(username))).map((commit)=>commit["rating"]);
 
         score = score + getRepoCountScore(repoCount)*0.1;
         score = score + getFollowersCountScore(followersCount)*0.025 
         score = score + getFollowingRatioScore(followersCount, followingCount)*0.025;
         score = score + getLanguagesCountScore(Array.from(uniqueLanguages).length)*0.05;
-        score = score + getTotalCommitsScore(commitsCount)*0.15 
+        score = score + getTotalCommitsScore(lastYearCommitsCount)*0.1
         score = score + getForksCountScore(forksCount)*0.1 
         score = score + getStarsCountScore(starsCount)*0.1; 
         score = score + await getProfileReadmeScore(username)*0.1;
         score = score + getPinnedReposCountScore(pinnedRepoCount)*0.05;
-        score = score + getPullRequestsCountScore(pullRequestsCount)*0.15;
-        score = score + getIssuesCountScore(issueRequestsCount)*0.15;
-        score = score + getStreakScore(maxStreak)*0.05;
+        score = score + getPullRequestsCountScore(pullRequestsCount)*0.1;
+        score = score + getIssuesCountScore(issueRequestsCount)*0.1;
+        score = score + getStreakScore(maxStreak, currentStreak, activeDays)*0.05;
+        score = score + getCommitsQualityScore(commitsQualityReport)*0.1;
 
         return res.status(200).json({score});
 

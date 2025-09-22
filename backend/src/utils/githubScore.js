@@ -1,4 +1,5 @@
 import { githubAPI } from "./axiosInstance.js";
+import { TOTAL_COMMITS_LIMIT } from "./githubFetch.js";
 
 const getRepoCountScore = (repoCount) => {
     const value = (Math.min(repoCount, 30) / 30) * 100;
@@ -75,11 +76,18 @@ const getProfileReadmeScore = async (username) => {
     }
 }
 
-const getStreakScore = (maxStreak) => {
-    const value = Math.min(100, maxStreak);
+const getStreakScore = (maxStreak, currentStreak, activeDays) => {
+    const value = Math.min(100, maxStreak)*0.25 + Math.min(100, currentStreak*4)*0.15 + Math.min(100, activeDays/3.66)*0.6;
     console.log('getStreakScore:', value);
     return value;
 }
+
+const getCommitsQualityScore = (commitsQualityReport) => {
+    const value = ((commitsQualityReport.reduce((totalQualityScore, commitQuality)=>totalQualityScore + commitQuality, 0)) / TOTAL_COMMITS_LIMIT)*10;
+    console.log('getCommitsQualityScore', value);
+    return value;
+}
+
 
 export {
     getRepoCountScore,
@@ -94,4 +102,5 @@ export {
     getPullRequestsCountScore,
     getIssuesCountScore,
     getStreakScore,
+    getCommitsQualityScore,
 }

@@ -1,9 +1,50 @@
 import { githubAPI } from "./axiosInstance.js";
+import { getCommitAnalysis } from "../utils/geminiResponse.js";
 
 const PAGE_SIZE = 100;
+const TOTAL_COMMITS_LIMIT = 25;
+
 
 const getUserProfileData = async (username) => {
-    return await githubAPI.get(`/users/${username}`)
+    try {
+        return await githubAPI.get(`/users/${username}`)
+    } catch (error) {
+        console.log("Error occurred while fetching user profile data:", error.message);
+        console.log(error.stack);
+        return null;
+    }
+}
+
+const getCommitsQualityReport = async (username) => {
+
+    let commitsArray = [];
+
+    try{
+        const userRepoResponse = await githubAPI.get(`/users/${username}/repos?per_page=${PAGE_SIZE}`);
+        const userRepoData = userRepoResponse.data;
+
+        for (let i=0; i<userRepoData.length && commitsArray.length < TOTAL_COMMITS_LIMIT; i++){
+            const repoData = userRepoData[i];
+            const repoName = repoData["name"];
+
+            const repoCommits = (await githubAPI.get(`/repos/${username}/${repoName}/commits?per_page=${PAGE_SIZE}`)).data;
+
+            for (let j=0; j<repoCommits.length; j++){
+                if (commitsArray.length < TOTAL_COMMITS_LIMIT){
+                    commitsArray.push(repoCommits[j]["commit"]["message"]);
+                } else {
+                    break;
+                }
+            }
+        }
+
+        return await getCommitAnalysis(commitsArray);
+    } catch (error){
+        console.log(`Error Occurred while fetching repos data page`);
+        console.log(error.stack);
+        return [];
+    }
+
 }
 
 const getCommitsPerRepo = async (repoName, username) => {
@@ -96,6 +137,7 @@ const getUserStreak = async (username) => {
 
         let currentStreak = 0;
         let maxStreak = 0;
+        let activeDays = 0;
 
         const contributionCalendarResponse = await githubAPI.post("/graphql", {query});
         const contributionCalendarData = contributionCalendarResponse.data["data"]["user"]["contributionsCollection"]["contributionCalendar"]["weeks"];
@@ -110,14 +152,15 @@ const getUserStreak = async (username) => {
                     currentStreak++;
                     maxStreak = Math.max(maxStreak, currentStreak);
                 }
+                activeDays++;
             }
         }
 
-        return {currentStreak, maxStreak};
+        return {currentStreak, maxStreak, activeDays};
     } catch (error){
         console.log("Error occurred while getting max streak: ", error);
         console.log(error.stack);
-        return {currentStreak: 0, maxStreak: 0};
+        return {currentStreak: 0, maxStreak: 0, activeDays: 0};
     }
 }
 
@@ -144,12 +187,42 @@ const getUserRepos = async (username, repoCount) => {
 }
 
 const getRepoLanguages = async (username, repoName) => {
-    return (await githubAPI.get(`/repos/${username}/${repoName}/languages`)).data
+    try {
+        return (await githubAPI.get(`/repos/${username}/${repoName}/languages`)).data;
+    } catch (error) {
+        console.log("Error occurred while fetching repo languages:", error.message);
+        console.log(error.stack);
+        return {};
+    }
 }
+
+const getLastYearCommitsCount = async (username) => {
+    try {
+        const query = `
+            {
+                user(login: "${username}") {
+                    contributionsCollection {
+                        contributionCalendar {
+                            totalContributions
+                        }
+                    }
+                }
+            }
+        `;
+        const lastYearCommitsResponse = await githubAPI.post("/graphql", {query});
+        const lastYearCommitsData = lastYearCommitsResponse.data;
+        return lastYearCommitsData["data"]["user"]["contributionsCollection"]["contributionCalendar"]["totalContributions"];
+    } catch (error) {
+        console.log("Error occurred while fetching last year commits count:", error.message);
+        console.log(error.stack);
+        return 0;
+    }
+}   
 
 
 export {
     PAGE_SIZE,
+    TOTAL_COMMITS_LIMIT,
     getCommitsPerRepo,
     getPinnedReposCount,
     getContributionCount,
@@ -157,4 +230,6 @@ export {
     getUserProfileData,
     getUserRepos,
     getRepoLanguages,
+    getLastYearCommitsCount,
+    getCommitsQualityReport,
 }
