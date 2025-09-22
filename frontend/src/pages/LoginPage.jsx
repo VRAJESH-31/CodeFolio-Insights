@@ -1,10 +1,49 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const LoginPage = () => {
+    const [formData, setFormData] = useState({
+        email: '',
+        password: '',
+    });
+    const navigate = useNavigate();
+
+    const { email, password } = formData;
+
     const handleGoogleLogin = () => {
         window.location.href = "http://localhost:8080/auth/google";
     };
+
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault(); // Prevent default form submission
+        try {
+            const res = await fetch('http://localhost:8080/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                // Store the token and redirect on successful login
+                localStorage.setItem('token', data.token);
+                navigate('/home');
+            } else {
+                // Handle errors (e.g., display "Invalid Credentials")
+                console.error(data.message || 'Login failed');
+            }
+        } catch (err) {
+            console.error('Server error:', err);
+        }
+    };
+
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 to-indigo-950">
@@ -18,7 +57,8 @@ const LoginPage = () => {
                         </Link>
                     </p>
                 </div>
-                <form className="space-y-6" action="#" method="POST">
+                {/* Add onSubmit to the form tag */}
+                <form className="space-y-6" onSubmit={handleSubmit}>
                     <div>
                         <label
                             htmlFor="email"
@@ -31,6 +71,8 @@ const LoginPage = () => {
                                 id="email"
                                 name="email"
                                 type="email"
+                                value={email} // Control the input with state
+                                onChange={handleChange} // Update state on change
                                 autoComplete="email"
                                 required
                                 className="block w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-white"
@@ -50,6 +92,8 @@ const LoginPage = () => {
                                 id="password"
                                 name="password"
                                 type="password"
+                                value={password} // Control the input with state
+                                onChange={handleChange} // Update state on change
                                 autoComplete="current-password"
                                 required
                                 className="block w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-white"
@@ -90,6 +134,7 @@ const LoginPage = () => {
                     </div>
                 </form>
 
+                 {/* ... rest of your component */}
                 <div className="relative">
                     <div className="absolute inset-0 flex items-center">
                         <div className="w-full border-t border-gray-600" />

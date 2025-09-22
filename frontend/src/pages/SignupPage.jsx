@@ -1,9 +1,48 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const SignupPage = () => {
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        password: '',
+    });
+    const navigate = useNavigate();
+
+    const { name, email, password } = formData;
+
     const handleGoogleSignup = () => {
         window.location.href = "http://localhost:8080/auth/google";
+    };
+
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault(); // Prevent default form submission
+        try {
+            const res = await fetch('http://localhost:8080/auth/signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                // Store the token and redirect
+                localStorage.setItem('token', data.token);
+                navigate('/home'); // Redirect to the home page
+            } else {
+                // Handle errors (e.g., display error message)
+                console.error(data.message || 'Signup failed');
+            }
+        } catch (err) {
+            console.error('Server error:', err);
+        }
     };
 
     return (
@@ -18,7 +57,8 @@ const SignupPage = () => {
                         </Link>
                     </p>
                 </div>
-                <form className="space-y-6" action="#" method="POST">
+                {/* Add onSubmit to the form tag */}
+                <form className="space-y-6" onSubmit={handleSubmit}>
                     <div>
                         <label
                             htmlFor="name"
@@ -31,7 +71,8 @@ const SignupPage = () => {
                                 id="name"
                                 name="name"
                                 type="text"
-                                autoComplete="name"
+                                value={name} // Control the input with state
+                                onChange={handleChange} // Update state on change
                                 required
                                 className="block w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-white"
                             />
@@ -49,7 +90,8 @@ const SignupPage = () => {
                                 id="email"
                                 name="email"
                                 type="email"
-                                autoComplete="email"
+                                value={email} // Control the input with state
+                                onChange={handleChange} // Update state on change
                                 required
                                 className="block w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-white"
                             />
@@ -68,13 +110,14 @@ const SignupPage = () => {
                                 id="password"
                                 name="password"
                                 type="password"
-                                autoComplete="current-password"
+                                value={password} // Control the input with state
+                                onChange={handleChange} // Update state on change
                                 required
                                 className="block w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-white"
                             />
                         </div>
                     </div>
-                    
+
                     <div>
                         <button
                             type="submit"
@@ -85,6 +128,7 @@ const SignupPage = () => {
                     </div>
                 </form>
 
+                {/* ... rest of your component */}
                 <div className="relative">
                     <div className="absolute inset-0 flex items-center">
                         <div className="w-full border-t border-gray-600" />
