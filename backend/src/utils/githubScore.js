@@ -1,53 +1,85 @@
 import { githubAPI } from "./axiosInstance.js";
 
 const getRepoCountScore = (repoCount) => {
-    console.log((Math.min(repoCount, 30) / 30) * 100)
-    return (Math.min(repoCount, 30) / 30) * 100;
+    const value = (Math.min(repoCount, 30) / 30) * 100;
+    console.log('getRepoCountScore:', value);
+    return value;
 }
 
 const getFollowersCountScore = (followersCount) => {
-    console.log(Math.min(100, followersCount*2))
-    return Math.min(100, followersCount*2);
+    const value = Math.min(100, followersCount*2);
+    console.log('getFollowersCountScore:', value);
+    return value;
 }
 
 const getFollowingRatioScore = (followersCount, followingCount) => {
-    console.log(Math.min(followersCount/followingCount, 1)*100)
-    if (followingCount == 0) return getFollowersCountScore(followersCount);
-    else return Math.min(followersCount/followingCount, 1)*100;
+    let value;
+    if (followingCount == 0) value = getFollowersCountScore(followersCount);
+    else value = Math.min(followersCount/followingCount, 1)*100;
+    console.log('getFollowingRatioScore:', value);
+    return value;
 }
 
 const getLanguagesCountScore = (languagesCount) => {
-    console.log(Math.min(100, languagesCount*10))
-    return Math.min(100, languagesCount*10);
+    const value = Math.min(100, languagesCount*10);
+    console.log('getLanguagesCountScore:', value);
+    return value;
 }
 
 const getStarsCountScore = (starsCount) => {
-    console.log(Math.min(100, starsCount*2))
-    return Math.min(100, starsCount*2);
+    const value = Math.min(100, starsCount*2);
+    console.log('getStarsCountScore:', value);
+    return value;
 }
 
 const getForksCountScore = (forksCount) => {
-    console.log(Math.min(100, forksCount*5))
-    return Math.min(100, forksCount*5);
+    const value = Math.min(100, forksCount*5);
+    console.log('getForksCountScore:', value);
+    return value;
 }
 
 const getTotalCommitsScore = (totalCommits) => {
-    console.log(Math.min(100, totalCommits*0.1))
-    return Math.min(100, totalCommits*0.1);
+    const value = Math.min(100, totalCommits*0.1);
+    console.log('getTotalCommitsScore:', value);
+    return value;
 }
 
-const getTotalPullRequestsScore = (totalPullRequests) => {
-    console.log(Math.min(100, totalPullRequests))
-    return Math.min(100, totalPullRequests);
+const getPullRequestsCountScore = (totalPullRequests) => {
+    const value = Math.min(100, totalPullRequests*2);
+    console.log('getPullRequestsCountScore:', value);
+    return value;
+}
+
+const getIssuesCountScore = (issuesCount) => {
+    const value = Math.min(100, issuesCount*4);
+    console.log('getIssuesCountScore:', value);
+    return value;
+}
+
+const getPinnedReposCountScore = (pinnedReposCount) => {
+    const value = (pinnedReposCount/6)*100;
+    console.log('getPinnedReposCountScore:', value);
+    return value;
 }
 
 const getProfileReadmeScore = async (username) => {
-    const profileReadme = (await githubAPI.get(`/repos/${username}/${username}/readme`)).data;
-    if (profileReadme["url"]) return 100;
-    else return 0;
+    try {
+        const profileReadmeResponse = await githubAPI.get(`/repos/${username}/${username}/readme`);
+        const profileReadmeData = profileReadmeResponse.data;
+        const value = ("url" in profileReadmeData) ? 100 : 0;
+        console.log('getProfileReadmeScore:', value);
+        return value;
+    } catch (error){
+        console.log('getProfileReadmeScore:', 0);
+        return 0;
+    }
 }
 
-
+const getStreakScore = (maxStreak) => {
+    const value = Math.min(100, maxStreak);
+    console.log('getStreakScore:', value);
+    return value;
+}
 
 export {
     getRepoCountScore,
@@ -57,6 +89,9 @@ export {
     getStarsCountScore,
     getForksCountScore,
     getTotalCommitsScore,
-    getTotalPullRequestsScore,
-    getProfileReadmeScore
+    getProfileReadmeScore,
+    getPinnedReposCountScore,
+    getPullRequestsCountScore,
+    getIssuesCountScore,
+    getStreakScore,
 }
