@@ -76,7 +76,21 @@ const login = async (req, res) => {
     }
 }
 
+const logout = (req, res, next) => {
+    req.logout(function(err) {
+        if (err) { return next(err); }
+        req.session.destroy((err) => {
+            if (err) {
+                return res.status(500).json({ message: 'Error destroying session' });
+            }
+            res.clearCookie('connect.sid'); // Clears the session cookie
+            res.status(200).json({ message: 'Logged out successfully' });
+        });
+    });
+};
+
 export { 
     signup,
-    login 
+    login,
+    logout
 };
