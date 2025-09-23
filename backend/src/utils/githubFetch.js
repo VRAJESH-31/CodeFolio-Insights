@@ -116,8 +116,8 @@ const getContributionCount = async (username) => {
     }
 }
 
-const getUserStreak = async (username) => {
-    try {
+const getContributionCalendar = async (username) => {
+    try { 
         const query = `
             {
                 user(login: "${username}") {
@@ -135,24 +135,34 @@ const getUserStreak = async (username) => {
             }
         `
 
+        const contributionCalendarResponse = await githubAPI.post("/graphql", {query});
+        const contributionCalendarData = contributionCalendarResponse.data["data"]["user"]["contributionsCollection"]["contributionCalendar"]["weeks"];
+
+        return contributionCalendarData;
+    } catch (error) {
+        console.log("Error occurred while getting max streak: ", error);
+        console.log(error.stack);
+        return [];
+    }
+}
+
+const getUserStreak = async (contributionCalendar) => {
+    try {
         let currentStreak = 0;
         let maxStreak = 0;
         let activeDays = 0;
 
-        const contributionCalendarResponse = await githubAPI.post("/graphql", {query});
-        const contributionCalendarData = contributionCalendarResponse.data["data"]["user"]["contributionsCollection"]["contributionCalendar"]["weeks"];
-
-        for (let i=0; i<contributionCalendarData.length; i++){
-            const week = contributionCalendarData[i];
+        for (let i=0; i<contributionCalendar.length; i++){
+            const week = contributionCalendar[i];
             for (let day=0; day<week["contributionDays"].length; day++){
                 let dailyContributions = week["contributionDays"][day]["contributionCount"];
                 if (dailyContributions == 0){
                     currentStreak = 0;
                 } else {
                     currentStreak++;
+                    activeDays++;
                     maxStreak = Math.max(maxStreak, currentStreak);
                 }
-                activeDays++;
             }
         }
 
@@ -219,6 +229,25 @@ const getLastYearCommitsCount = async (username) => {
     }
 }   
 
+const getLanguageUsageStats = (uniqueLanguages, userReposLanguageStat) => {
+
+    let languageUsage = {};
+    const languageUsagePerRepos = userReposLanguageStat.map((repo)=>repo["languageUsedInBytes"]);
+
+    for (let language of uniqueLanguages){
+        languageUsage[language] = 0;
+    }
+
+    for (let i=0; i<languageUsagePerRepos.length; i++){
+        for (let language in languageUsagePerRepos[i]){
+            languageUsage[language] = languageUsage[language] + languageUsagePerRepos[i][language];
+        }
+    }
+
+    return languageUsage;
+
+}
+
 
 export {
     PAGE_SIZE,
@@ -232,4 +261,6 @@ export {
     getRepoLanguages,
     getLastYearCommitsCount,
     getCommitsQualityReport,
+    getContributionCalendar,
+    getLanguageUsageStats,
 }

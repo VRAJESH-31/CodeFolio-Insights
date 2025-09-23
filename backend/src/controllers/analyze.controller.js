@@ -1,5 +1,6 @@
 import { getRepoCountScore, getFollowersCountScore, getFollowingRatioScore, getLanguagesCountScore, getTotalCommitsScore, getForksCountScore, getStarsCountScore, getProfileReadmeScore, getIssuesCountScore, getPinnedReposCountScore, getPullRequestsCountScore, getStreakScore, getCommitsQualityScore } from "../utils/githubScore.js";
-import { PAGE_SIZE, getCommitsPerRepo, getLastYearCommitsCount, getPinnedReposCount, getContributionCount, getUserStreak, getUserProfileData, getUserRepos, getRepoLanguages, getCommitsQualityReport } from "../utils/githubFetch.js"
+import { PAGE_SIZE, getCommitsPerRepo, getLastYearCommitsCount, getPinnedReposCount, getContributionCount, getUserStreak, getUserProfileData, getUserRepos, getRepoLanguages, getCommitsQualityReport, getContributionCalendar, getLanguageUsageStats } from "../utils/githubFetch.js"
+import { getGithubProfileAnalysis } from "../utils/geminiResponse.js";
 
 const analyzeGithub = async (req, res) => {
 
@@ -20,6 +21,7 @@ const analyzeGithub = async (req, res) => {
         let userReposStat = [];
         let userReposLanguageStat = [];
         let uniqueLanguages = new Set();
+        let languageUsageInBytes = {};
 
         userReposStat = await getUserRepos(username, repoCount);
 
@@ -42,13 +44,38 @@ const analyzeGithub = async (req, res) => {
             return languages;
         }, new Set()));
 
+        languageUsageInBytes = getLanguageUsageStats(uniqueLanguages, userReposLanguageStat);
+
         const contributionCount = await getContributionCount(username);
         const pullRequestsCount = contributionCount["pullRequestContributions"]["totalCount"];
         const issueRequestsCount = contributionCount["issueContributions"]["totalCount"];
 
-        const {currentStreak, maxStreak, activeDays} = await getUserStreak(username);
+        const contributionCalendar = await getContributionCalendar(username);
+        const {currentStreak, maxStreak, activeDays} = await getUserStreak(contributionCalendar);
+        const commitsQualityReport = JSON.parse(await getCommitsQualityReport(username));
+        const commitsQualityReportArray = Object.values(commitsQualityReport).map((commit)=>commit["rating"]);
 
-        const commitsQualityReport = Object.values(JSON.parse(await getCommitsQualityReport(username))).map((commit)=>commit["rating"]);
+        const githubData = {
+            userData,
+            repoCount, 
+            followersCount,
+            followingCount,
+            pinnedRepoCount,
+            starsCount, 
+            forksCount,
+            lastYearCommitsCount,
+            languageUsageInBytes,
+            userReposStat: userReposStat.slice(0,5),
+            contributionCount,
+            pullRequestsCount,
+            issueRequestsCount,
+            commitsQualityReport : Object.values(commitsQualityReport).slice(0,5),
+            currentStreak,
+            maxStreak,
+            activeDays,
+        }
+
+        const profileAnalysis = JSON.parse((await getGithubProfileAnalysis(githubData)));
 
         score = score + getRepoCountScore(repoCount)*0.1;
         score = score + getFollowersCountScore(followersCount)*0.025 
@@ -62,9 +89,25 @@ const analyzeGithub = async (req, res) => {
         score = score + getPullRequestsCountScore(pullRequestsCount)*0.1;
         score = score + getIssuesCountScore(issueRequestsCount)*0.1;
         score = score + getStreakScore(maxStreak, currentStreak, activeDays)*0.05;
-        score = score + getCommitsQualityScore(commitsQualityReport)*0.1;
+        score = score + getCommitsQualityScore(commitsQualityReportArray)*0.1;
 
-        return res.status(200).json({score});
+        return res.status(200).json({
+            score,
+            avatarUrl : userData["avatar_url"],
+            publicName : userData["name"],
+            bio : userData["bio"],
+            email: userData["email"],
+            followersCount: userData["followers"],
+            followingCount: userData["following"],
+            public_repos: userData["public_repos"],
+            contributionCalendar,
+            activeDays,
+            currentStreak,
+            maxStreak,
+            languageUsageInBytes,
+            userReposLanguageStat,
+            profileAnalysis,
+        });
 
     } catch (error){
         console.log("Error occurred while fetching github data: ", error.message);

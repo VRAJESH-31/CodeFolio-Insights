@@ -10,6 +10,15 @@ const githubAPI = axios.create({
     }
 })
 
+// ScrapeSpidey Instance
+const scrapeSpideyAPI = axios.create({
+    baseURL: "https://scrape-spidey.onrender.com",
+    headers: {
+        Accept: 'application/json',
+    }
+})
+
 export {
     githubAPI,
+    scrapeSpideyAPI,
 }
