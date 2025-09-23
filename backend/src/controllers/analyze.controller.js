@@ -1,5 +1,5 @@
 import { getRepoCountScore, getFollowersCountScore, getFollowingRatioScore, getLanguagesCountScore, getTotalCommitsScore, getForksCountScore, getStarsCountScore, getProfileReadmeScore, getIssuesCountScore, getPinnedReposCountScore, getPullRequestsCountScore, getStreakScore, getCommitsQualityScore } from "../utils/githubScore.js";
-import { PAGE_SIZE, getCommitsPerRepo, getLastYearCommitsCount, getPinnedReposCount, getContributionCount, getUserStreak, getUserProfileData, getUserRepos, getRepoLanguages, getCommitsQualityReport, getContributionCalendar, getLanguageUsageStats } from "../utils/githubFetch.js"
+import { PAGE_SIZE, getCommitsPerRepo, getLastYearCommitsCount, getPinnedReposCount, getContributionCount, getUserStreak, getUserProfileData, getUserRepos, getRepoLanguages, getCommitsQualityReport, getContributionCalendar, getLanguageUsageStats, getGithubContributionBadges } from "../utils/githubFetch.js"
 import { getGithubProfileAnalysis } from "../utils/geminiResponse.js";
 
 const analyzeGithub = async (req, res) => {
@@ -52,7 +52,9 @@ const analyzeGithub = async (req, res) => {
 
         const contributionCalendar = await getContributionCalendar(username);
         const {currentStreak, maxStreak, activeDays} = await getUserStreak(contributionCalendar);
-        const commitsQualityReport = JSON.parse(await getCommitsQualityReport(username));
+        const githubContributionBadges = await getGithubContributionBadges(username);
+
+        const commitsQualityReport = await getCommitsQualityReport(username);
         const commitsQualityReportArray = Object.values(commitsQualityReport).map((commit)=>commit["rating"]);
 
         const githubData = {
@@ -75,7 +77,7 @@ const analyzeGithub = async (req, res) => {
             activeDays,
         }
 
-        const profileAnalysis = JSON.parse((await getGithubProfileAnalysis(githubData)));
+        const profileAnalysis = await getGithubProfileAnalysis(githubData);
 
         score = score + getRepoCountScore(repoCount)*0.1;
         score = score + getFollowersCountScore(followersCount)*0.025 
@@ -106,6 +108,7 @@ const analyzeGithub = async (req, res) => {
             maxStreak,
             languageUsageInBytes,
             userReposLanguageStat,
+            githubContributionBadges,
             profileAnalysis,
         });
 

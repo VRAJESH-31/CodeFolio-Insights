@@ -1,9 +1,9 @@
-import { githubAPI } from "./axiosInstance.js";
-import { getCommitAnalysis } from "../utils/geminiResponse.js";
+import { githubAPI, scrapeSpideyAPI } from "./axiosInstance.js";
+import { getCommitAnalysis} from "../utils/geminiResponse.js";
+import { SCRAPE_SPIDEY_API_KEY } from "./config.js";
 
 const PAGE_SIZE = 100;
 const TOTAL_COMMITS_LIMIT = 25;
-
 
 const getUserProfileData = async (username) => {
     try {
@@ -40,7 +40,7 @@ const getCommitsQualityReport = async (username) => {
 
         return await getCommitAnalysis(commitsArray);
     } catch (error){
-        console.log(`Error Occurred while fetching repos data page`);
+        console.log("Error Occurred while getting commits quality report:", error.message);
         console.log(error.stack);
         return [];
     }
@@ -48,17 +48,23 @@ const getCommitsQualityReport = async (username) => {
 }
 
 const getCommitsPerRepo = async (repoName, username) => {
-    let commitCount = 0;
-    let pageNo = 1;
+    try {
+        let commitCount = 0;
+        let pageNo = 1;
 
-    while (true){
-        const temp = (await githubAPI.get(`/repos/${username}/${repoName}/commits?per_page=${PAGE_SIZE}&page=${pageNo}`)).data;
-        if (temp.length == 0) break;
-        commitCount = commitCount + temp.length;
-        pageNo++;
+        while (true){
+            const temp = (await githubAPI.get(`/repos/${username}/${repoName}/commits?per_page=${PAGE_SIZE}&page=${pageNo}`)).data;
+            if (temp.length == 0) break;
+            commitCount = commitCount + temp.length;
+            pageNo++;
+        }
+
+        return commitCount;
+    } catch (error) {
+        console.log("Error Occurred while getting repo commits:", error.message);
+        console.log(error.stack);
+        return 0;
     }
-
-    return commitCount;
 }
 
 const getPinnedReposCount = async (username) => {
@@ -77,7 +83,7 @@ const getPinnedReposCount = async (username) => {
         const pinnedRepoData = pinnedRepoResponse.data;
         return pinnedRepoData["data"]["user"]["pinnedItems"]["totalCount"];
     } catch (error){
-        console.log("Error occurred while fetching pinned epo count:", error.message);
+        console.log("Error occurred while fetching pinned repo count:", error.message);
         console.log(error.stack);
         return 0;
     }
@@ -103,7 +109,7 @@ const getContributionCount = async (username) => {
         const contributionCountResponse = await githubAPI.post("/graphql", {query});
         return contributionCountResponse.data["data"]["user"]["contributionsCollection"];
     } catch (error) {
-        console.log("Error occurred while fetching pinned epo count:", error.message);
+        console.log("Error occurred while fetching contribution counts:", error.message);
         console.log(error.stack);
         return JSON.parse({
             "pullRequestContributions": {
@@ -140,7 +146,7 @@ const getContributionCalendar = async (username) => {
 
         return contributionCalendarData;
     } catch (error) {
-        console.log("Error occurred while getting max streak: ", error);
+        console.log("Error occurred while fetching contribution calendar: ", error);
         console.log(error.stack);
         return [];
     }
@@ -168,7 +174,7 @@ const getUserStreak = async (contributionCalendar) => {
 
         return {currentStreak, maxStreak, activeDays};
     } catch (error){
-        console.log("Error occurred while getting max streak: ", error);
+        console.log("Error occurred while getting user streaks and total active days: ", error.message);
         console.log(error.stack);
         return {currentStreak: 0, maxStreak: 0, activeDays: 0};
     }
@@ -188,7 +194,7 @@ const getUserRepos = async (username, repoCount) => {
                 userReposStat.push(repoData);
             }
         } catch (error){
-            console.log(`Error Occurred while fetching repos data page`);
+            console.log(`Error Occurred while fetching repos`, error.message);
             error.stack();
         }
     }
@@ -245,7 +251,22 @@ const getLanguageUsageStats = (uniqueLanguages, userReposLanguageStat) => {
     }
 
     return languageUsage;
+}
 
+const getGithubContributionBadges = async (username) => {
+    try {
+        const githubBadgesResponse = await scrapeSpideyAPI.get(`/api/v1/github/user/badges/${username}?apiKey=${SCRAPE_SPIDEY_API_KEY}`);
+        if (githubBadgesResponse.status >= 400){
+            console.log(githubBadgesResponse.data);
+            return [];
+        } else {
+            return githubBadgesResponse.data;
+        }
+    } catch (error) {
+        console.log("Error occurred while fetching github badges: ", error.message);
+        console.log(error.stack);
+        return [];
+    }
 }
 
 
@@ -263,4 +284,5 @@ export {
     getCommitsQualityReport,
     getContributionCalendar,
     getLanguageUsageStats,
+    getGithubContributionBadges,
 }
