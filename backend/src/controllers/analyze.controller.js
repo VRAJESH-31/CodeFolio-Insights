@@ -1,9 +1,10 @@
 import { getRepoCountScore, getFollowersCountScore, getFollowingRatioScore, getLanguagesCountScore, getTotalCommitsScore, getForksCountScore, getStarsCountScore, getProfileReadmeScore, getIssuesCountScore, getPinnedReposCountScore, getPullRequestsCountScore, getStreakScore, getCommitsQualityScore } from "../utils/githubScore.js";
 import { PAGE_SIZE, getCommitsPerRepo, getLastYearCommitsCount, getPinnedReposCount, getContributionCount, getUserStreak, getUserProfileData, getUserRepos, getRepoLanguages, getCommitsQualityReport, getContributionCalendar, getLanguageUsageStats, getGithubContributionBadges } from "../utils/githubFetch.js"
-import { getGithubProfileAnalysis } from "../utils/geminiResponse.js";
+import { getLeetCodeProblemsCount, getLeetCodeUserStreaksAndCalendar, getLeetCodeContestData, getLeetCodeProfileInfo, getLeetCodeBadges, getLeetCodeTopicWiseProblems, } from "../utils/leetcodeFetch.js"
+import { getGithubProfileAnalysis, getLeetCodeProfileAnalysis } from "../utils/geminiResponse.js";
+import * as leetCodeScoring from "../utils/leetcodeScore.js";
 
 const analyzeGithub = async (req, res) => {
-
     try {
         const username = req.query.username;
         let score = 0;
@@ -119,6 +120,55 @@ const analyzeGithub = async (req, res) => {
     }
 }
 
+
+const analyzeLeetCode = async (req, res) => {
+    try {
+        const username = req.query.username;
+        let score = 0;
+
+        const problemsCount = await getLeetCodeProblemsCount(username);
+        const submissionCalendar = await getLeetCodeUserStreaksAndCalendar(username);
+        const contestData = await getLeetCodeContestData(username);
+        const profileInfo = await getLeetCodeProfileInfo(username);
+        const badges = await getLeetCodeBadges(username);
+        const topicWiseProblems = await getLeetCodeTopicWiseProblems(username);
+        
+        const acceptanceRate = problemsCount["acSubmissionNum"][0]["submissions"] / problemsCount["totalSubmissionNum"][0]["submissions"];
+
+        const leetCodeData = {
+            problemsCount,
+            submissionCalendar,
+            contestData,
+            profileInfo,
+            badges,
+            topicWiseProblems,
+            acceptanceRate
+        }
+        
+        const profileAnalysis = await getLeetCodeProfileAnalysis(leetCodeData);
+
+        let acceptanceRateScore = leetCodeScoring.getAcceptanceRateScore(acceptanceRate);
+        let badgesScore = leetCodeScoring.getBadgesScore(badges);
+        let contestScore = leetCodeScoring.getContestPerformanceScore(contestData);
+        let problemsSolvedScore = leetCodeScoring.getProblemsSolvedCountScore(problemsCount);
+        let profileScore = leetCodeScoring.getProfileDataScore(profileInfo);
+        let submissionConsistencyScore = leetCodeScoring.getSubmissionConsistencyScore(submissionCalendar);
+        let topicWiseProblemsScore = leetCodeScoring.getTopicWiseProblemsScore(topicWiseProblems);
+
+        score = acceptanceRateScore*0.1 + badgesScore*0.1 + submissionConsistencyScore*0.2 + contestScore*0.2 + problemsSolvedScore*0.2 + profileScore * 0.05 + topicWiseProblemsScore*0.05;
+
+        return res.status(200).json({score, leetCodeData, profileAnalysis});
+
+    } catch (error){
+        console.log("Error occurred while fetching leetCode data: ", error.message);
+        console.log(error.stack)
+        return res.status(500).json({"message" : "Couldn't retrieve user data"});
+    }
+
+}
+
+
 export {
     analyzeGithub,
+    analyzeLeetCode,
 }

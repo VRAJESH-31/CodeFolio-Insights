@@ -78,7 +78,48 @@ const getGithubProfileAnalysis = async (githubData) => {
     }
 }
 
+const getLeetCodeProfileAnalysis = async (leetCodeData) => {
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: `You will be given an object which will contain a lot of user leetCode data and you need to return an object :
+            {
+                analysis: This will contain a analysis on user leetCode data like what he has done and all other stuff. You should try to compliment the user on the basis of data you received but remember if there's nothing to talk about then no need to sugar-clot the stuff and just provide general analysis.
+                improvementAreas: This will be an array of 3-5 length with each element being a short point that gives suggestion for improvement based on the data provided
+            }
+
+            Take care that you should not miss to return any field empty and try to align the content with respect to user data
+            
+            Github Data: ${JSON.stringify(leetCodeData)}`,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        analysis : {
+                            type: Type.STRING,
+                        },
+                        improvementAreas : {
+                            type: Type.ARRAY,
+                            items: {
+                                type: Type.STRING,
+                            }
+                        }
+                    },
+                }
+            }
+        });
+
+        return JSON.parse(response['candidates'][0]["content"]["parts"][0]["text"]);
+    } catch (error){
+        console.log("Error Occurred while getting github profile analysis in geminiResponse.js", error.message);
+        console.log(error.stack);
+        return {};
+    }
+}
+
 export {
     getCommitAnalysis,
     getGithubProfileAnalysis,
+    getLeetCodeProfileAnalysis,
 }

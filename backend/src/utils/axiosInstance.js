@@ -18,7 +18,35 @@ const scrapeSpideyAPI = axios.create({
     }
 })
 
+// LeetCode Instance function
+const leetCodeAPI = axios.create({
+    baseURL: "https://leetcode.com/graphql",
+    headers: {
+        "Content-Type": "application/json",
+        "Referer": "https://leetcode.com",
+        "User-Agent": "Mozilla/5.0",
+    }
+})
+
+// LeetCode helper function
+const leetCodeQuery = async (query, variables = {}) => {
+    try{
+        const response = await leetCodeAPI.post("", {
+            query,
+            variables
+        });
+
+        return response.data;
+    } catch (error){
+        console.log("Error occurred: ", error.message);
+        console.log(error.stack);
+        return null;
+    }
+}
+
 export {
     githubAPI,
     scrapeSpideyAPI,
+    leetCodeAPI,
+    leetCodeQuery,
 }
