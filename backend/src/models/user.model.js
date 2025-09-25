@@ -16,6 +16,12 @@ const UserSchema = new Schema({
     },
     password: {
         type: String,
+    },
+    profilePicture: {
+        type: String,
+    },
+    jobTitle: {
+        type: String,
     }
 });
 

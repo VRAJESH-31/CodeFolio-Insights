@@ -67,14 +67,32 @@ const login = async (req, res) => {
             { expiresIn: 3600 },
             (err, token) => {
                 if (err) throw err;
-                res.json({ token });
+                res.json({
+                    token,
+                    user: {
+                        id: user.id,
+                        name: user.name,
+                        email: user.email,
+                        profilePicture: user.profilePicture,
+                        jobTitle: user.jobTitle
+                    }
+                });
             }
         );
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
     }
-}
+};
+
+const getCurrentUser = (req, res) => {
+    if (req.isAuthenticated()) {
+        res.json(req.user);
+    } else {
+        res.status(401).json({ message: 'Not authenticated' });
+    }
+};
+
 
 const logout = (req, res, next) => {
     req.logout(function(err) {
@@ -83,14 +101,15 @@ const logout = (req, res, next) => {
             if (err) {
                 return res.status(500).json({ message: 'Error destroying session' });
             }
-            res.clearCookie('connect.sid'); // Clears the session cookie
+            res.clearCookie('connect.sid');
             res.status(200).json({ message: 'Logged out successfully' });
         });
     });
 };
 
-export { 
+export {
     signup,
     login,
-    logout
+    logout,
+    getCurrentUser
 };
