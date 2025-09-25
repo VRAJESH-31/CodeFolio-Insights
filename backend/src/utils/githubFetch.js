@@ -1,6 +1,7 @@
 import { githubAPI, scrapeSpideyAPI } from "./axiosInstance.js";
 import { getCommitAnalysis} from "../utils/geminiResponse.js";
 import { SCRAPE_SPIDEY_API_KEY } from "./config.js";
+import { gitHubApiQueries } from "./constants.js";
 
 const PAGE_SIZE = 100;
 const TOTAL_COMMITS_LIMIT = 25;
@@ -69,17 +70,8 @@ const getCommitsPerRepo = async (repoName, username) => {
 
 const getPinnedReposCount = async (username) => {
     try {
-        const query = `
-            {
-                user(login: "${username}") {
-                        pinnedItems(first: 6, types: REPOSITORY) {
-                        totalCount
-                    }
-                }
-            }
-        `;
-
-        const pinnedRepoResponse = await githubAPI.post('/graphql', {query});
+        const query = gitHubApiQueries.GITHUB_TOTAL_PINNED_REPO_COUNT_QUERY;
+        const pinnedRepoResponse = await githubAPI.post('/graphql', {query, variables: {username}});
         const pinnedRepoData = pinnedRepoResponse.data;
         return pinnedRepoData["data"]["user"]["pinnedItems"]["totalCount"];
     } catch (error){
@@ -91,23 +83,10 @@ const getPinnedReposCount = async (username) => {
 
 const getContributionCount = async (username) => {
     try {
-        const query = `
-            {
-                user(login: "${username}") {
-                    contributionsCollection {
-                        pullRequestContributions(first: 100) {
-                            totalCount
-                        }
-                        issueContributions(first: 100) {
-                            totalCount
-                        }
-                    }
-                }
-            }
-        `;
-
-        const contributionCountResponse = await githubAPI.post("/graphql", {query});
-        return contributionCountResponse.data["data"]["user"]["contributionsCollection"];
+        const query = gitHubApiQueries.GITHUB_FIRST_100_REPOS_CONTRIBUTION_QUERY;
+        const contributionCountResponse = await githubAPI.post("/graphql", {query, variables: {username}});
+        const contributionCountData =  contributionCountResponse.data["data"]["user"]["contributionsCollection"];
+        return contributionCountData;
     } catch (error) {
         console.log("Error occurred while fetching contribution counts:", error.message);
         console.log(error.stack);
@@ -124,26 +103,9 @@ const getContributionCount = async (username) => {
 
 const getContributionCalendar = async (username) => {
     try { 
-        const query = `
-            {
-                user(login: "${username}") {
-                    contributionsCollection {
-                        contributionCalendar {
-                            weeks {
-                                contributionDays {
-                                    contributionCount
-                                    date
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        `
-
-        const contributionCalendarResponse = await githubAPI.post("/graphql", {query});
+        const query = gitHubApiQueries.GITHUB_CONTRIBUTION_CALENDAR_QUERY;
+        const contributionCalendarResponse = await githubAPI.post("/graphql", {query, variables:{username}});
         const contributionCalendarData = contributionCalendarResponse.data["data"]["user"]["contributionsCollection"]["contributionCalendar"]["weeks"];
-
         return contributionCalendarData;
     } catch (error) {
         console.log("Error occurred while fetching contribution calendar: ", error);
@@ -214,18 +176,8 @@ const getRepoLanguages = async (username, repoName) => {
 
 const getLastYearCommitsCount = async (username) => {
     try {
-        const query = `
-            {
-                user(login: "${username}") {
-                    contributionsCollection {
-                        contributionCalendar {
-                            totalContributions
-                        }
-                    }
-                }
-            }
-        `;
-        const lastYearCommitsResponse = await githubAPI.post("/graphql", {query});
+        const query = gitHubApiQueries.GITHUB_LAST_YEAR_COMMITS_COUNT;
+        const lastYearCommitsResponse = await githubAPI.post("/graphql", {query, variables: {username}});
         const lastYearCommitsData = lastYearCommitsResponse.data;
         return lastYearCommitsData["data"]["user"]["contributionsCollection"]["contributionCalendar"]["totalContributions"];
     } catch (error) {
@@ -257,7 +209,6 @@ const getGithubContributionBadges = async (username) => {
     try {
         const githubBadgesResponse = await scrapeSpideyAPI.get(`/api/v1/github/user/badges/${username}?apiKey=${SCRAPE_SPIDEY_API_KEY}`);
         if (githubBadgesResponse.status >= 400){
-            console.log(githubBadgesResponse.data);
             return [];
         } else {
             return githubBadgesResponse.data;

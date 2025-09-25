@@ -116,6 +116,63 @@ const leetCodeApiQueries = {
     `,
 };
 
+const gitHubApiQueries = {
+    GITHUB_TOTAL_PINNED_REPO_COUNT_QUERY : `
+        query($username: String!) {
+            user(login: $username) {
+                pinnedItems(first: 6, types: REPOSITORY) {
+                    totalCount
+                }
+            }
+        }
+    `,
+
+    GITHUB_FIRST_100_REPOS_CONTRIBUTION_QUERY : `
+        query($username: String!){
+            user(login: $username) {
+                contributionsCollection {
+                    pullRequestContributions(first: 100) {
+                        totalCount
+                    }
+                    issueContributions(first: 100) {
+                        totalCount
+                    }
+                }
+            }
+        }
+    `,
+
+    GITHUB_CONTRIBUTION_CALENDAR_QUERY : `
+        query($username: String!){
+            user(login: $username) {
+                contributionsCollection {
+                    contributionCalendar {
+                        weeks {
+                            contributionDays {
+                                contributionCount
+                                date
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    `,
+
+    GITHUB_LAST_YEAR_COMMITS_COUNT : `
+        query($username: String!){
+            user(login: $username) {
+                contributionsCollection {
+                    contributionCalendar {
+                        totalContributions
+                    }
+                }
+            }
+        }
+    `,
+}
+
 export {
     leetCodeApiQueries,
+    gitHubApiQueries,
 }
