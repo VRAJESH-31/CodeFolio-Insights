@@ -44,9 +44,39 @@ const leetCodeQuery = async (query, variables = {}) => {
     }
 }
 
+// GitHub Helper function for GraphQL queries
+const githubGraphQlQuery = async (query, variables={}) => {
+    try{
+        const response = await githubAPI.post("/graphql", {
+            query,
+            variables
+        });
+
+        return response.data;
+    } catch (error){
+        console.log("Error occurred: ", error.message);
+        console.log(error.stack);
+        return null;
+    }
+}
+
+// Github Helper function for RestAPI queries
+const githubRestApiQuery = async (endpoint) => {
+    try {
+        const response = await githubAPI.get(endpoint);
+        return response.data;
+    } catch (error){
+        console.log("Error occurred: ", error.message);
+        console.log(error.stack);
+        return null;
+    }
+}
+
 export {
     githubAPI,
     scrapeSpideyAPI,
     leetCodeAPI,
     leetCodeQuery,
+    githubGraphQlQuery,
+    githubRestApiQuery,
 }

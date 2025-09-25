@@ -9,8 +9,7 @@ const analyzeGithub = async (req, res) => {
         const username = req.query.username;
         let score = 0;
 
-        const userDataResponse = await githubFetching.getUserProfileData(username);
-        const userData = userDataResponse.data;
+        const userData = await githubFetching.getUserProfileData(username);
 
         const repoCount = userData["public_repos"];
         const followersCount = userData["followers"];
