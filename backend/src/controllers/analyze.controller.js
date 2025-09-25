@@ -1,20 +1,20 @@
-import { getRepoCountScore, getFollowersCountScore, getFollowingRatioScore, getLanguagesCountScore, getTotalCommitsScore, getForksCountScore, getStarsCountScore, getProfileReadmeScore, getIssuesCountScore, getPinnedReposCountScore, getPullRequestsCountScore, getStreakScore, getCommitsQualityScore } from "../utils/githubScore.js";
-import { PAGE_SIZE, getCommitsPerRepo, getLastYearCommitsCount, getPinnedReposCount, getContributionCount, getUserStreak, getUserProfileData, getUserRepos, getRepoLanguages, getCommitsQualityReport, getContributionCalendar, getLanguageUsageStats, getGithubContributionBadges } from "../utils/githubFetch.js"
-import { getGithubProfileAnalysis } from "../utils/geminiResponse.js";
+import * as githubScoring from "../utils/githubScore.js";
+import * as githubFetching from "../utils/githubFetch.js"
+import * as leetCodeFetching from "../utils/leetcodeFetch.js"
+import { getGithubProfileAnalysis, getLeetCodeProfileAnalysis } from "../utils/geminiResponse.js";
+import * as leetCodeScoring from "../utils/leetcodeScore.js";
 
 const analyzeGithub = async (req, res) => {
-
     try {
         const username = req.query.username;
         let score = 0;
 
-        const userDataResponse = await getUserProfileData(username);
-        const userData = userDataResponse.data;
+        const userData = await githubFetching.getUserProfileData(username);
 
         const repoCount = userData["public_repos"];
         const followersCount = userData["followers"];
         const followingCount = userData["following"];
-        const pinnedRepoCount = await getPinnedReposCount(username);
+        const pinnedRepoCount = await githubFetching.getPinnedReposCount(username);
         let starsCount = 0;
         let forksCount = 0;
         let lastYearCommitsCount = 0;
@@ -23,7 +23,7 @@ const analyzeGithub = async (req, res) => {
         let uniqueLanguages = new Set();
         let languageUsageInBytes = {};
 
-        userReposStat = await getUserRepos(username, repoCount);
+        userReposStat = await githubFetching.getUserRepos(username, repoCount);
 
         starsCount = userReposStat.reduce((totalStars, repoData)=>totalStars+repoData["stargazers_count"], 0);
         forksCount = userReposStat.reduce((totalForks, repoData)=>totalForks+repoData["forks_count"], 0);
@@ -33,28 +33,28 @@ const analyzeGithub = async (req, res) => {
                 repoId: repoData.id,
                 repoName: repoData.name,
                 repoUrl: repoData.html_url,
-                languageUsedInBytes: await getRepoLanguages(username, repoData.name),
+                languageUsedInBytes: await githubFetching.getRepoLanguages(username, repoData.name),
             }))
         );
 
-        lastYearCommitsCount = await getLastYearCommitsCount(username);
+        lastYearCommitsCount = await githubFetching.getLastYearCommitsCount(username);
 
         uniqueLanguages = Array.from(userReposLanguageStat.reduce((languages, repoLanguageStats)=>{
             Object.keys(repoLanguageStats.languageUsedInBytes).forEach(lang => languages.add(lang));
             return languages;
         }, new Set()));
 
-        languageUsageInBytes = getLanguageUsageStats(uniqueLanguages, userReposLanguageStat);
+        languageUsageInBytes = githubFetching.getLanguageUsageStats(uniqueLanguages, userReposLanguageStat);
 
-        const contributionCount = await getContributionCount(username);
+        const contributionCount = await githubFetching.getContributionCount(username);
         const pullRequestsCount = contributionCount["pullRequestContributions"]["totalCount"];
         const issueRequestsCount = contributionCount["issueContributions"]["totalCount"];
 
-        const contributionCalendar = await getContributionCalendar(username);
-        const {currentStreak, maxStreak, activeDays} = await getUserStreak(contributionCalendar);
-        const githubContributionBadges = await getGithubContributionBadges(username);
+        const contributionCalendar = await githubFetching.getContributionCalendar(username);
+        const {currentStreak, maxStreak, activeDays} = await githubFetching.getUserStreak(contributionCalendar);
+        const githubContributionBadges = await githubFetching.getGithubContributionBadges(username);
 
-        const commitsQualityReport = await getCommitsQualityReport(username);
+        const commitsQualityReport = await githubFetching.getCommitsQualityReport(username);
         const commitsQualityReportArray = Object.values(commitsQualityReport).map((commit)=>commit["rating"]);
 
         const githubData = {
@@ -79,19 +79,21 @@ const analyzeGithub = async (req, res) => {
 
         const profileAnalysis = await getGithubProfileAnalysis(githubData);
 
-        score = score + getRepoCountScore(repoCount)*0.1;
-        score = score + getFollowersCountScore(followersCount)*0.025 
-        score = score + getFollowingRatioScore(followersCount, followingCount)*0.025;
-        score = score + getLanguagesCountScore(Array.from(uniqueLanguages).length)*0.05;
-        score = score + getTotalCommitsScore(lastYearCommitsCount)*0.1
-        score = score + getForksCountScore(forksCount)*0.1 
-        score = score + getStarsCountScore(starsCount)*0.1; 
-        score = score + await getProfileReadmeScore(username)*0.1;
-        score = score + getPinnedReposCountScore(pinnedRepoCount)*0.05;
-        score = score + getPullRequestsCountScore(pullRequestsCount)*0.1;
-        score = score + getIssuesCountScore(issueRequestsCount)*0.1;
-        score = score + getStreakScore(maxStreak, currentStreak, activeDays)*0.05;
-        score = score + getCommitsQualityScore(commitsQualityReportArray)*0.1;
+        const repoCountScore = githubScoring.getRepoCountScore(repoCount);
+        const followersCountScore = githubScoring.getFollowersCountScore(followersCount);
+        const followingRatioScore = githubScoring.getFollowingRatioScore(followersCount, followingCount);
+        const languagesCountScore = githubScoring.getLanguagesCountScore(Array.from(uniqueLanguages).length);
+        const totalCommitsScore = githubScoring.getTotalCommitsScore(lastYearCommitsCount);
+        const forksCountScore = githubScoring.getForksCountScore(forksCount);
+        const starsCountScore = githubScoring.getStarsCountScore(starsCount);
+        const profileReadmeScore = await githubScoring.getProfileReadmeScore(username);
+        const pinnedReposCountScore = githubScoring.getPinnedReposCountScore(pinnedRepoCount);
+        const pullRequestsCountScore = githubScoring.getPullRequestsCountScore(pullRequestsCount);
+        const issuesCountScore = githubScoring.getIssuesCountScore(issueRequestsCount);
+        const streakScore = githubScoring.getStreakScore(maxStreak, currentStreak, activeDays);
+        const commitsQualityScore = githubScoring.getCommitsQualityScore(commitsQualityReportArray);
+
+        score = repoCountScore*0.1 + followersCountScore*0.025 + followingRatioScore*0.025 + languagesCountScore*0.05 + totalCommitsScore*0.1 + forksCountScore*0.1 + starsCountScore*0.1 + profileReadmeScore*0.1 + pinnedReposCountScore*0.05 + pullRequestsCountScore*0.1 + issuesCountScore*0.1 + streakScore*0.05 + commitsQualityScore*0.1;
 
         return res.status(200).json({
             score,
@@ -119,6 +121,65 @@ const analyzeGithub = async (req, res) => {
     }
 }
 
+
+const analyzeLeetCode = async (req, res) => {
+    try {
+        const username = req.query.username;
+        let score = 0;
+
+        const problemsCount = await leetCodeFetching.getLeetCodeProblemsCount(username);
+        const submissionCalendar = await leetCodeFetching.getLeetCodeUserStreaksAndCalendar(username);
+        const contestData = await leetCodeFetching.getLeetCodeContestData(username);
+        const profileInfo = await leetCodeFetching.getLeetCodeProfileInfo(username);
+        const badges = await leetCodeFetching.getLeetCodeBadges(username);
+        const topicWiseProblems = await leetCodeFetching.getLeetCodeTopicWiseProblems(username);
+        
+        const acceptanceRate = problemsCount["acSubmissionNum"][0]["submissions"] / problemsCount["totalSubmissionNum"][0]["submissions"];
+
+        const leetCodeData = {
+            problemsCount,
+            submissionCalendar,
+            contestData,
+            profileInfo,
+            badges,
+            topicWiseProblems,
+            acceptanceRate
+        }
+        
+        const profileAnalysis = await getLeetCodeProfileAnalysis(leetCodeData);
+
+        let acceptanceRateScore = leetCodeScoring.getAcceptanceRateScore(acceptanceRate);
+        let badgesScore = leetCodeScoring.getBadgesScore(badges);
+        let contestScore = leetCodeScoring.getContestPerformanceScore(contestData);
+        let problemsSolvedScore = leetCodeScoring.getProblemsSolvedCountScore(problemsCount);
+        let profileScore = leetCodeScoring.getProfileDataScore(profileInfo);
+        let submissionConsistencyScore = leetCodeScoring.getSubmissionConsistencyScore(submissionCalendar);
+        let topicWiseProblemsScore = leetCodeScoring.getTopicWiseProblemsScore(topicWiseProblems);
+
+        score = acceptanceRateScore*0.1 + badgesScore*0.1 + submissionConsistencyScore*0.2 + contestScore*0.2 + problemsSolvedScore*0.2 + profileScore * 0.05 + topicWiseProblemsScore*0.05;
+
+        return res.status(200).json({
+            score,
+            problemsCount,
+            submissionCalendar,
+            contestData,
+            profileInfo,
+            badges,
+            topicWiseProblems,
+            acceptanceRate,
+            profileAnalysis
+        });
+
+    } catch (error){
+        console.log("Error occurred while fetching leetCode data: ", error.message);
+        console.log(error.stack)
+        return res.status(500).json({"message" : "Couldn't retrieve user data"});
+    }
+
+}
+
+
 export {
     analyzeGithub,
+    analyzeLeetCode,
 }
