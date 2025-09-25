@@ -1,8 +1,10 @@
 import * as githubScoring from "../utils/githubScore.js";
 import * as githubFetching from "../utils/githubFetch.js"
 import * as leetCodeFetching from "../utils/leetcodeFetch.js"
-import { getGithubProfileAnalysis, getLeetCodeProfileAnalysis } from "../utils/geminiResponse.js";
+import { getGithubProfileAnalysis, getLeetCodeProfileAnalysis, getResumeAnalysis } from "../utils/geminiResponse.js";
 import * as leetCodeScoring from "../utils/leetcodeScore.js";
+import { getPdfContent } from "../utils/pdfUtils.js";
+import { MAX_PDF_SIZE } from "../utils/constants.js";
 
 const analyzeGithub = async (req, res) => {
     try {
@@ -179,7 +181,64 @@ const analyzeLeetCode = async (req, res) => {
 }
 
 
+const analyzeResume = async (req, res) => {
+    try {
+        console.log(req.files);
+        if (!req?.files?.resume) return res.status(400).json({"message" : "Resume Not provided"});
+
+        let resumePdf = null;
+        if (!Array.isArray(req.files.resume)){
+            if (req.files.resume.mimetype=="application/pdf" && req.files.resume.size<=MAX_PDF_SIZE){
+                resumePdf = req.files.resume;
+            }
+        } else {
+            for (let i=0; i<req.files.resume.length; i++){
+                if (req.files.resume[i].mimetype=="application/pdf" && req.files.resume[i].size<=MAX_PDF_SIZE){
+                    resumePdf = req.files.resume;
+                    break;
+                }
+            }
+        }
+
+        if (!resumePdf) return res.status(400).json({"message" : "Resume Not provided"});
+
+        const resumeContent = await getPdfContent(resumePdf);
+        const resumeAnalysis = await getResumeAnalysis(resumeContent);
+
+        if (Object.keys(resumeAnalysis).length == 0) return res.status(500).json({"message" : "Something Went Wrong while analyzing the resume"});
+
+        const scoreAnalysis = resumeAnalysis["scoreAnalysis"];
+        let score = 0;
+
+        const grammarScore = scoreAnalysis["grammar"]["score"];
+        const logicalFlowScore = scoreAnalysis["logicalFlow"]["score"];
+        const resumeLengthScore = scoreAnalysis["resumeLength"]["score"];
+        const achievementScore = scoreAnalysis["section"]["achievements"]["score"];
+        const courseworkScore = scoreAnalysis["section"]["coursework"]["score"];
+        const educationScore = scoreAnalysis["section"]["education"]["score"];
+        const experienceScore = scoreAnalysis["section"]["experience"]["score"];
+        const fullNameScore = scoreAnalysis["section"]["fullName"]["score"];
+        const projectsScore = scoreAnalysis["section"]["projects"]["score"];
+        const socialProfilesScore = scoreAnalysis["section"]["socialProfileLinks"]["score"];
+        const technicalSkillsScore = scoreAnalysis["section"]["technicalSkills"]["score"];
+
+
+        score = grammarScore*0.1 + resumeLengthScore*0.1 + logicalFlowScore*0.05 + fullNameScore*0.05 + socialProfilesScore*0.05 + achievementScore*0.1 + courseworkScore*0.05 + educationScore*0.1 + experienceScore*0.15 + projectsScore*0.15 + technicalSkillsScore*0.1;
+
+        resumeAnalysis["score"] = score;
+
+        return res.status(200).json({resumeAnalysis});
+
+    } catch (error) {
+        console.log("Error occurred while fetching leetCode data: ", error.message);
+        console.log(error.stack)
+        return res.status(500).json({"message" : "Couldn't retrieve user data"});
+    }
+}
+
+
 export {
     analyzeGithub,
     analyzeLeetCode,
+    analyzeResume,
 }

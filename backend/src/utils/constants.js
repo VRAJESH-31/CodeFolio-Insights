@@ -1,3 +1,5 @@
+const MAX_PDF_SIZE = 5 * 1024 * 1024;
+
 const leetCodeApiQueries = {
     LEETCODE_USER_PROBLEMS_SOLVED_QUERY : `
         query userProfile($username: String!) {
@@ -173,6 +175,7 @@ const gitHubApiQueries = {
 }
 
 export {
+    MAX_PDF_SIZE,
     leetCodeApiQueries,
     gitHubApiQueries,
 }
