@@ -7,10 +7,16 @@ import AuthRouter from './routes/auth.route.js';
 import AnalyzeRouter from './routes/analyze.route.js';
 import { connectToDB } from './utils/db.js';
 import { PORT, SESSION_SECRET } from './utils/config.js';
+import fileUpload from "express-fileupload";
 
 const app = express();
 
 app.use(bodyParser.json());
+app.use(express.json({limit: "16mb"}));
+app.use(express.urlencoded({extended: true, limit: "16mb"}));
+app.use(express.static("public"));
+app.use(fileUpload());
+
 app.use(cors());
 
 // Express session middleware

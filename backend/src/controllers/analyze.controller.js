@@ -1,8 +1,10 @@
 import * as githubScoring from "../utils/githubScore.js";
 import * as githubFetching from "../utils/githubFetch.js"
 import * as leetCodeFetching from "../utils/leetcodeFetch.js"
-import { getGithubProfileAnalysis, getLeetCodeProfileAnalysis } from "../utils/geminiResponse.js";
+import { getGithubProfileAnalysis, getLeetCodeProfileAnalysis, getResumeAnalysis } from "../utils/geminiResponse.js";
 import * as leetCodeScoring from "../utils/leetcodeScore.js";
+import { getPdfContent } from "../utils/pdfUtils.js";
+import { MAX_PDF_SIZE } from "../utils/constants.js";
 
 const analyzeGithub = async (req, res) => {
     try {
@@ -179,7 +181,88 @@ const analyzeLeetCode = async (req, res) => {
 }
 
 
+const analyzeResume = async (req, res) => {
+    try {
+        if (!req?.files?.resume) return res.status(400).json({"message" : "Resume Not provided"});
+
+        let resumePdf = null;
+        const experienceInYears = req.body.experienceInYears || 0;
+
+        if (!Array.isArray(req.files.resume)){
+            if (req.files.resume.mimetype=="application/pdf" && req.files.resume.size<=MAX_PDF_SIZE){
+                resumePdf = req.files.resume;
+            }
+        } else {
+            for (let i=0; i<req.files.resume.length; i++){
+                if (req.files.resume[i].mimetype=="application/pdf" && req.files.resume[i].size<=MAX_PDF_SIZE){
+                    resumePdf = req.files.resume;
+                    break;
+                }
+            }
+        }
+
+        if (!resumePdf) return res.status(400).json({"message" : "Resume Not provided"});
+
+        const {noOfPages, pdfText} = await getPdfContent(resumePdf);
+        const resumeAnalysis = await getResumeAnalysis({resumeContent : pdfText, experienceInYears, noOfResumePages : noOfPages});
+
+        if (Object.keys(resumeAnalysis).length == 0) return res.status(500).json({"message" : "Something Went Wrong while analyzing the resume"});
+
+        const scoreAnalysis = resumeAnalysis["scoreAnalysis"];
+        let score = 0;
+
+        const resumeScoringWeights = {
+            PROFESSIONALISM: 0.1,
+            LOGICAL_FLOW: 0.05,
+            RESUME_LENGTH: 0.05,
+            IMPACT: 0.1,
+            ACHIEVEMENT: 0.1,
+            COURSEWORK: 0.05,
+            EDUCATION: (experienceInYears < 2) ? 0.1 : 0.05,
+            EXPERIENCE: (experienceInYears < 2) ? 0.1 : 0.225,
+            CONTACT: 0.05,
+            PROJECT: (experienceInYears < 2) ? 0.2 : 0.125,
+            TECHNICAL_SKILLS: 0.1,
+        }
+
+        const professionalismScore = scoreAnalysis["professionalism"]["score"];
+        const logicalFlowScore = scoreAnalysis["logicalFlow"]["score"];
+        const resumeLengthScore = scoreAnalysis["resumeLength"]["score"];
+        const impactScore = scoreAnalysis["impact"]["score"];
+        const achievementScore = scoreAnalysis["section"]["achievements"]["score"];
+        const courseworkScore = scoreAnalysis["section"]["coursework"]["score"];
+        const educationScore = scoreAnalysis["section"]["education"]["score"];
+        const experienceScore = scoreAnalysis["section"]["experience"]["score"];
+        const contactScore = scoreAnalysis["section"]["contact"]["score"];
+        const projectsScore = scoreAnalysis["section"]["projects"]["score"];
+        const technicalSkillsScore = scoreAnalysis["section"]["technicalSkills"]["score"];
+
+        score = professionalismScore*resumeScoringWeights.PROFESSIONALISM
+        + resumeLengthScore*resumeScoringWeights.RESUME_LENGTH 
+        + logicalFlowScore*resumeScoringWeights.LOGICAL_FLOW 
+        + contactScore*resumeScoringWeights.CONTACT 
+        + achievementScore*resumeScoringWeights.ACHIEVEMENT
+        + courseworkScore*resumeScoringWeights.COURSEWORK
+        + educationScore*resumeScoringWeights.EDUCATION
+        + experienceScore*resumeScoringWeights.EXPERIENCE
+        + projectsScore*resumeScoringWeights.PROJECT
+        + technicalSkillsScore*resumeScoringWeights.TECHNICAL_SKILLS
+        + impactScore*resumeScoringWeights.IMPACT;
+
+        resumeAnalysis["score"] = score;
+
+        return res.status(200).json({resumeAnalysis});
+
+    } catch (error) {
+        console.log("Error occurred while fetching leetCode data: ", error.message);
+        console.log(error.stack)
+        return res.status(500).json({"message" : "Couldn't retrieve user data"});
+    }
+}
+
+
 export {
     analyzeGithub,
     analyzeLeetCode,
+    analyzeResume,
 }
