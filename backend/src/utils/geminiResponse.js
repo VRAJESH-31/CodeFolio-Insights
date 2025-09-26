@@ -138,7 +138,7 @@ const getResumeAnalysis = async (resumeData) => {
                 "score": {
                     // This object contains key-value pairs for different judging criteria.
                     // The value for each key will be {score, analysis}.
-                    // The 'analysis' should provide a critical review of the good and bad aspects without mentioning the score itself.
+                    // The 'analysis' should provide a critical review of the good and bad aspects without mentioning the score itself. The analysis may be of 2-3 lines too if one line is insufficient.
                     // Cap all scores at 100, even with bonuses.
 
                     "(a) Resume Length Score": {
@@ -158,22 +158,32 @@ const getResumeAnalysis = async (resumeData) => {
                         // - Quantified Results: How often are bullet points supported by numbers, percentages, or concrete metrics? (e.g., "Increased performance by 30%" vs. "Improved performance"). A lack of metrics MUST result in a low score (< 60).
                         // - Action Verbs: Does each bullet point start with a strong action verb (e.g., 'Architected', 'Engineered', 'Optimized', 'Led')? Or does it use weak/passive language (e.g., 'Responsible for', 'Worked on')?
                         // - STAR Method: Evaluate if the bullet points implicitly follow the STAR (Situation, Task, Action, Result) method. The analysis should critique points that only describe actions without results.
+                        // - If a same action verb is present more than two times, it is not good. More a same action verb is used, low is the score.
                     },
                     "(d) Logical Flow Score": {
                         // Judges the structural layout. Be strict.
                         // - The candidate's name must be at the very top. Followed immediately by contact info/links.
-                        // - For students/new grads: Education -> Skills -> Projects -> Experience -> Achievements.
-                        // - For experienced professionals: Experience -> Skills -> Projects -> Education.
+                        // - There's no restriction in ordering of section, but it would be great if the more impressive section is placed at top of other sections, but again that's the choice not compulsion.
+                        // - In case user has kept summary section, it should come after name and profile links
                         // - All sections must use reverse chronological order (most recent first). Any deviation is a major penalty.
                     },
                     "(e) Section Scores": {
                         // An object containing scores for individual sections.
-                        // If a mandatory section (based on candidate's experience level) is missing, score it 0.
+                        // Below all are mandatory sections and if any of the section is missing, score it 0.
 
                         "Contact Info Section": {
-                            // - Must contain a professional email (e.g., firstname.lastname@email.com). Unprofessional emails (e.g., coolguy99@...) get a low score.
-                            // - Must contain a phone number and a clickable LinkedIn URL.
-                            // - GitHub link is mandatory for a tech role. The quality of the GitHub profile (pinned repos, activity graph) should be considered for a top score. An empty GitHub is a red flag.
+                            // - Must contain a professional email. Unprofessional emails (e.g., coolguy99@...) get a low score.
+                            // - Must contain a phone number, a clickable LinkedIn URL and Github URL.
+                            // -  Since You would be given only text and you can't sense link. So, if you encounter any name of social profile, it is ok and everything went good.
+                            // - Although, it is not compulsion but one can also mention the link of coding profiles too like that of LeetCode, CodeForces, etc.
+                            // - This section would have liberal review, if everything is mentioned correctly, then one can easily score full.
+                        },
+                        "Course Work Section" : {
+                            // - Must contain a set of courses taken by student during this degree.
+                            // - The most important or compulsory to have courses for Computer Science Students are: Operating System, Computer Networks, Database Management System, Object Oriented Programming, Data Structures and Algorithms. Apart from that it is optional if someones want to mention any course.
+                            // - The course names should be in full form. Course work cannot have names like ML, OS, etc.
+                            // - It is ok if coursework is not provided in separated section, and provided along with education section.
+                            // - This section will have liberal review too, if everything is mentioned correctly, then one can easily score full.
                         },
                         "Technical Skills Section": {
                             // - Organization: Are skills logically grouped (e.g., 'Languages', 'Frameworks & Libraries', 'Databases', 'Developer Tools')? A single block of unorganized skills gets a low score.
@@ -187,16 +197,18 @@ const getResumeAnalysis = async (resumeData) => {
                         },
                         "Projects Section": {
                             // - For new grads, this is the most important section. 2-4 high-quality projects are ideal.
-                            // - Project Name: Penalize generic names like 'Twitter Clone' or 'E-commerce Website'. Creative and descriptive names are rewarded.
-                            // - Links: GitHub repo link is **mandatory**. A live deployment link is **highly rewarded**. A missing GitHub link results in a score below 40 for that project.
+                            // - Project Name: Penalize generic names like 'Twitter Clone' or 'E-commerce Website'. Creative and descriptive names are rewarded like 'ShortFolio - A portfolio website builder'
+                            // - Links: GitHub repo link and live deployment link is **mandatory**. Any missing link results in a score below 40 for that project.
+                            // - You can provide a link for demo video too in case live project link is not available due to any issues.
                             // - Technology Stack: Must clearly list the technologies used.
-                            // - Bullet Points: As with Experience, these MUST be impact-driven. What was the feature? What was the outcome? (e.g., "Implemented JWT-based authentication to secure user data and create protected API routes.").
+                            // - Bullet Points: As with Experience, these MUST be impact-driven. What was the feature? What was the outcome? (e.g., "Implemented JWT-based authentication to secure user data and create protected API routes."). It would be great if the bullet points contain numerical metrics.
                         },
                         "Education Section": {
                             // - Must include University Name, Degree, and Graduation Date (or expected date).
                             // - Reverse chronological order is mandatory.
                             // - Consistency: Information provided for one degree (e.g., GPA, coursework) should be consistent for others.
                             // - High GPA (if mentioned and high) or prestigious honors can add a small bonus.
+                            // - If someone is from a prestigious colleges like IITs, NITs, BITS Pilani or any other prestigious college, he/she will get bonus.
                         },
                         "Achievements Section": {
                             // - Score based on the significance and quantification of the achievements.
@@ -212,11 +224,14 @@ const getResumeAnalysis = async (resumeData) => {
                     // A list of 2-4 bullet points detailing the most critical flaws that would cause a recruiter to discard the resume. Be direct and blunt.
                 ],
                 "improvements": [
-                    // A prioritized list of actionable suggestions. Start with the highest-impact changes. For example, "Rewrite every bullet point in your Experience section to include a quantifiable metric."
+                    // A prioritized list of actionable suggestions. Start with the highest-impact changes. For example, "Rewrite every bullet point in your Experience section to include a quantifiable metric. Here, you should try to list out all the possible improvements. There's not point limit. If you found 3 points of improvement then mention it. Or even if you found 10-15 points of improvement, mention all of them without halt as the fate of user is upon you"
                 ]
             }
 
-            Resume Data: ${resumeData}`,
+            Resume Data: ${resumeData["resumeContent"]}
+            No of pages in resume: ${resumeData["noOfResumePages"]}
+            Experience (in years): ${resumeData["experienceInYears"]}
+            `,
             config: {
                 responseMimeType: "application/json",
                 responseSchema: {
@@ -232,14 +247,14 @@ const getResumeAnalysis = async (resumeData) => {
                                         analysis: {type: Type.STRING},
                                     }
                                 },
-                                sectionCompleteness : {
+                                impact : {
                                     type: Type.OBJECT,
                                     properties: {
                                         score: {type: Type.INTEGER},
                                         analysis: {type: Type.STRING},
                                     }
                                 },
-                                grammar : {
+                                professionalism : {
                                     type: Type.OBJECT,
                                     properties: {
                                         score: {type: Type.INTEGER},
@@ -256,14 +271,7 @@ const getResumeAnalysis = async (resumeData) => {
                                 section : {
                                     type: Type.OBJECT,
                                     properties: {
-                                        fullName: {
-                                            type: Type.OBJECT,
-                                            properties: {
-                                                score: {type: Type.INTEGER},
-                                                analysis: {type: Type.STRING},
-                                            }
-                                        },
-                                        socialProfileLinks: {
+                                        contact: {
                                             type: Type.OBJECT,
                                             properties: {
                                                 score: {type: Type.INTEGER},

@@ -183,10 +183,11 @@ const analyzeLeetCode = async (req, res) => {
 
 const analyzeResume = async (req, res) => {
     try {
-        console.log(req.files);
         if (!req?.files?.resume) return res.status(400).json({"message" : "Resume Not provided"});
 
         let resumePdf = null;
+        const experienceInYears = req.body.experienceInYears || 0;
+
         if (!Array.isArray(req.files.resume)){
             if (req.files.resume.mimetype=="application/pdf" && req.files.resume.size<=MAX_PDF_SIZE){
                 resumePdf = req.files.resume;
@@ -202,28 +203,51 @@ const analyzeResume = async (req, res) => {
 
         if (!resumePdf) return res.status(400).json({"message" : "Resume Not provided"});
 
-        const resumeContent = await getPdfContent(resumePdf);
-        const resumeAnalysis = await getResumeAnalysis(resumeContent);
+        const {noOfPages, pdfText} = await getPdfContent(resumePdf);
+        const resumeAnalysis = await getResumeAnalysis({resumeContent : pdfText, experienceInYears, noOfResumePages : noOfPages});
 
         if (Object.keys(resumeAnalysis).length == 0) return res.status(500).json({"message" : "Something Went Wrong while analyzing the resume"});
 
         const scoreAnalysis = resumeAnalysis["scoreAnalysis"];
         let score = 0;
 
-        const grammarScore = scoreAnalysis["grammar"]["score"];
+        const resumeScoringWeights = {
+            PROFESSIONALISM: 0.1,
+            LOGICAL_FLOW: 0.05,
+            RESUME_LENGTH: 0.05,
+            IMPACT: 0.1,
+            ACHIEVEMENT: 0.1,
+            COURSEWORK: 0.05,
+            EDUCATION: (experienceInYears < 2) ? 0.1 : 0.05,
+            EXPERIENCE: (experienceInYears < 2) ? 0.1 : 0.225,
+            CONTACT: 0.05,
+            PROJECT: (experienceInYears < 2) ? 0.2 : 0.125,
+            TECHNICAL_SKILLS: 0.1,
+        }
+
+        const professionalismScore = scoreAnalysis["professionalism"]["score"];
         const logicalFlowScore = scoreAnalysis["logicalFlow"]["score"];
         const resumeLengthScore = scoreAnalysis["resumeLength"]["score"];
+        const impactScore = scoreAnalysis["impact"]["score"];
         const achievementScore = scoreAnalysis["section"]["achievements"]["score"];
         const courseworkScore = scoreAnalysis["section"]["coursework"]["score"];
         const educationScore = scoreAnalysis["section"]["education"]["score"];
         const experienceScore = scoreAnalysis["section"]["experience"]["score"];
-        const fullNameScore = scoreAnalysis["section"]["fullName"]["score"];
+        const contactScore = scoreAnalysis["section"]["contact"]["score"];
         const projectsScore = scoreAnalysis["section"]["projects"]["score"];
-        const socialProfilesScore = scoreAnalysis["section"]["socialProfileLinks"]["score"];
         const technicalSkillsScore = scoreAnalysis["section"]["technicalSkills"]["score"];
 
-
-        score = grammarScore*0.1 + resumeLengthScore*0.1 + logicalFlowScore*0.05 + fullNameScore*0.05 + socialProfilesScore*0.05 + achievementScore*0.1 + courseworkScore*0.05 + educationScore*0.1 + experienceScore*0.15 + projectsScore*0.15 + technicalSkillsScore*0.1;
+        score = professionalismScore*resumeScoringWeights.PROFESSIONALISM
+        + resumeLengthScore*resumeScoringWeights.RESUME_LENGTH 
+        + logicalFlowScore*resumeScoringWeights.LOGICAL_FLOW 
+        + contactScore*resumeScoringWeights.CONTACT 
+        + achievementScore*resumeScoringWeights.ACHIEVEMENT
+        + courseworkScore*resumeScoringWeights.COURSEWORK
+        + educationScore*resumeScoringWeights.EDUCATION
+        + experienceScore*resumeScoringWeights.EXPERIENCE
+        + projectsScore*resumeScoringWeights.PROJECT
+        + technicalSkillsScore*resumeScoringWeights.TECHNICAL_SKILLS
+        + impactScore*resumeScoringWeights.IMPACT;
 
         resumeAnalysis["score"] = score;
 
