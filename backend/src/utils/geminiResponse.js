@@ -1,5 +1,6 @@
 import { GoogleGenAI, Type} from "@google/genai";
 import { GEMINI_API_KEY } from "./config.js";
+import { complexAnalysisSchema, simpleAnalysisSchema, simpleListSchema, jobDescriptionSchema } from "./responseSchema.js";
 
 const ai = new GoogleGenAI({apiKey : GEMINI_API_KEY});
 
@@ -126,6 +127,8 @@ const getResumeAnalysis = async (resumeData) => {
 
             Your primary directive is to be **critically evaluative and discerning**. Do not award high scores for simply meeting the bare minimum requirements. High scores (90+) are reserved for truly exceptional, polished, and impactful resumes.
 
+            You will also judge the user on the basis of how much his/her resume matches the job description. In case, job description is not provided. You will give generic review.
+
             **Scoring Philosophy:**
             - **< 50 (Major Flaws):** Significant issues with content, structure, or professionalism. Unlikely to pass an initial screen.
             - **50-70 (Meets Basics):** The resume has the necessary sections but lacks impact, quantification, and polish. It is generic.
@@ -138,7 +141,7 @@ const getResumeAnalysis = async (resumeData) => {
                 "score": {
                     // This object contains key-value pairs for different judging criteria.
                     // The value for each key will be {score, analysis}.
-                    // The 'analysis' should provide a critical review of the good and bad aspects without mentioning the score itself. The analysis may be of 2-3 lines too if one line is insufficient.
+                    // The 'analysis' should provide a critical review of the good and bad aspects without mentioning the score itself. The analysis can be of single line or maybe of 5-6 lines. There's not restriction on points limit, it all depends on the situation.
                     // Cap all scores at 100, even with bonuses.
 
                     "(a) Resume Length Score": {
@@ -158,7 +161,7 @@ const getResumeAnalysis = async (resumeData) => {
                         // - Quantified Results: How often are bullet points supported by numbers, percentages, or concrete metrics? (e.g., "Increased performance by 30%" vs. "Improved performance"). A lack of metrics MUST result in a low score (< 60).
                         // - Action Verbs: Does each bullet point start with a strong action verb (e.g., 'Architected', 'Engineered', 'Optimized', 'Led')? Or does it use weak/passive language (e.g., 'Responsible for', 'Worked on')?
                         // - STAR Method: Evaluate if the bullet points implicitly follow the STAR (Situation, Task, Action, Result) method. The analysis should critique points that only describe actions without results.
-                        // - If a same action verb is present more than two times, it is not good. More a same action verb is used, low is the score.
+                        // - If a same action verb is present more than two times, it is not good. More a same action verb is used, lower is the score.
                     },
                     "(d) Logical Flow Score": {
                         // Judges the structural layout. Be strict.
@@ -170,6 +173,8 @@ const getResumeAnalysis = async (resumeData) => {
                     "(e) Section Scores": {
                         // An object containing scores for individual sections.
                         // Below all are mandatory sections and if any of the section is missing, score it 0.
+                        // Achievements, Experience and Projects section will also contain the pointAnalysis field. Structure of pointAnalysis field : {point, score, analysis} for each and every bullet point of that section, where point will be the {original: original point provided in the section, refactored: This will be the refactored version of the original point}, pointScore will be an integer from 0 to 10 and pointAnalysis will be an analysis for that point.
+                        // For analysis of each point, the quantified point will score higher rather than the unquantified one and remember your standards are very high. And remember, there wont't be any impact in the general analysis filed due to this point analysis.
 
                         "Contact Info Section": {
                             // - Must contain a professional email. Unprofessional emails (e.g., coolguy99@...) get a low score.
@@ -189,7 +194,7 @@ const getResumeAnalysis = async (resumeData) => {
                             // - Organization: Are skills logically grouped (e.g., 'Languages', 'Frameworks & Libraries', 'Databases', 'Developer Tools')? A single block of unorganized skills gets a low score.
                             // - Relevance: Are the skills modern and relevant for the target role?
                             // - Validation: Critically check if the skills listed are actually demonstrated in the Experience or Projects sections. If a skill is listed but not used in project section or experience section, it still qualifies but it would have been great if they were mentioned. 
-                            // A core skill like language, tool or framework not mentioned in skill section used in project becomes reason of concern. But it would be okay if it's an API or some other side, easy to use integrating stuff
+                            // A core skill like language, tool or framework not mentioned in skill section but used in project becomes reason of concern. But it would be okay if it's an API or some other side, easy to use integrating stuff
                         },
                         "Experience Section": {
                             // - Score this section heavily based on the 'Impact & Action-Orientation Score'.
@@ -217,6 +222,12 @@ const getResumeAnalysis = async (resumeData) => {
                             // - If the section is empty or contains trivial points, the score should be low.
                         }
                     }
+                    "(f) Job Description Score": {
+                        // Judges on the basis of how much a user's resume match to the job description.
+                        // In case the job description is not provided, score the user 100 directly.
+                        // In the analysis of this section, you will mention user what stuff of his/her resume matches with the job description and on what doesn't.
+                        // In case job description is provided, there will be three extra fields: 'Job Description Given', 'Keywords present' and 'Keywords absent', first will contain if the job description is given or not while other two will signify each and every keyword mentioned and not mentioned. In case job description is absent, skip these fields. And remember you should mention any kind of keyword in  1-2 words, and at max 3-4 keyword (if required). I don't want something like this - 'good in problem solving and analytical thinking', 'problem solving' and 'analytical thinking' are good keywords
+                    }
                 },
                 "strengths": [
                     // A list of 2-4 bullet points highlighting what the resume does exceptionally well. Be specific. If nothing is exceptional, say so.
@@ -232,6 +243,8 @@ const getResumeAnalysis = async (resumeData) => {
             Resume Data: ${resumeData["resumeContent"]}
             No of pages in resume: ${resumeData["noOfResumePages"]}
             Experience (in years): ${resumeData["experienceInYears"]}
+            Job Description : ${resumeData["jobDescription"]}
+            Current Date: ${new Date().toISOString().split('T')[0]} (for your reference so that you can check the dates mentioned in the resume)
             `,
             config: {
                 responseMimeType: "application/json",
@@ -241,109 +254,32 @@ const getResumeAnalysis = async (resumeData) => {
                         scoreAnalysis: {
                             type: Type.OBJECT,
                             properties: {
-                                resumeLength : {
-                                    type: Type.OBJECT,
-                                    properties: {
-                                        score: {type: Type.INTEGER},
-                                        analysis: {type: Type.STRING},
-                                    }
-                                },
-                                impact : {
-                                    type: Type.OBJECT,
-                                    properties: {
-                                        score: {type: Type.INTEGER},
-                                        analysis: {type: Type.STRING},
-                                    }
-                                },
-                                professionalism : {
-                                    type: Type.OBJECT,
-                                    properties: {
-                                        score: {type: Type.INTEGER},
-                                        analysis: {type: Type.STRING},
-                                    }
-                                },
-                                logicalFlow : {
-                                    type: Type.OBJECT,
-                                    properties: {
-                                        score: {type: Type.INTEGER},
-                                        analysis: {type: Type.STRING},
-                                    }
-                                },
+                                resumeLength : simpleAnalysisSchema,
+                                impact : simpleAnalysisSchema,
+                                professionalism : simpleAnalysisSchema,
+                                logicalFlow : simpleAnalysisSchema,
                                 section : {
                                     type: Type.OBJECT,
                                     properties: {
-                                        contact: {
-                                            type: Type.OBJECT,
-                                            properties: {
-                                                score: {type: Type.INTEGER},
-                                                analysis: {type: Type.STRING},
-                                            }
-                                        },
-                                        coursework: {
-                                            type: Type.OBJECT,
-                                            properties: {
-                                                score: {type: Type.INTEGER},
-                                                analysis: {type: Type.STRING},
-                                            }
-                                        },
-                                        education: {
-                                            type: Type.OBJECT,
-                                            properties: {
-                                                score: {type: Type.INTEGER},
-                                                analysis: {type: Type.STRING},
-                                            }
-                                        },
-                                        projects: {
-                                            type: Type.OBJECT,
-                                            properties: {
-                                                score: {type: Type.INTEGER},
-                                                analysis: {type: Type.STRING},
-                                            }
-                                        },
-                                        achievements: {
-                                            type: Type.OBJECT,
-                                            properties: {
-                                                score: {type: Type.INTEGER},
-                                                analysis: {type: Type.STRING},
-                                            }
-                                        },
-                                        technicalSkills: {
-                                            type: Type.OBJECT,
-                                            properties: {
-                                                score: {type: Type.INTEGER},
-                                                analysis: {type: Type.STRING},
-                                            }
-                                        },
-                                        experience: {
-                                            type: Type.OBJECT,
-                                            properties: {
-                                                score: {type: Type.INTEGER},
-                                                analysis: {type: Type.STRING},
-                                            }
-                                        },
-                                    }
-                                }
-                            }
+                                        contact: simpleAnalysisSchema,
+                                        coursework: simpleAnalysisSchema,
+                                        education: simpleAnalysisSchema,
+                                        projects: complexAnalysisSchema,
+                                        achievements: complexAnalysisSchema,
+                                        technicalSkills: simpleAnalysisSchema,
+                                        experience: complexAnalysisSchema,
+                                    },
+                                    required: ["contact", "coursework", "education", "projects", "achievements", "technicalSkills", "experience"],
+                                },
+                                jobDescription : jobDescriptionSchema,
+                            },
+                            required: ["resumeLength", "impact", "professionalism", "logicalFlow", "section", "jobDescription"],
                         },
-                        strengths : {
-                            type: Type.ARRAY,
-                            items: {
-                                type: Type.STRING,
-                            }
-                        },
-                        weaknesses: {
-                            type: Type.ARRAY,
-                            items: {
-                                type: Type.STRING,
-                            }
-                        },
-                        improvements: {
-                            type: Type.ARRAY,
-                            items: {
-                                type: Type.STRING,
-                            }
-                        }
+                        strengths : simpleListSchema,
+                        weaknesses: simpleListSchema,
+                        improvements: simpleListSchema,
                     },
+                    required: ["scoreAnalysis", "strengths", "weaknesses", "improvements"],
                 }
             }
         });

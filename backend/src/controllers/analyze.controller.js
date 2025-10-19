@@ -187,6 +187,7 @@ const analyzeResume = async (req, res) => {
 
         let resumePdf = null;
         const experienceInYears = req.body.experienceInYears || 0;
+        const jobDescription = req.body.jobDescription || "";
 
         if (!Array.isArray(req.files.resume)){
             if (req.files.resume.mimetype=="application/pdf" && req.files.resume.size<=MAX_PDF_SIZE){
@@ -204,25 +205,27 @@ const analyzeResume = async (req, res) => {
         if (!resumePdf) return res.status(400).json({"message" : "Resume Not provided"});
 
         const {noOfPages, pdfText} = await getPdfContent(resumePdf);
-        const resumeAnalysis = await getResumeAnalysis({resumeContent : pdfText, experienceInYears, noOfResumePages : noOfPages});
+        const resumeAnalysis = await getResumeAnalysis({resumeContent : pdfText, experienceInYears, noOfResumePages : noOfPages, jobDescription: jobDescription});
 
         if (Object.keys(resumeAnalysis).length == 0) return res.status(500).json({"message" : "Something Went Wrong while analyzing the resume"});
 
         const scoreAnalysis = resumeAnalysis["scoreAnalysis"];
-        let score = 0;
 
         const resumeScoringWeights = {
             PROFESSIONALISM: 0.1,
-            LOGICAL_FLOW: 0.05,
-            RESUME_LENGTH: 0.05,
             IMPACT: 0.1,
-            ACHIEVEMENT: 0.1,
+            ACHIEVEMENT: 0.15,
             COURSEWORK: 0.05,
             EDUCATION: (experienceInYears < 2) ? 0.1 : 0.05,
-            EXPERIENCE: (experienceInYears < 2) ? 0.1 : 0.225,
+            EXPERIENCE: (experienceInYears < 2) ? 0.15 : 0.275,
             CONTACT: 0.05,
             PROJECT: (experienceInYears < 2) ? 0.2 : 0.125,
             TECHNICAL_SKILLS: 0.1,
+        }
+
+        const resumeScoringMultiplierWeights = {
+            LOGICAL_FLOW: 0.4,
+            RESUME_LENGTH: 0.6,
         }
 
         const professionalismScore = scoreAnalysis["professionalism"]["score"];
@@ -236,18 +239,15 @@ const analyzeResume = async (req, res) => {
         const contactScore = scoreAnalysis["section"]["contact"]["score"];
         const projectsScore = scoreAnalysis["section"]["projects"]["score"];
         const technicalSkillsScore = scoreAnalysis["section"]["technicalSkills"]["score"];
+        const jobDescriptionScore = scoreAnalysis["jobDescription"]["score"];
 
-        score = professionalismScore*resumeScoringWeights.PROFESSIONALISM
-        + resumeLengthScore*resumeScoringWeights.RESUME_LENGTH 
-        + logicalFlowScore*resumeScoringWeights.LOGICAL_FLOW 
-        + contactScore*resumeScoringWeights.CONTACT 
-        + achievementScore*resumeScoringWeights.ACHIEVEMENT
-        + courseworkScore*resumeScoringWeights.COURSEWORK
-        + educationScore*resumeScoringWeights.EDUCATION
-        + experienceScore*resumeScoringWeights.EXPERIENCE
-        + projectsScore*resumeScoringWeights.PROJECT
-        + technicalSkillsScore*resumeScoringWeights.TECHNICAL_SKILLS
-        + impactScore*resumeScoringWeights.IMPACT;
+        const baseScore = (professionalismScore*resumeScoringWeights.PROFESSIONALISM + contactScore*resumeScoringWeights.CONTACT  + achievementScore*resumeScoringWeights.ACHIEVEMENT + courseworkScore*resumeScoringWeights.COURSEWORK + educationScore*resumeScoringWeights.EDUCATION + experienceScore*resumeScoringWeights.EXPERIENCE + projectsScore*resumeScoringWeights.PROJECT + technicalSkillsScore*resumeScoringWeights.TECHNICAL_SKILLS + impactScore*resumeScoringWeights.IMPACT);
+
+        const scoreMultiplier = (logicalFlowScore*resumeScoringMultiplierWeights.LOGICAL_FLOW + resumeLengthScore*resumeScoringMultiplierWeights.RESUME_LENGTH) / 100;
+
+        const jobDescriptionMatchMultiplier = jobDescriptionScore/100;
+
+        const score = baseScore * scoreMultiplier * jobDescriptionMatchMultiplier;
 
         resumeAnalysis["score"] = score;
 
