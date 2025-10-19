@@ -182,13 +182,14 @@ const getResumeAnalysis = async (resumeData) => {
                             // - Must contain a set of courses taken by student during this degree.
                             // - The most important or compulsory to have courses for Computer Science Students are: Operating System, Computer Networks, Database Management System, Object Oriented Programming, Data Structures and Algorithms. Apart from that it is optional if someones want to mention any course.
                             // - The course names should be in full form. Course work cannot have names like ML, OS, etc.
-                            // - It is ok if coursework is not provided in separated section, and provided along with education section.
+                            // - It is ok if coursework is not provided in separated section, and provided along with education section or skills section.
                             // - This section will have liberal review too, if everything is mentioned correctly, then one can easily score full.
                         },
                         "Technical Skills Section": {
                             // - Organization: Are skills logically grouped (e.g., 'Languages', 'Frameworks & Libraries', 'Databases', 'Developer Tools')? A single block of unorganized skills gets a low score.
                             // - Relevance: Are the skills modern and relevant for the target role?
-                            // - Validation: Critically check if the skills listed are actually demonstrated in the Experience or Projects sections. A skill listed but not applied anywhere gets 0 credit and should be noted in the analysis.
+                            // - Validation: Critically check if the skills listed are actually demonstrated in the Experience or Projects sections. If a skill is listed but not used in project section or experience section, it still qualifies but it would have been great if they were mentioned. 
+                            // A core skill like language, tool or framework not mentioned in skill section used in project becomes reason of concern. But it would be okay if it's an API or some other side, easy to use integrating stuff
                         },
                         "Experience Section": {
                             // - Score this section heavily based on the 'Impact & Action-Orientation Score'.

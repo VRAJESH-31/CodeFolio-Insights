@@ -5,6 +5,7 @@ import session from 'express-session';
 import passport from './config/passport.js';
 import AuthRouter from './routes/auth.route.js';
 import AnalyzeRouter from './routes/analyze.route.js';
+import ProfilesRouter from './routes/profiles.route.js';
 import { connectToDB } from './utils/db.js';
 import { PORT, SESSION_SECRET } from './utils/config.js';
 import fileUpload from "express-fileupload";
@@ -32,13 +33,14 @@ app.use(passport.session());
 
 app.use('/auth', AuthRouter);
 app.use('/analyze', AnalyzeRouter);
+app.use("/profiles", ProfilesRouter);
 
 connectToDB()
-    .then(() => {
-        app.listen(PORT, () => {
-            console.log(`Listening to app on PORT no ${PORT}`);
-        })
+.then(() => {
+    app.listen(PORT, () => {
+        console.log(`Listening to app on PORT no ${PORT}`);
     })
-    .catch((error) => {
-        console.log("MongoDB Database Failed to connect! ", error);
-    })
+})
+.catch((error) => {
+    console.log("MongoDB Database Failed to connect! ", error);
+})
