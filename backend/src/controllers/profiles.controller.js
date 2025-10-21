@@ -1,5 +1,10 @@
+import UserModel from '../models/user.model.js';
 import ProfileModel from '../models/profiles.model.js';
 import mongoose from 'mongoose';
+import axios from 'axios';
+import { getLeetCodeBadges, getLeetCodeContestData, getLeetCodeProblemsCount, getLeetCodeProfileInfo, getLeetCodeUserStreaksAndCalendar } from '../utils/leetcodeFetch.js';
+import { fetchCodeChefUserData, fetchCodeChefUserSubmissionData, fetchGfgUserData, fetchGfgUserSubmissionData, fetchInterviewbitUserData } from '../utils/scrapeSpideyFetch.js';
+import { getContributionCalendar, getContributionCount, getGithubContributionBadges, getLastYearCommitsCount, getUserLanguageStats, getUserProfileData } from '../utils/githubFetch.js';
 
 const getProfiles = async (req, res) => {
     try {
@@ -30,7 +35,6 @@ const getProfiles = async (req, res) => {
 
 
 const updateProfiles = async (req, res) => {
-
     try {
         const { userId } = req.body;
         const updateFields = req.body;
@@ -55,7 +59,60 @@ const updateProfiles = async (req, res) => {
     }
 };
 
+
+const fetchProfilesData = async (req, res) => {
+    try {
+        const username = req.query.username;
+        if (!username || !username.trim()) return res.status(400).json({message: "username not provided"});
+
+        const user = await UserModel.findOne({name: username});
+        if (!user) return res.status(404).json({message: "Invalid Username!"});
+
+        const profilesLinksUrl = `${req.protocol}://${req.get("host")}/profiles?userId=${user._id}`
+        const profileLinksResponse = await axios.get(profilesLinksUrl);
+        const profileLinks = profileLinksResponse.data;
+
+        const profileData = {
+            gfg : profileLinks.gfgUsername ? {
+                profile : await fetchGfgUserData(profileLinks.gfgUsername),
+                submission : await fetchGfgUserSubmissionData(profileLinks.gfgUsername),
+            } : null,
+            codechef : profileLinks.codechefUsername ? {
+                profile : await fetchCodeChefUserData(profileLinks.codechefUsername),
+                submission : await fetchCodeChefUserSubmissionData(profileLinks.codechefUsername),
+            } : null,
+            interviewbit : profileLinks.interviewbitUsername ? {
+                profile : await fetchInterviewbitUserData(profileLinks.interviewbitUsername),
+            } : null,
+            leetcode : profileLinks.leetCodeUsername ? {
+                profile : await getLeetCodeProfileInfo(profileLinks.leetCodeUsername),
+                badges : await getLeetCodeBadges(profileLinks.leetCodeUsername),
+                contest : await getLeetCodeContestData(profileLinks.leetCodeUsername),
+                problems : await getLeetCodeProblemsCount(profileLinks.leetCodeUsername),
+                submission : await getLeetCodeUserStreaksAndCalendar(profileLinks.leetCodeUsername),
+            } : null,
+            github : profileLinks.githubUsername ? {
+                profile : await getUserProfileData(profileLinks.githubUsername),
+                contributions : await getContributionCount(profileLinks.githubUsername),
+                commits : await getLastYearCommitsCount(profileLinks.githubUsername),
+                calendar : await getContributionCalendar(profileLinks.githubUsername),
+                badges: await getGithubContributionBadges(profileLinks.githubUsername),
+                languageStats : await getUserLanguageStats(profileLinks.githubUsername)
+            } : null
+        }
+
+        return res.status(200).json(profileData);
+
+    } catch (error) {
+        console.log("Error occurred while fetching user profiles data:", error.message);
+        console.log(error.stack);
+        return res.status(500).json({"message" : "Couldn't fetch user profiles data."});
+    }
+}
+
+
 export {
     getProfiles,
     updateProfiles,
+    fetchProfilesData,
 }

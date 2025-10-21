@@ -1,5 +1,6 @@
 import express from "express"
 import { analyzeGithub, analyzeLeetCode, analyzeResume } from "../controllers/analyze.controller.js";
+import { protectRoute } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
