@@ -64,6 +64,6 @@ export const optionalAuth = async (req, res, next) => {
     } catch (error) {
         console.log("Error in auth middleware:", error.message);
         console.log(error.stack);
-        return res.status(500).json({message: "Internal Sever Error!"})
+        next();
     }
 }

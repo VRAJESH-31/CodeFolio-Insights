@@ -1,16 +1,18 @@
 import UserModel from '../models/user.model.js';
 import ProfileModel from '../models/profiles.model.js';
-import mongoose from 'mongoose';
 import axios from 'axios';
+import mongoose from 'mongoose';
 import { getLeetCodeBadges, getLeetCodeContestData, getLeetCodeProblemsCount, getLeetCodeProfileInfo, getLeetCodeUserStreaksAndCalendar } from '../utils/leetcodeFetch.js';
 import { fetchCodeChefUserData, fetchCodeChefUserSubmissionData, fetchGfgUserData, fetchGfgUserSubmissionData, fetchInterviewbitUserData } from '../utils/scrapeSpideyFetch.js';
 import { getContributionCalendar, getContributionCount, getGithubContributionBadges, getLastYearCommitsCount, getUserLanguageStats, getUserProfileData } from '../utils/githubFetch.js';
 
+
 const getProfiles = async (req, res) => {
     try {
-        const user = req.user;
+        const userId = req.query.userId;
         
-        const userId = user._id;
+        if (!userId) return res.status(200).json({message: "User id is required!"});
+        if (!mongoose.Types.ObjectId.isValid(userId)) return res.status(400).json({ message: "Invalid user ID format." });
         
         const profiles = await ProfileModel.findOneAndUpdate(
             { userId: userId },
@@ -70,6 +72,8 @@ const fetchProfilesData = async (req, res) => {
         const profilesLinksUrl = `${req.protocol}://${req.get("host")}/profiles?userId=${user._id}`
         const profileLinksResponse = await axios.get(profilesLinksUrl);
         const profileLinks = profileLinksResponse.data;
+
+        console.log(profileLinks);
 
         const profileData = {
             gfg : profileLinks.gfgUsername ? {
