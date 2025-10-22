@@ -6,10 +6,10 @@ import { JWT_SECRET } from '../utils/config.js';
 const signup = async (req, res) => {
     try {
         const { name, email, password } = req.body;
+
         let user = await UserModel.findOne({ email });
-        if (user) {
-            return res.status(400).json({ message: 'User already exists' });
-        }
+        if (user) return res.status(400).json({ message: 'User already exists' });
+
         user = new UserModel({
             name,
             email,
@@ -51,7 +51,7 @@ const login = async (req, res) => {
         if (!user) return res.status(400).json({ message: 'Invalid Credentials' });
         if (!user.password) return res.status(400).json({ message: 'Authentication for this email is done by non password authentication system' });
 
-        const isMatch = bcrypt.compare(password, user.password);
+        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ message: 'Invalid Credentials' });
 
         const payload = {

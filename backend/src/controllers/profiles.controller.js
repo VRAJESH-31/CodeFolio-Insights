@@ -2,9 +2,9 @@ import UserModel from '../models/user.model.js';
 import ProfileModel from '../models/profiles.model.js';
 import axios from 'axios';
 import mongoose from 'mongoose';
-import { getLeetCodeBadges, getLeetCodeContestData, getLeetCodeProblemsCount, getLeetCodeProfileInfo, getLeetCodeUserStreaksAndCalendar } from '../utils/leetcodeFetch.js';
-import { fetchCodeChefUserData, fetchCodeChefUserSubmissionData, fetchGfgUserData, fetchGfgUserSubmissionData, fetchInterviewbitUserData } from '../utils/scrapeSpideyFetch.js';
-import { getContributionCalendar, getContributionCount, getGithubContributionBadges, getLastYearCommitsCount, getUserLanguageStats, getUserProfileData } from '../utils/githubFetch.js';
+import * as leetcodeFetching from '../utils/leetcodeFetch.js';
+import * as scrapeSpideyFetching from '../utils/scrapeSpideyFetch.js';
+import * as githubFetching from '../utils/githubFetch.js';
 
 
 const getProfiles = async (req, res) => {
@@ -73,34 +73,32 @@ const fetchProfilesData = async (req, res) => {
         const profileLinksResponse = await axios.get(profilesLinksUrl);
         const profileLinks = profileLinksResponse.data;
 
-        console.log(profileLinks);
-
         const profileData = {
             gfg : profileLinks.gfgUsername ? {
-                profile : await fetchGfgUserData(profileLinks.gfgUsername),
-                submission : await fetchGfgUserSubmissionData(profileLinks.gfgUsername),
+                profile : await scrapeSpideyFetching.fetchGfgUserData(profileLinks.gfgUsername),
+                submission : await scrapeSpideyFetching.fetchGfgUserSubmissionData(profileLinks.gfgUsername),
             } : null,
             codechef : profileLinks.codechefUsername ? {
-                profile : await fetchCodeChefUserData(profileLinks.codechefUsername),
-                submission : await fetchCodeChefUserSubmissionData(profileLinks.codechefUsername),
+                profile : await scrapeSpideyFetching.fetchCodeChefUserData(profileLinks.codechefUsername),
+                submission : await scrapeSpideyFetching.fetchCodeChefUserSubmissionData(profileLinks.codechefUsername),
             } : null,
             interviewbit : profileLinks.interviewbitUsername ? {
-                profile : await fetchInterviewbitUserData(profileLinks.interviewbitUsername),
+                profile : await scrapeSpideyFetching.fetchInterviewbitUserData(profileLinks.interviewbitUsername),
             } : null,
             leetcode : profileLinks.leetCodeUsername ? {
-                profile : await getLeetCodeProfileInfo(profileLinks.leetCodeUsername),
-                badges : await getLeetCodeBadges(profileLinks.leetCodeUsername),
-                contest : await getLeetCodeContestData(profileLinks.leetCodeUsername),
-                problems : await getLeetCodeProblemsCount(profileLinks.leetCodeUsername),
-                submission : await getLeetCodeUserStreaksAndCalendar(profileLinks.leetCodeUsername),
+                profile : await leetcodeFetching.getLeetCodeProfileInfo(profileLinks.leetCodeUsername),
+                badges : await leetcodeFetching.getLeetCodeBadges(profileLinks.leetCodeUsername),
+                contest : await leetcodeFetching.getLeetCodeContestData(profileLinks.leetCodeUsername),
+                problems : await leetcodeFetching.getLeetCodeProblemsCount(profileLinks.leetCodeUsername),
+                submission : await leetcodeFetching.getLeetCodeUserStreaksAndCalendar(profileLinks.leetCodeUsername),
             } : null,
             github : profileLinks.githubUsername ? {
-                profile : await getUserProfileData(profileLinks.githubUsername),
-                contributions : await getContributionCount(profileLinks.githubUsername),
-                commits : await getLastYearCommitsCount(profileLinks.githubUsername),
-                calendar : await getContributionCalendar(profileLinks.githubUsername),
-                badges: await getGithubContributionBadges(profileLinks.githubUsername),
-                languageStats : await getUserLanguageStats(profileLinks.githubUsername)
+                profile : await githubFetching.getUserProfileData(profileLinks.githubUsername),
+                contributions : await githubFetching.getContributionCount(profileLinks.githubUsername),
+                commits : await githubFetching.getLastYearCommitsCount(profileLinks.githubUsername),
+                calendar : await githubFetching.getContributionCalendar(profileLinks.githubUsername),
+                badges: await githubFetching.getGithubContributionBadges(profileLinks.githubUsername),
+                languageStats : await githubFetching.getUserLanguageStats(profileLinks.githubUsername)
             } : null
         }
 

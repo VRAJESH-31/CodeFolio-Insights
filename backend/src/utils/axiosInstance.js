@@ -81,7 +81,7 @@ const scrapeSpideyApiQuery = async (endpoint) => {
         return response.data;
     } catch (error){
         console.log("Error occurred: ", error.message);
-        console.log(error.stack);
+        // console.log(error.stack);
         return null;
     }
 }
