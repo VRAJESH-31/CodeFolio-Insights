@@ -45,3 +45,25 @@ export const protectRoute = async (req, res, next) => {
         return res.status(500).json({message: "Internal Sever Error!"})
     }
 }
+
+export const optionalAuth = async (req, res, next) => {
+    try {
+        const token = req.header("Authorization")?.replace("Bearer ", "");
+
+        if (!token){
+            req.user = null;
+        } else {
+            const decodedToken = jwt.verify(token, JWT_SECRET);
+            const user = await UserModel.findById(decodedToken.user.id).select("-password");
+            
+            if (!user) req.user = null;
+            else req.user = user;
+        }
+
+        next();
+    } catch (error) {
+        console.log("Error in auth middleware:", error.message);
+        console.log(error.stack);
+        return res.status(500).json({message: "Internal Sever Error!"})
+    }
+}
