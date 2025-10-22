@@ -13,7 +13,8 @@ const signup = async (req, res) => {
         user = new UserModel({
             name,
             email,
-            password
+            password,
+            lastRefresh: Date.now(),
         });
 
         const salt = await bcrypt.genSalt(10);
@@ -46,14 +47,12 @@ const login = async (req, res) => {
     try {
         const { email, password } = req.body;
         let user = await UserModel.findOne({ email });
-        if (!user) {
-            return res.status(400).json({ message: 'Invalid Credentials' });
-        }
+        
+        if (!user) return res.status(400).json({ message: 'Invalid Credentials' });
+        if (!user.password) return res.status(400).json({ message: 'Authentication for this email is done by non password authentication system' });
 
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ message: 'Invalid Credentials' });
-        }
+        const isMatch = bcrypt.compare(password, user.password);
+        if (!isMatch) return res.status(400).json({ message: 'Invalid Credentials' });
 
         const payload = {
             user: {
@@ -72,6 +71,7 @@ const login = async (req, res) => {
         );
     } catch (err) {
         console.error(err.message);
+        console.log(err.stack);
         res.status(500).send('Server error');
     }
 }

@@ -1,11 +1,11 @@
 import express from "express"
 import { analyzeGithub, analyzeLeetCode, analyzeResume } from "../controllers/analyze.controller.js";
-import { protectRoute } from "../middlewares/auth.middleware.js";
+import { getAnalytics } from "../middlewares/analytics.middleware.js";
 
 const router = express.Router();
 
-router.get("/github", analyzeGithub);
-router.get("/leetcode", analyzeLeetCode);
-router.post("/resume", analyzeResume);
+router.get("/github", getAnalytics, analyzeGithub);
+router.get("/leetcode", getAnalytics, analyzeLeetCode);
+router.post("/resume", getAnalytics, analyzeResume);
 
 export default router;

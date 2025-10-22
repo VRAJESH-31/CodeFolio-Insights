@@ -8,10 +8,9 @@ import { getContributionCalendar, getContributionCount, getGithubContributionBad
 
 const getProfiles = async (req, res) => {
     try {
-        const { userId } = req.query;
-
-        if (!userId) return res.status(400).json({ message: "user ID not provided." });
-        if (!mongoose.Types.ObjectId.isValid(userId)) return res.status(400).json({ message: "Invalid user ID format." });
+        const user = req.user;
+        
+        const userId = user._id;
         
         const profiles = await ProfileModel.findOneAndUpdate(
             { userId: userId },
@@ -36,10 +35,10 @@ const getProfiles = async (req, res) => {
 
 const updateProfiles = async (req, res) => {
     try {
-        const { userId } = req.body;
+        const user = req.user;
         const updateFields = req.body;
-
-        if (!userId) return res.status(400).json({ message: "User ID is required to update a profile." });
+        
+        const userId = user._id;
         
         let $setFields = { ...updateFields };
         delete $setFields.userId; // Ensure userId isn't updated if it exists

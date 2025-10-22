@@ -29,13 +29,12 @@ export const validate = (req, res, next) => {
 
 export const protectRoute = async (req, res, next) => {
     try {
-        const token = req?.cookies.jwt || req.header("Authorization")?.replace("Bearer ", "");
+        const token = req.header("Authorization")?.replace("Bearer ", "");
         if (!token) return res.status(401).json({message : "Unauthenticated User! Token not provided"});
 
         const decodedToken = jwt.verify(token, JWT_SECRET);
-        if (!decodedToken) return res.status(401).json({message: "Unauthenticated User! Invalid Token!"});
 
-        const user = await UserModel.findById(decodedToken.id).select("-password");
+        const user = await UserModel.findById(decodedToken.user.id).select("-password");
         if (!user) return res.status(404).json({message : "User not found"});
 
         req.user = user;
