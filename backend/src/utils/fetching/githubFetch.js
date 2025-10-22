@@ -1,7 +1,7 @@
-import { githubGraphQlQuery, githubRestApiQuery, scrapeSpideyAPI } from "./axiosInstance.js";
-import { getCommitAnalysis} from "../utils/geminiResponse.js";
-import { SCRAPE_SPIDEY_API_KEY } from "./config.js";
-import { gitHubApiQueries } from "./constants.js";
+import { githubGraphQlQuery, githubRestApiQuery, scrapeSpideyAPI } from "../axiosInstance.js";
+import { getCommitAnalysis} from "../geminiResponse.js";
+import { SCRAPE_SPIDEY_API_KEY } from "../config.js";
+import { gitHubApiQueries } from "../constants.js";
 
 const PAGE_SIZE = 100;
 const TOTAL_COMMITS_LIMIT = 25;

@@ -2,9 +2,9 @@ import UserModel from '../models/user.model.js';
 import ProfileModel from '../models/profiles.model.js';
 import axios from 'axios';
 import mongoose from 'mongoose';
-import * as leetcodeFetching from '../utils/leetcodeFetch.js';
-import * as scrapeSpideyFetching from '../utils/scrapeSpideyFetch.js';
-import * as githubFetching from '../utils/githubFetch.js';
+import * as leetcodeFetching from '../utils/fetching/leetcodeFetch.js';
+import * as scrapeSpideyFetching from '../utils/fetching/scrapeSpideyFetch.js';
+import * as githubFetching from '../utils/fetching/githubFetch.js';
 
 
 const getProfiles = async (req, res) => {
