@@ -18,6 +18,25 @@ const UserSchema = new Schema({
     },
     password: {
         type: String,
+    },
+    profile: {
+        type: String,
+    },
+    bio: {
+        type: String,
+        trim: true,
+    },
+    profileVisibility: {
+        type: Boolean,
+        default: true,
+    },
+    lastRefresh: {
+        type: Date,
+        required: true,
+    },
+    profileViews: {
+        type: Number,
+        default: 0,
     }
 });
 
