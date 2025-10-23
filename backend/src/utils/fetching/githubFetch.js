@@ -1,7 +1,7 @@
-import { githubAPI, githubGraphQlQuery, githubRestApiQuery, scrapeSpideyAPI } from "./axiosInstance.js";
-import { getCommitAnalysis} from "../utils/geminiResponse.js";
-import { SCRAPE_SPIDEY_API_KEY } from "./config.js";
-import { gitHubApiQueries } from "./constants.js";
+import { githubGraphQlQuery, githubRestApiQuery, scrapeSpideyAPI } from "../axiosInstance.js";
+import { getCommitAnalysis} from "../geminiResponse.js";
+import { SCRAPE_SPIDEY_API_KEY } from "../config.js";
+import { gitHubApiQueries } from "../constants.js";
 
 const PAGE_SIZE = 100;
 const TOTAL_COMMITS_LIMIT = 25;
@@ -69,7 +69,7 @@ const getContributionCount = async (username) => {
         },
         "issueContributions": {
             "totalCount": 0
-        }
+        },
     };
 
     const contributionCountData = await githubGraphQlQuery(query, {username});
@@ -157,7 +157,7 @@ const getLanguageUsageStats = (uniqueLanguages, userReposLanguageStat) => {
 
 const getGithubContributionBadges = async (username) => {
     try {
-        const githubBadgesResponse = await scrapeSpideyAPI.get(`/api/v1/github/user/badges/${username}?apiKey=${SCRAPE_SPIDEY_API_KEY}`);
+        const githubBadgesResponse = await scrapeSpideyAPI.get(`/api/v1/github/user/badges?user=${username}&apiKey=${SCRAPE_SPIDEY_API_KEY}`);
         if (githubBadgesResponse.status >= 400){
             return [];
         } else {
@@ -165,6 +165,36 @@ const getGithubContributionBadges = async (username) => {
         }
     } catch (error) {
         console.log("Error occurred while fetching github badges: ", error.message);
+        console.log(error.stack);
+        return [];
+    }
+}
+
+const getUserLanguageStats = async (username) => {
+    try {
+        const userData = await getUserProfileData(username);
+        const repoCount = userData["public_repos"];
+
+        const userReposStat = await getUserRepos(username, repoCount);
+
+        const userReposLanguageStat = await Promise.all(
+            userReposStat.map(async (repoData) => ({
+                repoId: repoData.id,
+                repoName: repoData.name,
+                repoUrl: repoData.html_url,
+                languageUsedInBytes: await getRepoLanguages(username, repoData.name),
+            }))
+        );
+
+        const uniqueLanguages = Array.from(userReposLanguageStat.reduce((languages, repoLanguageStats)=>{
+            Object.keys(repoLanguageStats.languageUsedInBytes).forEach(lang => languages.add(lang));
+            return languages;
+        }, new Set()));
+
+        const languageUsageInBytes = getLanguageUsageStats(uniqueLanguages, userReposLanguageStat);
+        return languageUsageInBytes;
+    } catch (error){
+        console.log("Error occurred while fetching github language stats: ", error.message);
         console.log(error.stack);
         return [];
     }
@@ -186,4 +216,5 @@ export {
     getContributionCalendar,
     getLanguageUsageStats,
     getGithubContributionBadges,
+    getUserLanguageStats,
 }

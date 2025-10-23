@@ -1,8 +1,8 @@
-import * as githubScoring from "../utils/githubScore.js";
-import * as githubFetching from "../utils/githubFetch.js"
-import * as leetCodeFetching from "../utils/leetcodeFetch.js"
+import * as githubScoring from "../utils/scoring/githubScore.js";
+import * as githubFetching from "../utils/fetching/githubFetch.js"
+import * as leetCodeFetching from "../utils/fetching/leetcodeFetch.js"
 import { getGithubProfileAnalysis, getLeetCodeProfileAnalysis, getResumeAnalysis } from "../utils/geminiResponse.js";
-import * as leetCodeScoring from "../utils/leetcodeScore.js";
+import * as leetCodeScoring from "../utils/scoring/leetcodeScore.js";
 import { getPdfContent } from "../utils/pdfUtils.js";
 import { MAX_PDF_SIZE } from "../utils/constants.js";
 

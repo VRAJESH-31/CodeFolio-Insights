@@ -1,5 +1,5 @@
 import axios from "axios";
-import { GITHUB_TOKEN } from "./config.js";
+import { GITHUB_TOKEN, SCRAPE_SPIDEY_API_KEY } from "./config.js";
 
 // Github Instance
 const githubAPI = axios.create({
@@ -27,6 +27,8 @@ const leetCodeAPI = axios.create({
         "User-Agent": "Mozilla/5.0",
     }
 })
+
+
 
 // LeetCode helper function
 const leetCodeQuery = async (query, variables = {}) => {
@@ -72,6 +74,19 @@ const githubRestApiQuery = async (endpoint) => {
     }
 }
 
+// ScrapeSpidey Helper function
+const scrapeSpideyApiQuery = async (endpoint) => {
+    try {
+        const response = await scrapeSpideyAPI.get(endpoint);
+        return response.data;
+    } catch (error){
+        console.log("Error occurred: ", error.message);
+        // console.log(error.stack);
+        return null;
+    }
+}
+
+
 export {
     githubAPI,
     scrapeSpideyAPI,
@@ -79,4 +94,5 @@ export {
     leetCodeQuery,
     githubGraphQlQuery,
     githubRestApiQuery,
+    scrapeSpideyApiQuery,
 }

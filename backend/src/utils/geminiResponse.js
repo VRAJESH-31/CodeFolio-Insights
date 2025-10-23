@@ -226,7 +226,11 @@ const getResumeAnalysis = async (resumeData) => {
                         // Judges on the basis of how much a user's resume match to the job description.
                         // In case the job description is not provided, score the user 100 directly.
                         // In the analysis of this section, you will mention user what stuff of his/her resume matches with the job description and on what doesn't.
-                        // In case job description is provided, there will be three extra fields: 'Job Description Given', 'Keywords present' and 'Keywords absent', first will contain if the job description is given or not while other two will signify each and every keyword mentioned and not mentioned. In case job description is absent, skip these fields. And remember you should mention any kind of keyword in  1-2 words, and at max 3-4 keyword (if required). I don't want something like this - 'good in problem solving and analytical thinking', 'problem solving' and 'analytical thinking' are good keywords
+                        // In case job description is provided, there will be three extra fields: 
+                            1. 'Job Description Given' : It will contain if the job description is given or not, 
+                            2. 'Keywords present' : signify each and every keyword mentioned in the resume
+                            3. 'Keywords absent' : signify each and every keyword not mentioned in the resume
+                            In case job description is absent, skip these fields. And remember you should mention any kind of keyword in  1-2 words, and at max 3-4 keyword (if required). I don't want something like this - 'good in problem solving and analytical thinking', 'problem solving' and 'analytical thinking' are good keywords. Plus, try to search for as many as possible 'Valid' keywords by reading job description properly. Yes, valid only valid ones. Just because I've told you to find many keywords, it doesn't mean you will add every next word to keyword list.
                     }
                 },
                 "strengths": [

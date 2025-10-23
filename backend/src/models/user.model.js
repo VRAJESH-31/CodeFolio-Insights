@@ -8,6 +8,8 @@ const UserSchema = new Schema({
     name: {
         type: String,
         required: true,
+        unique: true,
+        trim: true,
     },
     email: {
         type: String,
@@ -16,6 +18,25 @@ const UserSchema = new Schema({
     },
     password: {
         type: String,
+    },
+    profile: {
+        type: String,
+    },
+    bio: {
+        type: String,
+        trim: true,
+    },
+    profileVisibility: {
+        type: Boolean,
+        default: true,
+    },
+    lastRefresh: {
+        type: Date,
+        required: true,
+    },
+    profileViews: {
+        type: Number,
+        default: 0,
     }
 });
 
