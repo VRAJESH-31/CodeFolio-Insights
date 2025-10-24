@@ -7,6 +7,7 @@ import AuthRouter from './routes/auth.route.js';
 import AnalyzeRouter from './routes/analyze.route.js';
 import ProfilesRouter from './routes/profiles.route.js';
 import UserRouter from './routes/user.route.js';
+import ScoreRouter from './routes/score.route.js';
 import AnalyticsRouter from './routes/analytics.route.js';
 import { connectToDB } from './utils/db.js';
 import { PORT, SESSION_SECRET } from './utils/config.js';
@@ -39,6 +40,7 @@ app.use('/analyze', AnalyzeRouter);
 app.use("/profiles", ProfilesRouter);
 app.use("/user", UserRouter);
 app.use("/analytics", AnalyticsRouter);
+app.use("/score", ScoreRouter);
 
 const startServer = async () => {
     await createAdmin();
