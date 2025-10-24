@@ -7,10 +7,11 @@ import AuthRouter from './routes/auth.route.js';
 import AnalyzeRouter from './routes/analyze.route.js';
 import ProfilesRouter from './routes/profiles.route.js';
 import UserRouter from './routes/user.route.js';
+import AnalyticsRouter from './routes/analytics.route.js';
 import { connectToDB } from './utils/db.js';
 import { PORT, SESSION_SECRET } from './utils/config.js';
-// import fileUpload from "express-fileupload";
 import cookieParser from "cookie-parser";
+import { createAdmin } from './utils/seed/adminSeed.js';
 
 const app = express();
 
@@ -18,7 +19,6 @@ app.use(bodyParser.json());
 app.use(express.json({limit: "16mb"}));
 app.use(express.urlencoded({extended: true, limit: "16mb"}));
 app.use(express.static("public"));
-// app.use(fileUpload());
 app.use(cookieParser());
 
 app.use(cors());
@@ -38,12 +38,18 @@ app.use('/auth', AuthRouter);
 app.use('/analyze', AnalyzeRouter);
 app.use("/profiles", ProfilesRouter);
 app.use("/user", UserRouter);
+app.use("/analytics", AnalyticsRouter);
 
-connectToDB()
-.then(() => {
+const startServer = async () => {
+    await createAdmin();
     app.listen(PORT, () => {
         console.log(`Listening to app on PORT no ${PORT}`);
     })
+}
+
+connectToDB()
+.then(async () => {
+    await startServer();
 })
 .catch((error) => {
     console.log("MongoDB Database Failed to connect! ", error);

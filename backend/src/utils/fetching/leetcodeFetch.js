@@ -1,5 +1,5 @@
-import { leetCodeQuery } from "./axiosInstance.js";
-import { leetCodeApiQueries } from "./constants.js";
+import { leetCodeQuery } from "../axiosInstance.js";
+import { leetCodeApiQueries } from "../constants.js";
 
 const getLeetCodeProblemsCount = async (username) => {
     const query = leetCodeApiQueries.LEETCODE_USER_PROBLEMS_SOLVED_QUERY;

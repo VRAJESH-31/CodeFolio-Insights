@@ -5,8 +5,8 @@ import { getAnalytics } from "../middlewares/analytics.middleware.js";
 
 const router = express.Router();
 
-router.get("/", optionalAuth, getAnalytics, getProfiles);
+router.get("/:userId", optionalAuth, getAnalytics, getProfiles);
 router.patch("/", protectRoute,  getAnalytics, updateProfiles);
-router.get("/fetch", optionalAuth, getAnalytics, fetchProfilesData);
+router.get("/fetch/:username", optionalAuth, getAnalytics, fetchProfilesData);
 
 export default router;

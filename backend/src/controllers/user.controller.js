@@ -2,10 +2,11 @@ import UserModel from "../models/user.model.js";
 import mongoose from "mongoose";
 import { destroyFile, uploadFile } from "../utils/cloudinary.js";
 import bcrypt from "bcrypt";
+import {getSearchQuery, getSortQuery} from "../utils/query/userQuery.js"
 
 const getUser = async (req, res) => {
     try {
-        const userId = req.query.id;
+        const userId = req.params.id;
 
         if (!userId) return res.status(200).json({message: "User id is required!"});
         if (!mongoose.Types.ObjectId.isValid(userId)) return res.status(400).json({ message: "Invalid user ID format." });
@@ -18,6 +19,71 @@ const getUser = async (req, res) => {
         console.log("Failed to fetch user:", error.message);
         console.log(error.stack);
         return res.status(500).json({message: "Something went wrong!"});
+    }
+}
+
+const getUsers = async (req, res) => {
+    try {
+        const isAdmin = req.isAdmin;
+        const limit = Math.min(req.query.limit || 10, 100);
+        const searchQuery = req.query.searchQuery || "";
+        const searchField = req.query.searchField;
+        const searchOrder = parseInt(req.query.searchOrder) || 0;
+        let cursor = null;
+        let query = {};
+        let fieldQuery = {};
+        let sortQuery = {};
+
+        if (!isAdmin) return res.status(403).json({message : "You are not authorized to access this service."});
+        if (searchOrder!==1 && searchOrder!==-1) return res.status(400).json({message: "The value of search order should be 1 or -1 only!"});
+
+        if (req.query.cursor){
+            try {
+                cursor = JSON.parse(decodeURIComponent(req.query.cursor));
+            } catch (error) {
+                return res.status(400).json({message: "Invalid cursor format"});
+            }
+        }
+
+        if (searchField=="createdAt") sortQuery = getSortQuery("createdAt", searchOrder);
+        else if (searchField=="updatedAt") sortQuery = getSortQuery("updatedAt", searchOrder);
+        else if (searchField=="name") sortQuery = getSortQuery("name", searchOrder);
+        else if (searchField=="profileViews") sortQuery = getSortQuery("profileViews", searchOrder);
+
+        if (cursor){
+
+            if (searchField=="createdAt") fieldQuery = getSearchQuery("createdAt", searchOrder, cursor);
+            else if (searchField=="updatedAt") fieldQuery = getSearchQuery("updatedAt", searchOrder, cursor);
+            else if (searchField=="name") fieldQuery = getSearchQuery("name", searchOrder, cursor);
+            else if (searchField=="profileViews") fieldQuery = getSearchQuery("profileViews", searchOrder, cursor);
+                
+            query = {
+                $and : [
+                    fieldQuery,
+                    {name: {$regex : searchQuery, $options: 'i'}}
+                ]
+            };
+        } else {
+            query = {
+                name: {$regex : searchQuery, $options: 'i'}
+            }
+        }
+
+        const users = await UserModel.find(query).sort(sortQuery).limit(limit+1);
+        const hasNext = users.length > limit;
+        const pageUsers = hasNext ? users.slice(0, limit) : users;
+        const nextCursor = hasNext ? pageUsers[pageUsers.length - 1] : null;
+
+        res.status(200).json({
+            users: pageUsers, 
+            nextCursor : nextCursor ? encodeURIComponent(JSON.stringify(nextCursor)) : null,
+            hasNext
+        });
+
+    } catch (error){
+        console.log("Something went wrong while fetching users", error.message);
+        console.log(error.stack);
+        return null;
     }
 }
 
@@ -89,7 +155,7 @@ const changePassword = async (req, res) => {
 
 const addProfileView = async (req, res) => {
     const user = req.user;
-    const userId = req.query.userId;
+    const userId = req.params.userId;
 
     const loggedInUserId = user._id;
 
@@ -122,6 +188,7 @@ const updateLastRefresh = async (req, res) => {
 
 export {
     getUser,
+    getUsers,
     updateUserInfo,
     updateLastRefresh,
     changePassword,

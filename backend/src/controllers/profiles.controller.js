@@ -9,7 +9,7 @@ import * as githubFetching from '../utils/fetching/githubFetch.js';
 
 const getProfiles = async (req, res) => {
     try {
-        const userId = req.query.userId;
+        const userId = req.params.userId;
         
         if (!userId) return res.status(200).json({message: "User id is required!"});
         if (!mongoose.Types.ObjectId.isValid(userId)) return res.status(400).json({ message: "Invalid user ID format." });
@@ -63,7 +63,7 @@ const updateProfiles = async (req, res) => {
 
 const fetchProfilesData = async (req, res) => {
     try {
-        const username = req.query.username;
+        const username = req.params.username;
         if (!username || !username.trim()) return res.status(400).json({message: "username not provided"});
 
         const user = await UserModel.findOne({name: username});
