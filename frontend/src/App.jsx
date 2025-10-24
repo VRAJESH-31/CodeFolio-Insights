@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage.jsx';
 import SignupPage from './pages/SignupPage.jsx';
 import HomePage from './pages/HomePage.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
+import ResumeAnalyse from './pages/ResumeAnalyse.jsx';
 
 const App = () => {
     return (
@@ -14,6 +15,7 @@ const App = () => {
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/resume-analyse" element={<ResumeAnalyse isSidebarCollapsed={true} />} />
         </Routes>
     )
 }
