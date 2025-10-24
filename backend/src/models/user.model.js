@@ -19,6 +19,10 @@ const UserSchema = new Schema({
     password: {
         type: String,
     },
+    isAdmin: {
+        type: Boolean,
+        default: false,
+    },
     profile: {
         type: String,
     },
@@ -32,13 +36,13 @@ const UserSchema = new Schema({
     },
     lastRefresh: {
         type: Date,
-        required: true,
+        default: Date.now(),
     },
     profileViews: {
         type: Number,
         default: 0,
     }
-});
+}, {timestamps: true});
 
 const UserModel = mongoose.model('users', UserSchema);
 

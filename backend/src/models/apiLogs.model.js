@@ -20,6 +20,6 @@ const apiLogsSchema = new mongoose.Schema({
     },
 }, {timestamps: true});
 
-const apiLogs = mongoose.model("ApiLog", apiLogsSchema);
+const apiLogsModel = mongoose.model("ApiLog", apiLogsSchema);
 
-export default apiLogs;
+export default apiLogsModel;
