@@ -130,18 +130,20 @@ const updateUserInfo = async (req, res) => {
 const changePassword = async (req, res) => {
     try {
         const user = req.user;
-        const {password} = req.body;
+        const {oldPassword, newPassword} = req.body;
+
+        if (oldPassword === newPassword) return res.status(400).json({message: "old and new password are same"});
 
         const queriedUser = await UserModel.findById(user._id);
         if (!queriedUser) return res.status(404).json({message: "User not found!"});
 
         if (queriedUser.password){
-            if (await bcrypt.compare(password, queriedUser.password)){
-                return res.status(400).json({message: "Your new password is same as old password!"});
-            } else {
-                queriedUser.password = await bcrypt.hash(password, await bcrypt.genSalt(10));
+            if (await bcrypt.compare(oldPassword, queriedUser.password)){
+                queriedUser.password = await bcrypt.hash(newPassword, await bcrypt.genSalt(10));
                 queriedUser.save(); 
                 return res.status(200).json({message: "Password Changed"});
+            } else {
+                return res.status(400).json({message: "Wrong password!"});
             }
         } else {
             return res.status(400).json({message: "You are logged in through third party login services, and not general password login"});
