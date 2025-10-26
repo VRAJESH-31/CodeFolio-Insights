@@ -1,27 +1,26 @@
-// src/pages/LeetCode.jsx
+// src/pages/GitHub.jsx
 import React, { useState, useEffect } from 'react';
 import {
     Search,
-    CheckCircle,
-    Target,
-    Zap,
-    Award,
-    Trophy,
-    ChevronRight,
-    PieChart as PieChartIcon,
-    BarChart2,
-    MessageSquareQuote,
+    GitBranch,
+    GitCommit,
+    GitPullRequest,
     Star,
-    TrendingUp,
-    Clock,
     Users,
+    Eye,
+    Code,
     Calendar,
-    Sparkles,
+    TrendingUp,
+    Award,
     Crown,
+    Sparkles,
     Rocket,
     Brain,
     Lightbulb,
-    Shield
+    Shield,
+    FolderOpen,
+    Clock,
+    Zap
 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import {
@@ -40,8 +39,8 @@ import {
     Bar,
 } from 'recharts';
 
-const LeetCode = () => {
-    const [userId, setUserId] = useState('');
+const GitHub = () => {
+    const [username, setUsername] = useState('');
     const [analysis, setAnalysis] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [mounted, setMounted] = useState(false);
@@ -50,47 +49,60 @@ const LeetCode = () => {
         setMounted(true);
     }, []);
 
-    const submissionData = [
-        { name: 'Mar 18', solved: 2, submissions: 4 },
-        { name: 'Jun 10', solved: 5, submissions: 8 },
-        { name: 'Jun 18', solved: 2, submissions: 3 },
-        { name: 'Jun 26', solved: 3, submissions: 5 },
-        { name: 'Jul 3', solved: 1, submissions: 2 },
-        { name: 'Jul 4', solved: 1, submissions: 1 },
-        { name: 'Jul 23', solved: 1, submissions: 2 },
-        { name: 'Aug 5', solved: 1, submissions: 1 },
-        { name: 'Aug 21', solved: 2, submissions: 3 },
+    const commitData = [
+        { name: 'Jan', commits: 45, additions: 1200, deletions: 400 },
+        { name: 'Feb', commits: 62, additions: 1800, deletions: 600 },
+        { name: 'Mar', commits: 38, additions: 950, deletions: 300 },
+        { name: 'Apr', commits: 85, additions: 2200, deletions: 800 },
+        { name: 'May', commits: 72, additions: 1900, deletions: 550 },
+        { name: 'Jun', commits: 98, additions: 2800, deletions: 900 },
+        { name: 'Jul', commits: 65, additions: 1700, deletions: 500 },
+        { name: 'Aug', commits: 112, additions: 3200, deletions: 1100 },
+        { name: 'Sep', commits: 88, additions: 2400, deletions: 700 },
     ];
 
-    const difficultyData = [
-        { name: 'Easy', value: 12, color: '#34D399' },
-        { name: 'Medium', value: 6, color: '#F59E0B' },
-        { name: 'Hard', value: 1, color: '#EF4444' },
+    const languageData = [
+        { name: 'JavaScript', value: 35, color: '#F7DF1E' },
+        { name: 'TypeScript', value: 25, color: '#3178C6' },
+        { name: 'Python', value: 20, color: '#3776AB' },
+        { name: 'Java', value: 12, color: '#ED8B00' },
+        { name: 'Go', value: 8, color: '#00ADD8' },
     ];
 
-    const topicData = [
-        { name: 'Arrays', value: 8, mastery: 65 },
-        { name: 'DP', value: 3, mastery: 40 },
-        { name: 'Trees', value: 5, mastery: 75 },
-        { name: 'Graphs', value: 2, mastery: 30 },
-        { name: 'Strings', value: 6, mastery: 70 },
+    const repoTypeData = [
+        { name: 'Public', value: 15, color: '#10B981' },
+        { name: 'Private', value: 8, color: '#F59E0B' },
+        { name: 'Forked', value: 6, color: '#3B82F6' },
+    ];
+
+    const activityData = [
+        { name: 'Mon', commits: 12, prs: 3, issues: 2 },
+        { name: 'Tue', commits: 8, prs: 5, issues: 1 },
+        { name: 'Wed', commits: 15, prs: 2, issues: 4 },
+        { name: 'Thu', commits: 6, prs: 4, issues: 3 },
+        { name: 'Fri', commits: 18, prs: 6, issues: 2 },
+        { name: 'Sat', commits: 4, prs: 1, issues: 0 },
+        { name: 'Sun', commits: 2, prs: 0, issues: 1 },
     ];
 
     const handleAnalyze = () => {
-        if (!userId.trim()) return;
+        if (!username.trim()) return;
         
         setIsLoading(true);
         setTimeout(() => {
             setAnalysis({
-                totalSolved: 19,
-                acceptanceRate: '80.77%',
-                currentStreak: 0,
-                longestStreak: 2,
-                ranking: '3,719,824',
-                profileScore: 82,
-                weeklyRank: 'Top 45%',
-                dailyChallenge: '3/7',
-                contestRating: 1520,
+                totalRepos: 23,
+                totalCommits: 685,
+                totalStars: 156,
+                totalForks: 42,
+                followers: 89,
+                following: 45,
+                profileScore: 78,
+                contributions: '1,245',
+                pullRequests: 67,
+                issues: 23,
+                weeklyActivity: 'High',
+                accountAge: '2.5 years'
             });
             setIsLoading(false);
         }, 2000);
@@ -130,12 +142,12 @@ const LeetCode = () => {
     `;
 
     return (
-        <div className="flex min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-purple-50/30 font-sans">
+        <div className="flex min-h-screen bg-gradient-to-br from-green-50/30 via-white to-blue-50/30 font-sans">
             <style>{animationStyles}</style>
             
             <Sidebar
                 isSidebarCollapsed={false}
-                activeMenu="LeetCode"
+                activeMenu="GitHub"
                 setActiveMenu={() => {}}
                 user={{ name: 'John Doe', jobTitle: 'Developer' }}
                 handleLogout={() => alert('Logged out')}
@@ -145,23 +157,23 @@ const LeetCode = () => {
             <main className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8">
                 {/* Header Section */}
                 <div className="text-center space-y-4 animate-float-in">
-                    <h1 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent leading-tight">
-                        LeetCode Analytics
+                    <h1 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 bg-clip-text text-transparent leading-tight">
+                        GitHub Analytics
                     </h1>
                     <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                        Master your coding journey with AI-powered insights and personalized recommendations
+                        Dive deep into your GitHub activity with AI-powered insights and contribution analysis
                     </p>
                 </div>
 
                 {/* Input Section */}
                 <div className="bg-white/90 backdrop-blur-sm p-8 rounded-3xl shadow-2xl border border-white/60 animate-float-in" style={{animationDelay: '100ms'}}>
                     <div className="flex items-center gap-4 mb-6">
-                        <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl shadow-lg">
-                            <Rocket className="h-7 w-7 text-white" />
+                        <div className="p-3 bg-gradient-to-br from-green-500 to-blue-600 rounded-2xl shadow-lg">
+                            <Code className="h-7 w-7 text-white" />
                         </div>
                         <div>
                             <h3 className="text-2xl md:text-3xl font-black text-gray-800">Analyze Your Profile</h3>
-                            <p className="text-gray-500 text-sm mt-1">Enter your LeetCode username to get started</p>
+                            <p className="text-gray-500 text-sm mt-1">Enter your GitHub username to unlock insights</p>
                         </div>
                     </div>
                     
@@ -169,18 +181,18 @@ const LeetCode = () => {
                         <div className="flex-1 relative">
                             <input
                                 type="text"
-                                value={userId}
-                                onChange={(e) => setUserId(e.target.value)}
-                                placeholder="Enter your LeetCode UserID..."
-                                className="w-full p-4 pl-12 text-lg border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 bg-white/80 backdrop-blur-sm hover:border-blue-300"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                placeholder="Enter your GitHub username..."
+                                className="w-full p-4 pl-12 text-lg border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all duration-300 bg-white/80 backdrop-blur-sm hover:border-green-300"
                             />
                             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                         </div>
                         <button
                             onClick={handleAnalyze}
                             disabled={isLoading}
-                            className={`flex items-center justify-center gap-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-black px-8 py-4 rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-500 transform hover:-translate-y-1 disabled:opacity-60 disabled:cursor-not-allowed ${
-                                isLoading ? 'cursor-wait' : 'hover:from-blue-600 hover:to-purple-700'
+                            className={`flex items-center justify-center gap-3 bg-gradient-to-r from-green-500 to-blue-600 text-white font-black px-8 py-4 rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-500 transform hover:-translate-y-1 disabled:opacity-60 disabled:cursor-not-allowed ${
+                                isLoading ? 'cursor-wait' : 'hover:from-green-600 hover:to-blue-700'
                             }`}
                         >
                             {isLoading ? (
@@ -208,7 +220,7 @@ const LeetCode = () => {
                                 <div className="text-center space-y-6">
                                     <div className="flex items-center justify-center gap-3 mb-4">
                                         <Crown className="h-8 w-8 text-yellow-500" />
-                                        <h3 className="text-2xl font-black text-gray-800">Profile Score</h3>
+                                        <h3 className="text-2xl font-black text-gray-800">GitHub Score</h3>
                                     </div>
                                     
                                     <div className="relative inline-block">
@@ -229,7 +241,7 @@ const LeetCode = () => {
                                                     cy="50"
                                                     r="45"
                                                     fill="none"
-                                                    stroke="url(#scoreGradient)"
+                                                    stroke="url(#githubScoreGradient)"
                                                     strokeWidth="8"
                                                     strokeLinecap="round"
                                                     strokeDasharray="283"
@@ -237,20 +249,20 @@ const LeetCode = () => {
                                                     className="animate-score-progress"
                                                 />
                                                 <defs>
-                                                    <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                                        <stop offset="0%" stopColor="#3b82f6" />
-                                                        <stop offset="100%" stopColor="#8b5cf6" />
+                                                    <linearGradient id="githubScoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                                        <stop offset="0%" stopColor="#10b981" />
+                                                        <stop offset="100%" stopColor="#3b82f6" />
                                                     </linearGradient>
                                                 </defs>
                                             </svg>
                                             <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                                <span className="text-5xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                                                <span className="text-5xl font-black bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
                                                     {analysis.profileScore}
                                                 </span>
                                                 <span className="text-lg text-gray-500 font-semibold">/100</span>
                                                 <div className="flex items-center gap-1 mt-2">
                                                     <TrendingUp className="h-4 w-4 text-green-500" />
-                                                    <span className="text-sm text-green-600 font-semibold">+12% this month</span>
+                                                    <span className="text-sm text-green-600 font-semibold">+8% this month</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -258,13 +270,13 @@ const LeetCode = () => {
 
                                     <div className="space-y-3">
                                         <div className="flex justify-between items-center text-sm">
-                                            <span className="text-gray-600">Progress to next level</span>
-                                            <span className="font-semibold text-blue-600">68%</span>
+                                            <span className="text-gray-600">Progress to Expert</span>
+                                            <span className="font-semibold text-green-600">78%</span>
                                         </div>
                                         <div className="w-full bg-gray-200 rounded-full h-2">
                                             <div 
-                                                className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-1000 animate-shimmer"
-                                                style={{ width: '68%' }}
+                                                className="bg-gradient-to-r from-green-500 to-blue-600 h-2 rounded-full transition-all duration-1000 animate-shimmer"
+                                                style={{ width: '78%' }}
                                             ></div>
                                         </div>
                                     </div>
@@ -273,35 +285,47 @@ const LeetCode = () => {
 
                             {/* Meme and Review - Right Side */}
                             <div className="xl:col-span-2 bg-white/90 backdrop-blur-sm p-8 rounded-3xl shadow-2xl border border-white/60 animate-float-in" style={{animationDelay: '200ms'}}>
-                                <ProfileScoreReview score={analysis.profileScore} />
+                                <GitHubScoreReview score={analysis.profileScore} />
                             </div>
                         </div>
 
                         {/* Enhanced Stats Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             {[
-                                { icon: CheckCircle, title: "Total Solved", value: analysis.totalSolved, change: "+5", color: "green" },
-                                { icon: Target, title: "Acceptance Rate", value: analysis.acceptanceRate, change: "+2.3%", color: "blue" },
-                                { icon: Zap, title: "Current Streak", value: analysis.currentStreak, change: "🔥", color: "yellow" },
-                                { icon: Award, title: "Contest Rating", value: analysis.contestRating, change: "+45", color: "purple" },
+                                { icon: FolderOpen, title: "Total Repositories", value: analysis.totalRepos, change: "+3", color: "green" },
+                                { icon: GitCommit, title: "Total Commits", value: analysis.totalCommits, change: "+45", color: "blue" },
+                                { icon: Star, title: "Total Stars", value: analysis.totalStars, change: "+12", color: "yellow" },
+                                { icon: GitBranch, title: "Total Forks", value: analysis.totalForks, change: "+5", color: "purple" },
                             ].map((stat, index) => (
-                                <StatCard key={stat.title} {...stat} delay={index * 100} />
+                                <GitHubStatCard key={stat.title} {...stat} delay={index * 100} />
+                            ))}
+                        </div>
+
+                        {/* Additional Stats Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {[
+                                { icon: Users, title: "Followers", value: analysis.followers, change: "+8", color: "indigo" },
+                                { icon: Eye, title: "Following", value: analysis.following, change: "+2", color: "pink" },
+                                { icon: GitPullRequest, title: "Pull Requests", value: analysis.pullRequests, change: "+7", color: "orange" },
+                                { icon: Zap, title: "Contributions", value: analysis.contributions, change: "+89", color: "cyan" },
+                            ].map((stat, index) => (
+                                <GitHubStatCard key={stat.title} {...stat} delay={(index + 4) * 100} />
                             ))}
                         </div>
 
                         {/* Charts Grid */}
                         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-                            {/* Submission Activity */}
+                            {/* Commit Activity */}
                             <div className="xl:col-span-2 bg-white/90 backdrop-blur-sm p-8 rounded-3xl shadow-2xl border border-white/60 animate-float-in" style={{animationDelay: '300ms'}}>
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl">
-                                        <BarChart2 className="w-5 h-5 text-white" />
+                                    <div className="p-2 bg-gradient-to-br from-green-500 to-blue-600 rounded-xl">
+                                        <Calendar className="w-5 h-5 text-white" />
                                     </div>
-                                    <h3 className="text-2xl font-black text-gray-800">Submission Activity</h3>
+                                    <h3 className="text-2xl font-black text-gray-800">Commit Activity</h3>
                                 </div>
                                 <div style={{ width: '100%', height: 300 }}>
                                     <ResponsiveContainer>
-                                        <LineChart data={submissionData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+                                        <LineChart data={commitData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
                                             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                                             <XAxis dataKey="name" stroke="#6b7280" fontSize={12} />
                                             <YAxis stroke="#6b7280" fontSize={12} />
@@ -316,38 +340,37 @@ const LeetCode = () => {
                                             <Legend />
                                             <Line 
                                                 type="monotone" 
-                                                dataKey="solved" 
-                                                stroke="#3b82f6" 
+                                                dataKey="commits" 
+                                                stroke="#10b981" 
                                                 strokeWidth={3} 
-                                                dot={{ fill: '#3b82f6', r: 4 }} 
-                                                activeDot={{ r: 6, fill: '#1d4ed8' }}
+                                                dot={{ fill: '#10b981', r: 4 }} 
+                                                activeDot={{ r: 6, fill: '#059669' }}
                                             />
                                             <Line 
                                                 type="monotone" 
-                                                dataKey="submissions" 
-                                                stroke="#8b5cf6" 
-                                                strokeWidth={2} 
-                                                strokeDasharray="3 3"
-                                                dot={{ fill: '#8b5cf6', r: 3 }}
+                                                dataKey="additions" 
+                                                stroke="#3b82f6" 
+                                                strokeWidth={2}
+                                                dot={{ fill: '#3b82f6', r: 3 }}
                                             />
                                         </LineChart>
                                     </ResponsiveContainer>
                                 </div>
                             </div>
 
-                            {/* Problem Difficulty */}
+                            {/* Language Distribution */}
                             <div className="bg-white/90 backdrop-blur-sm p-8 rounded-3xl shadow-2xl border border-white/60 animate-float-in" style={{animationDelay: '400ms'}}>
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl">
-                                        <PieChartIcon className="w-5 h-5 text-white" />
+                                    <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl">
+                                        <Code className="w-5 h-5 text-white" />
                                     </div>
-                                    <h3 className="text-2xl font-black text-gray-800">Problem Difficulty</h3>
+                                    <h3 className="text-2xl font-black text-gray-800">Language Distribution</h3>
                                 </div>
                                 <div style={{ width: '100%', height: 300 }}>
                                     <ResponsiveContainer>
                                         <PieChart>
                                             <Pie
-                                                data={difficultyData}
+                                                data={languageData}
                                                 cx="50%"
                                                 cy="50%"
                                                 innerRadius={60}
@@ -355,7 +378,7 @@ const LeetCode = () => {
                                                 paddingAngle={2}
                                                 dataKey="value"
                                             >
-                                                {difficultyData.map((entry, index) => (
+                                                {languageData.map((entry, index) => (
                                                     <Cell key={`cell-${index}`} fill={entry.color} />
                                                 ))}
                                             </Pie>
@@ -370,82 +393,132 @@ const LeetCode = () => {
                                         </PieChart>
                                     </ResponsiveContainer>
                                 </div>
-                                <div className="grid grid-cols-3 gap-4 mt-6">
-                                    {difficultyData.map((item, index) => (
+                                <div className="grid grid-cols-2 gap-4 mt-6">
+                                    {languageData.slice(0, 4).map((item, index) => (
                                         <div key={item.name} className="text-center p-3 rounded-2xl bg-gray-50/80">
                                             <div className="text-sm font-semibold text-gray-600">{item.name}</div>
-                                            <div className="text-xl font-black text-gray-800">{item.value}</div>
-                                            <div className="text-xs text-gray-500">problems</div>
+                                            <div className="text-xl font-black text-gray-800">{item.value}%</div>
+                                            <div className="text-xs text-gray-500">usage</div>
                                         </div>
                                     ))}
                                 </div>
                             </div>
                         </div>
 
-                        {/* Additional Insights */}
+                        {/* Additional Charts */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            {/* Topic Mastery */}
+                            {/* Repository Types */}
                             <div className="bg-white/90 backdrop-blur-sm p-8 rounded-3xl shadow-2xl border border-white/60 animate-float-in" style={{animationDelay: '500ms'}}>
                                 <div className="flex items-center gap-3 mb-6">
                                     <div className="p-2 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl">
-                                        <Brain className="w-5 h-5 text-white" />
+                                        <GitBranch className="w-5 h-5 text-white" />
                                     </div>
-                                    <h3 className="text-2xl font-black text-gray-800">Topic Mastery</h3>
+                                    <h3 className="text-2xl font-black text-gray-800">Repository Types</h3>
                                 </div>
-                                <div className="space-y-4">
-                                    {topicData.map((topic, index) => (
-                                        <div key={topic.name} className="space-y-2">
-                                            <div className="flex justify-between items-center">
-                                                <span className="font-semibold text-gray-700">{topic.name}</span>
-                                                <span className="text-sm font-bold text-blue-600">{topic.mastery}%</span>
-                                            </div>
-                                            <div className="w-full bg-gray-200 rounded-full h-2">
-                                                <div 
-                                                    className="h-2 rounded-full transition-all duration-1000"
-                                                    style={{ 
-                                                        width: `${topic.mastery}%`,
-                                                        background: `linear-gradient(90deg, ${topicData[index].color}, ${topicData[index].color}99)`
-                                                    }}
-                                                ></div>
-                                            </div>
-                                        </div>
-                                    ))}
+                                <div style={{ width: '100%', height: 300 }}>
+                                    <ResponsiveContainer>
+                                        <BarChart data={repoTypeData}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                                            <XAxis dataKey="name" stroke="#6b7280" fontSize={12} />
+                                            <YAxis stroke="#6b7280" fontSize={12} />
+                                            <Tooltip 
+                                                contentStyle={{ 
+                                                    background: 'rgba(255, 255, 255, 0.9)', 
+                                                    backdropFilter: 'blur(10px)',
+                                                    border: '1px solid #e5e7eb',
+                                                    borderRadius: '12px'
+                                                }}
+                                            />
+                                            <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                                                {repoTypeData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={entry.color} />
+                                                ))}
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
                                 </div>
                             </div>
 
-                            {/* AI Recommended Video */}
+                            {/* Weekly Activity */}
                             <div className="bg-white/90 backdrop-blur-sm p-8 rounded-3xl shadow-2xl border border-white/60 animate-float-in" style={{animationDelay: '600ms'}}>
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl">
-                                        <Lightbulb className="w-5 h-5 text-white" />
+                                    <div className="p-2 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl">
+                                        <Zap className="w-5 h-5 text-white" />
                                     </div>
-                                    <h3 className="text-2xl font-black text-gray-800">AI Recommended Content</h3>
+                                    <h3 className="text-2xl font-black text-gray-800">Weekly Activity</h3>
+                                </div>
+                                <div style={{ width: '100%', height: 300 }}>
+                                    <ResponsiveContainer>
+                                        <BarChart data={activityData}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                                            <XAxis dataKey="name" stroke="#6b7280" fontSize={12} />
+                                            <YAxis stroke="#6b7280" fontSize={12} />
+                                            <Tooltip 
+                                                contentStyle={{ 
+                                                    background: 'rgba(255, 255, 255, 0.9)', 
+                                                    backdropFilter: 'blur(10px)',
+                                                    border: '1px solid #e5e7eb',
+                                                    borderRadius: '12px'
+                                                }}
+                                            />
+                                            <Legend />
+                                            <Bar dataKey="commits" fill="#10b981" radius={[4, 4, 0, 0]} />
+                                            <Bar dataKey="prs" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                                            <Bar dataKey="issues" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* AI Recommendations */}
+                        <div className="bg-white/90 backdrop-blur-sm p-8 rounded-3xl shadow-2xl border border-white/60 animate-float-in" style={{animationDelay: '700ms'}}>
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl">
+                                    <Lightbulb className="w-5 h-5 text-white" />
+                                </div>
+                                <h3 className="text-2xl font-black text-gray-800">AI Recommendations</h3>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-4">
+                                    <h4 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                                        <TrendingUp className="h-5 w-5 text-green-500" />
+                                        Strengths
+                                    </h4>
+                                    <ul className="space-y-2 text-gray-600">
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                            Consistent commit activity throughout the year
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                            Strong presence in JavaScript and TypeScript
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                            Active in open source contributions
+                                        </li>
+                                    </ul>
                                 </div>
                                 <div className="space-y-4">
-                                    <div className="aspect-video bg-gray-900 rounded-2xl mb-4 overflow-hidden shadow-lg">
-                                        <iframe
-                                            className="w-full h-full rounded-2xl"
-                                            src="https://www.youtube.com/embed/P6FORpg0KVo"
-                                            title="Dynamic Programming Tutorial"
-                                            frameBorder="0"
-                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                            allowFullScreen
-                                        ></iframe>
-                                    </div>
-                                    <h4 className="text-xl font-black text-gray-800">Dynamic Programming: From Zero to Hero</h4>
-                                    <p className="text-gray-600 leading-relaxed">
-                                        Master Dynamic Programming concepts with this AI-selected video. Focuses on your weak areas and provides practical examples.
-                                    </p>
-                                    <div className="flex items-center gap-4 pt-4">
-                                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                                            <Clock className="w-4 h-4" />
-                                            <span>45 min watch</span>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                                            <Users className="w-4 h-4" />
-                                            <span>1.2M views</span>
-                                        </div>
-                                    </div>
+                                    <h4 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                                        <Zap className="h-5 w-5 text-amber-500" />
+                                        Areas to Improve
+                                    </h4>
+                                    <ul className="space-y-2 text-gray-600">
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                                            Increase documentation in repositories
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                                            More engagement with community projects
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                                            Diversify into backend technologies
+                                        </li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
@@ -456,41 +529,41 @@ const LeetCode = () => {
     );
 };
 
-/* --- Enhanced Profile Score & Meme Review --- */
-const ProfileScoreReview = ({ score }) => {
+/* --- Enhanced GitHub Score & Meme Review --- */
+const GitHubScoreReview = ({ score }) => {
     const getMemeForScore = (score) => {
         if (score <= 10) return { 
-            text: "Bhai... kya kar raha hai tu?", 
-            meme: "https://media1.tenor.com/m/9rWnSoV8cU0AAAAC/ab-sale.gif",
-            comment: "Not great. Start from basics.",
+            text: "Bro, do you even commit?", 
+            meme: "https://media1.tenor.com/m/5cIs6QvX3uMAAAAC/gajab-bezzati-salman-khan.gif",
+            comment: "Time to start your GitHub journey!",
             bg: "from-red-50 to-orange-50",
             border: "border-red-200"
         };
         if (score <= 30) return { 
-            text: "Okay, we have a foundation.", 
+            text: "Getting there! Baby steps...", 
             meme: "https://media1.tenor.com/m/6gB-_c6lVqoAAAAC/baburao-style-hai.gif",
-            comment: "Focus on consistency and practice.",
+            comment: "Consistency is key. Keep pushing!",
             bg: "from-orange-50 to-yellow-50",
             border: "border-orange-200"
         };
         if (score <= 60) return { 
-            text: "Average hai, overconfident mat hona.", 
+            text: "Solid contributor in the making!", 
             meme: "https://media1.tenor.com/m/6vEVb2uGj8kAAAAC/50-ruppee-kat-rajkumar-hirani.gif",
-            comment: "Slightly above average! Keep pushing.",
+            comment: "You're building great momentum!",
             bg: "from-yellow-50 to-lime-50",
             border: "border-yellow-200"
         };
         if (score <= 80) return { 
-            text: "Good job! Thoda aur...", 
-            meme: "https://media1.tenor.com/m/5cIs6QvX3uMAAAAC/gajab-bezzati-salman-khan.gif",
-            comment: "You're showing strong consistency.",
+            text: "GitHub warrior in action! 💪", 
+            meme: "https://media1.tenor.com/m/9rWnSoV8cU0AAAAC/ab-sale.gif",
+            comment: "Impressive activity and contributions!",
             bg: "from-green-50 to-emerald-50",
             border: "border-green-200"
         };
         if (score <= 100) return { 
-            text: "Legendary! Sab phod diya.", 
+            text: "Open Source Legend! 🏆", 
             meme: "https://media1.tenor.com/m/4zRz1b9W1bAAAAAC/maula-mere-maula.gif",
-            comment: "Outstanding work! You're crushing it.",
+            comment: "You're crushing the GitHub game!",
             bg: "from-blue-50 to-purple-50",
             border: "border-blue-200"
         };
@@ -502,21 +575,21 @@ const ProfileScoreReview = ({ score }) => {
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-3 mb-2">
-                <MessageSquareQuote className="h-7 w-7 text-purple-600" />
-                <h3 className="text-2xl font-black text-gray-800">AI Performance Review</h3>
+                <Sparkles className="h-7 w-7 text-blue-600" />
+                <h3 className="text-2xl font-black text-gray-800">AI GitHub Review</h3>
             </div>
             
             <div className={`rounded-3xl p-6 border-2 ${review.border} bg-gradient-to-br ${review.bg} shadow-lg animate-bounce-in`}>
                 <div className="text-center space-y-4">
                     <div className="inline-flex items-center gap-2 bg-white/80 px-4 py-2 rounded-full shadow-sm border">
-                        <Sparkles className="h-4 w-4 text-purple-500" />
-                        <span className="text-sm font-semibold text-gray-700">AI Generated Review</span>
+                        <Code className="h-4 w-4 text-green-500" />
+                        <span className="text-sm font-semibold text-gray-700">GitHub Performance Review</span>
                     </div>
                     
                     <div className="rounded-2xl overflow-hidden shadow-lg mx-auto max-w-md">
                         <img 
                             src={review.meme} 
-                            alt="Performance meme" 
+                            alt="GitHub performance meme" 
                             className="w-full h-48 object-cover transition-transform duration-500 hover:scale-105"
                         />
                     </div>
@@ -533,50 +606,54 @@ const ProfileScoreReview = ({ score }) => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-4 rounded-2xl border border-blue-200">
+                <div className="bg-gradient-to-br from-green-50 to-cyan-50 p-4 rounded-2xl border border-green-200">
                     <div className="flex items-center gap-2 mb-2">
-                        <TrendingUp className="h-4 w-4 text-blue-600" />
-                        <span className="font-semibold text-blue-800">Strengths</span>
+                        <TrendingUp className="h-4 w-4 text-green-600" />
+                        <span className="font-semibold text-green-800">GitHub Strengths</span>
                     </div>
-                    <ul className="text-sm text-blue-700 space-y-1">
-                        <li>• High acceptance rate on Easy problems</li>
-                        <li>• Consistent weekly activity</li>
-                        <li>• Good progress in Arrays & Strings</li>
+                    <ul className="text-sm text-green-700 space-y-1">
+                        <li>• Consistent commit history</li>
+                        <li>• Active in multiple repositories</li>
+                        <li>• Good mix of personal and contributed projects</li>
                     </ul>
                 </div>
                 
                 <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-4 rounded-2xl border border-amber-200">
                     <div className="flex items-center gap-2 mb-2">
-                        <Target className="h-4 w-4 text-amber-600" />
-                        <span className="font-semibold text-amber-800">Areas to Improve</span>
+                        <Zap className="h-4 w-4 text-amber-600" />
+                        <span className="font-semibold text-amber-800">Growth Opportunities</span>
                     </div>
                     <ul className="text-sm text-amber-700 space-y-1">
-                        <li>• Struggling with Medium problems</li>
-                        <li>• Need more Dynamic Programming practice</li>
-                        <li>• Inconsistent submission patterns</li>
+                        <li>• Increase repository documentation</li>
+                        <li>• More engagement with issues</li>
+                        <li>• Diversify technology stack</li>
                     </ul>
                 </div>
             </div>
 
-            <button className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+            <button className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-green-500 to-blue-600 text-white font-bold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
                 <Shield className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                <span className="text-lg">Get Detailed Performance Report</span>
-                <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                <span className="text-lg">Get Detailed GitHub Report</span>
+                <GitBranch className="h-5 w-5 group-hover:rotate-12 transition-transform" />
             </button>
         </div>
     );
 };
 
-/* --- Enhanced Stat Card --- */
-const StatCard = ({ icon: Icon, title, value, change, color, delay }) => {
+/* --- Enhanced GitHub Stat Card --- */
+const GitHubStatCard = ({ icon: Icon, title, value, change, color, delay }) => {
     const colorClasses = {
         green: { bg: 'from-green-500 to-emerald-600', text: 'text-green-600', bgLight: 'bg-green-100' },
         blue: { bg: 'from-blue-500 to-cyan-600', text: 'text-blue-600', bgLight: 'bg-blue-100' },
         yellow: { bg: 'from-yellow-500 to-amber-600', text: 'text-yellow-600', bgLight: 'bg-yellow-100' },
         purple: { bg: 'from-purple-500 to-indigo-600', text: 'text-purple-600', bgLight: 'bg-purple-100' },
+        indigo: { bg: 'from-indigo-500 to-purple-600', text: 'text-indigo-600', bgLight: 'bg-indigo-100' },
+        pink: { bg: 'from-pink-500 to-rose-600', text: 'text-pink-600', bgLight: 'bg-pink-100' },
+        orange: { bg: 'from-orange-500 to-red-600', text: 'text-orange-600', bgLight: 'bg-orange-100' },
+        cyan: { bg: 'from-cyan-500 to-blue-600', text: 'text-cyan-600', bgLight: 'bg-cyan-100' },
     };
 
-    const colors = colorClasses[color] || colorClasses.blue;
+    const colors = colorClasses[color] || colorClasses.green;
 
     return (
         <div 
@@ -605,4 +682,4 @@ const StatCard = ({ icon: Icon, title, value, change, color, delay }) => {
     );
 };
 
-export default LeetCode;
+export default GitHub;
