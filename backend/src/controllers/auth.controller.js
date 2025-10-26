@@ -34,7 +34,7 @@ const signup = async (req, res) => {
             { expiresIn: 3600 },
             (err, token) => {
                 if (err) throw err;
-                res.json({ token });
+                res.status(201).json({ token });
             }
         );
     } catch (err) {
@@ -66,7 +66,7 @@ const login = async (req, res) => {
             { expiresIn: 3600 },
             (err, token) => {
                 if (err) throw err;
-                res.json({ token });
+                res.status(200).json({ token });
             }
         );
     } catch (err) {
@@ -80,11 +80,9 @@ const logout = (req, res, next) => {
     req.logout(function(err) {
         if (err) { return next(err); }
         req.session.destroy((err) => {
-            if (err) {
-                return res.status(500).json({ message: 'Error destroying session' });
-            }
+            if (err) return res.status(500).json({ message: 'Error destroying session' });
             res.clearCookie('connect.sid'); // Clears the session cookie
-            res.status(200).json({ message: 'Logged out successfully' });
+            return res.status(200).json({ message: 'Logged out successfully' });
         });
     });
 };
