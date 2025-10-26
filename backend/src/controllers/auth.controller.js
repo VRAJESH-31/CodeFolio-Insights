@@ -6,14 +6,15 @@ import { JWT_SECRET } from '../utils/config.js';
 const signup = async (req, res) => {
     try {
         const { name, email, password } = req.body;
+
         let user = await UserModel.findOne({ email });
-        if (user) {
-            return res.status(400).json({ message: 'User already exists' });
-        }
+        if (user) return res.status(400).json({ message: 'User already exists' });
+
         user = new UserModel({
             name,
             email,
-            password
+            password,
+            lastRefresh: Date.now(),
         });
 
         const salt = await bcrypt.genSalt(10);
@@ -33,7 +34,7 @@ const signup = async (req, res) => {
             { expiresIn: 3600 },
             (err, token) => {
                 if (err) throw err;
-                res.json({ token });
+                res.status(201).json({ token });
             }
         );
     } catch (err) {
@@ -46,14 +47,12 @@ const login = async (req, res) => {
     try {
         const { email, password } = req.body;
         let user = await UserModel.findOne({ email });
-        if (!user) {
-            return res.status(400).json({ message: 'Invalid Credentials' });
-        }
+        
+        if (!user) return res.status(400).json({ message: 'Invalid Credentials' });
+        if (!user.password) return res.status(400).json({ message: 'Authentication for this email is done by non password authentication system' });
 
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ message: 'Invalid Credentials' });
-        }
+        if (!isMatch) return res.status(400).json({ message: 'Invalid Credentials' });
 
         const payload = {
             user: {
@@ -77,10 +76,12 @@ const login = async (req, res) => {
                         jobTitle: user.jobTitle
                     }
                 });
+                res.status(200).json({ token });
             }
         );
     } catch (err) {
         console.error(err.message);
+        console.log(err.stack);
         res.status(500).send('Server error');
     }
 };
@@ -103,6 +104,9 @@ const logout = (req, res, next) => {
             }
             res.clearCookie('connect.sid');
             res.status(200).json({ message: 'Logged out successfully' });
+            if (err) return res.status(500).json({ message: 'Error destroying session' });
+            res.clearCookie('connect.sid'); // Clears the session cookie
+            return res.status(200).json({ message: 'Logged out successfully' });
         });
     });
 };
