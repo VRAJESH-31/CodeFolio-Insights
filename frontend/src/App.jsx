@@ -15,7 +15,7 @@ const App = () => {
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/resume-analyse" element={<ResumeAnalyse isSidebarCollapsed={true} />} />
+            <Route path="/resume-analyse" element={<ResumeAnalyse isSidebarCollapsed={false} />} />
         </Routes>
     )
 }
