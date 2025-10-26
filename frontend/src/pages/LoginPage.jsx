@@ -34,6 +34,7 @@ const LoginPage = () => {
             if (res.ok) {
                 // Store the token and redirect on successful login
                 localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
                 navigate('/home');
             } else {
                 // Handle errors (e.g., display "Invalid Credentials")
