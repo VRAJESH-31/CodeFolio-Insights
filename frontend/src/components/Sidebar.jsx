@@ -14,7 +14,7 @@ const Sidebar = ({ isSidebarCollapsed, activeMenu, setActiveMenu, user, handleLo
         { name: 'Dashboard', icon: 'fa-solid fa-table-columns', path: '/home' },
         { name: 'LeetCode', icon: 'fa-solid fa-code', path: '/leetcode' },
         { name: 'GitHub', icon: 'fa-brands fa-github', path: '/github' },
-        { name: 'LinkedIn', icon: 'fa-brands fa-linkedin-in', path: '/linkedin' },
+        { name: 'Gfg', icon: 'fa-brands fa-linkedin-in', path: '/gfg' },
         { name: 'Resume Analysis', icon: 'fa-solid fa-file-lines', path: '/resume-analyse' },
         { name: 'Settings', icon: 'fa-solid fa-gear', path: '/settings' },
     ];

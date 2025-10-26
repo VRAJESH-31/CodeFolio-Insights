@@ -6,6 +6,7 @@ import SignupPage from './pages/SignupPage.jsx';
 import HomePage from './pages/HomePage.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
 import ResumeAnalyse from './pages/ResumeAnalyse.jsx';
+import LeetCode from './pages/Leetcode.jsx';
 
 const App = () => {
     return (
@@ -16,6 +17,7 @@ const App = () => {
             <Route path="/home" element={<HomePage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/resume-analyse" element={<ResumeAnalyse isSidebarCollapsed={false} />} />
+            <Route path="/leetcode" element={<LeetCode isSidebarCollapsed={false} />} />
         </Routes>
     )
 }
