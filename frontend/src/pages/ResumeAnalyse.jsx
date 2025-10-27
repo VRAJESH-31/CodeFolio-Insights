@@ -164,7 +164,7 @@ const ResumeAnalysis = ({
                 handleLogout={handleLogout}
             />
 
-            <main className={`flex-1 overflow-y-auto transition-all duration-500 ${isSidebarCollapsed ? 'ml-24' : 'ml-80'}`}>
+            <main className={`flex-1 overflow-y-auto transition-all duration-500 `}>
                 <div className="p-6 md:p-8 space-y-8">
                     {/* Header Section */}
                     <div className="text-center space-y-4 animate-float-in">

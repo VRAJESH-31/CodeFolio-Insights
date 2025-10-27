@@ -221,13 +221,9 @@ const Sidebar = ({ isSidebarCollapsed, activeMenu, setActiveMenu, user, handleLo
                                     <i className="fa-solid fa-user w-4 text-center group-hover/item:scale-110 transition-transform duration-300"></i>
                                     <span className="font-medium">Profile Settings</span>
                                 </Link>
-                                <a href="#" className="flex items-center gap-4 px-4 py-3 text-sm text-gray-700 hover:text-blue-700 hover:bg-blue-50/80 rounded-xl transition-all duration-300 group/item">
+                                <a href="/link" className="flex items-center gap-4 px-4 py-3 text-sm text-gray-700 hover:text-blue-700 hover:bg-blue-50/80 rounded-xl transition-all duration-300 group/item">
                                     <i className="fa-solid fa-link w-4 text-center group-hover/item:scale-110 transition-transform duration-300"></i>
                                     <span className="font-medium">Manage Links</span>
-                                </a>
-                                <a href="#" className="flex items-center gap-4 px-4 py-3 text-sm text-gray-700 hover:text-blue-700 hover:bg-blue-50/80 rounded-xl transition-all duration-300 group/item">
-                                    <i className="fa-solid fa-share-nodes w-4 text-center group-hover/item:scale-110 transition-transform duration-300"></i>
-                                    <span className="font-medium">Share Profile</span>
                                 </a>
                                 <button
                                     onClick={handleLogout}
