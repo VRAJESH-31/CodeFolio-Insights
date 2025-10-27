@@ -11,6 +11,9 @@ const UserSchema = new Schema({
         unique: true,
         trim: true,
     },
+    jobTitle: {
+        String,
+    },
     email: {
         type: String,
         required: true,

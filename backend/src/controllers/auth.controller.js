@@ -89,8 +89,26 @@ const logout = (req, res, next) => {
     });
 };
 
+const checkAuth = async (req, res) => {
+    try {
+        const token = req.header("Authorization")?.replace("Bearer ", "");
+        if (!token) return res.status(401).json({message : "Unauthenticated User! Token not provided"});
+
+        const decodedToken = jwt.verify(token, JWT_SECRET);
+        const user = await UserModel.findById(decodedToken.user.id).select("-password");
+
+        if (!user) return res.status(401).json({message : "Invalid token"});
+        return res.status(200).json({user:user, message : "Token validated!"});
+    } catch (error) {
+        console.log("Error in checkAuth function:", error.message);
+        console.log(error.stack);
+        return res.status(404).json({message: "Something went wrong!"});
+    }
+}
+
 export { 
     signup,
     login,
-    logout
+    logout,
+    checkAuth
 };

@@ -90,7 +90,7 @@ const getUsers = async (req, res) => {
 const updateUserInfo = async (req, res) => {
     try {
         const user = req.user;
-        const {bio, profileVisibility, name} = req.body;
+        const {bio, profileVisibility, name, jobTitle} = req.body;
         const file = req.file;
 
         const userId = user._id;
@@ -104,6 +104,7 @@ const updateUserInfo = async (req, res) => {
         if (name) queriedUser.name = name;
         if (bio) queriedUser.bio = bio;
         if (profileVisibility) queriedUser.profileVisibility = profileVisibility;
+        if (jobTitle) queriedUser.jobTitle = jobTitle;
         queriedUser.save();
 
         if (file){
