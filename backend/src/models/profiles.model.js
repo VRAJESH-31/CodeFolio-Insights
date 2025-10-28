@@ -7,6 +7,10 @@ const ProfileSchema = new Schema({
         ref: "users",
         require: true,
     },
+    linkedinUsername : {
+        type: String,
+        default: "",
+    },
     githubUsername : {
         type: String,
         default: "",
