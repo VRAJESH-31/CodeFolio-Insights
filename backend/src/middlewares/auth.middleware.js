@@ -1,5 +1,5 @@
 import { check, validationResult } from 'express-validator';
-import { JWT_SECRET } from '../utils/config.js';
+import { JWT_SECRET } from '../config/config.js';
 import UserModel from '../models/user.model.js';
 import jwt from "jsonwebtoken";
 

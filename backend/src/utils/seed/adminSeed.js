@@ -1,5 +1,5 @@
 import UserModel from "../../models/user.model.js"
-import { ADMIN_EMAIL, ADMIN_PASSWORD } from "../config.js";
+import { ADMIN_EMAIL, ADMIN_PASSWORD } from "../../config/config.js";
 import bcrypt from 'bcrypt';
 
 const createAdmin = async () => {

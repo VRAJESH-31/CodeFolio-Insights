@@ -90,7 +90,7 @@ const getUsers = async (req, res) => {
 const updateUserInfo = async (req, res) => {
     try {
         const user = req.user;
-        const {bio, profileVisibility, name} = req.body;
+        const {name, ...updatedFields} = req.body;
         const file = req.file;
 
         const userId = user._id;
@@ -98,28 +98,39 @@ const updateUserInfo = async (req, res) => {
         const queriedUser = await UserModel.findById(userId).select("-googleId -password -__v");
         if (!queriedUser) return res.status(404).json({message: "Invalid user id!"});
 
-        const existingUser = await UserModel.findOne({name});
-        if (existingUser && !existingUser._id.equals(user._id)) return res.status(400).json({message: "User with given name already exists"});
+        // Checking if the user with name provided in the updatedField is already present or not
+        if (name){
+            const existingUser = await UserModel.findOne({name});
+            if (existingUser && !existingUser._id.equals(user._id)) return res.status(400).json({message: "User with given name already exists"});
+            queriedUser.name = name;
+            queriedUser.save();
+        }
 
-        if (name) queriedUser.name = name;
-        if (bio) queriedUser.bio = bio;
-        if (profileVisibility) queriedUser.profileVisibility = profileVisibility;
-        queriedUser.save();
+        const updatedUser = await UserModel.findByIdAndUpdate(
+            userId,
+            { $set: updatedFields },
+            { 
+                new: true,
+                runValidators: true
+            }
+        );
+
+        if (!updatedUser) return res.status(500).json({message: "Could not update the user info"});
 
         if (file){
-            const previousProfileImageUrl = queriedUser.profile;
+            const previousProfileImageUrl = updatedUser.profile;
             const newProfileImageUrl = await uploadFile(file.path, "Codefolio");
 
             if (newProfileImageUrl){
                 if (previousProfileImageUrl) destroyFile(previousProfileImageUrl);
-                queriedUser.profile = newProfileImageUrl;
-                queriedUser.save();
+                updatedUser.profile = newProfileImageUrl;
+                updatedUser.save();
             } else {
                 return res.status(500).json({message: "Couldn't upload new profile image!"});
             }
         }
 
-        return res.status(200).json(queriedUser);
+        return res.status(200).json(updatedUser);
     } catch (error){
         console.log("Failed to fetch user:", error.message);
         console.log(error.stack);
@@ -130,18 +141,20 @@ const updateUserInfo = async (req, res) => {
 const changePassword = async (req, res) => {
     try {
         const user = req.user;
-        const {password} = req.body;
+        const {oldPassword, newPassword} = req.body;
+
+        if (oldPassword === newPassword) return res.status(400).json({message: "old and new password are same"});
 
         const queriedUser = await UserModel.findById(user._id);
         if (!queriedUser) return res.status(404).json({message: "User not found!"});
 
         if (queriedUser.password){
-            if (await bcrypt.compare(password, queriedUser.password)){
-                return res.status(400).json({message: "Your new password is same as old password!"});
-            } else {
-                queriedUser.password = await bcrypt.hash(password, await bcrypt.genSalt(10));
+            if (await bcrypt.compare(oldPassword, queriedUser.password)){
+                queriedUser.password = await bcrypt.hash(newPassword, await bcrypt.genSalt(10));
                 queriedUser.save(); 
                 return res.status(200).json({message: "Password Changed"});
+            } else {
+                return res.status(400).json({message: "Wrong password!"});
             }
         } else {
             return res.status(400).json({message: "You are logged in through third party login services, and not general password login"});

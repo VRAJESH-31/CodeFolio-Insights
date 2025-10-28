@@ -1,4 +1,4 @@
-import { githubAPI } from "../axiosInstance.js";
+import { githubAPI } from "../../api/axiosInstance.js";
 import { TOTAL_COMMITS_LIMIT } from "../fetching/githubFetch.js";
 
 const getRepoCountScore = (repoCount) => {

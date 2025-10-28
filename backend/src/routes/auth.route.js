@@ -1,6 +1,6 @@
 import express from "express";
 import passport from "passport";
-import { signup, login, logout , getCurrentUser } from "../controllers/auth.controller.js";
+import { signup, login, logout, checkAuth, getCurrentUser } from "../controllers/auth.controller.js";
 import { signupValidation, loginValidation, validate } from "../middlewares/auth.middleware.js";
 import { getAnalytics } from "../middlewares/analytics.middleware.js";
 
@@ -8,8 +8,7 @@ const router = express.Router();
 
 router.post('/signup', signupValidation, validate, getAnalytics, signup);
 router.post('/login', loginValidation, validate, getAnalytics, login);
-
-router.post('/logout', logout);
+router.get("/check", checkAuth);
 router.get('/user', getCurrentUser);
 router.post('/logout', getAnalytics, logout);
 

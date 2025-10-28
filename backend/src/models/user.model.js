@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import { getCountries, getCountryCallingCode } from 'libphonenumber-js';
+
 const Schema = mongoose.Schema;
 
 const UserSchema = new Schema({
@@ -10,6 +12,9 @@ const UserSchema = new Schema({
         required: true,
         unique: true,
         trim: true,
+    },
+    jobTitle: {
+        String,
     },
     email: {
         type: String,
@@ -28,6 +33,10 @@ const UserSchema = new Schema({
     profile: {
         type: String,
     },
+    headline: {
+        type: String,
+        trim: true,
+    },
     bio: {
         type: String,
         trim: true,
@@ -43,7 +52,18 @@ const UserSchema = new Schema({
     profileViews: {
         type: Number,
         default: 0,
-    }
+    },
+    location: {
+        type: String,
+    },
+    countryCode: {
+        type: String,
+        enum: getCountries().map((code)=>getCountryCallingCode(code)),
+    },
+    phone: {
+        type: Number,
+        length: 10,
+    },
 }, {timestamps: true});
 
 const UserModel = mongoose.model('users', UserSchema);
