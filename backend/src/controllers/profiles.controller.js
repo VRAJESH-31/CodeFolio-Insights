@@ -43,12 +43,12 @@ const updateProfiles = async (req, res) => {
         const userId = user._id;
         
         let $setFields = { ...updateFields };
-        delete $setFields.userId; // Ensure userId isn't updated if it exists
+        delete $setFields.userId;
 
         const updatedProfile = await ProfileModel.findOneAndUpdate(
-            { userId: userId }, // Filter by the user's ID
-            { $set: $setFields }, // Apply all other fields from the body
-            { new: true, runValidators: true, upsert: true } // Return the updated document and run Mongoose validators
+            { userId: userId },
+            { $set: $setFields },
+            { new: true, runValidators: true, upsert: true }
         );
 
         if (!updatedProfile) return res.status(404).json({ message: "Could not update user profile links." });
@@ -69,7 +69,7 @@ const fetchProfilesData = async (req, res) => {
         const user = await UserModel.findOne({name: username});
         if (!user) return res.status(404).json({message: "Invalid Username!"});
 
-        const profilesLinksUrl = `${req.protocol}://${req.get("host")}/profiles?userId=${user._id}`
+        const profilesLinksUrl = `${req.protocol}://${req.get("host")}/profiles/${user._id}`
         const profileLinksResponse = await axios.get(profilesLinksUrl);
         const profileLinks = profileLinksResponse.data;
 

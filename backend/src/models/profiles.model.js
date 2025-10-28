@@ -26,6 +26,14 @@ const ProfileSchema = new Schema({
     codechefUsername: {
         type: String,
         default: "",
+    },
+    linkedinUsername: {
+        type: String,
+        default: "",
+    },
+    portfolioWebsiteLink: {
+        type: String,
+        default: "",
     }
 }, {timestamps: true});
 
