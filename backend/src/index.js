@@ -8,8 +8,8 @@ import AnalyzeRouter from './routes/analyze.route.js';
 import ProfilesRouter from './routes/profiles.route.js';
 import UserRouter from './routes/user.route.js';
 import AnalyticsRouter from './routes/analytics.route.js';
-import { connectToDB } from './utils/db.js';
-import { PORT, SESSION_SECRET } from './utils/config.js';
+import { connectToDB } from './db.js';
+import { PORT, SESSION_SECRET } from './config/config.js';
 import cookieParser from "cookie-parser";
 import { createAdmin } from './utils/seed/adminSeed.js';
 

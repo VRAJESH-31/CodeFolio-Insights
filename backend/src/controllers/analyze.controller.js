@@ -1,10 +1,10 @@
 import * as githubScoring from "../utils/scoring/githubScore.js";
 import * as githubFetching from "../utils/fetching/githubFetch.js"
 import * as leetCodeFetching from "../utils/fetching/leetcodeFetch.js"
-import { getGithubProfileAnalysis, getLeetCodeProfileAnalysis, getResumeAnalysis } from "../utils/geminiResponse.js";
+import { getGithubProfileAnalysis, getLeetCodeProfileAnalysis, getResumeAnalysis } from "../utils/geminiUtils.js";
 import * as leetCodeScoring from "../utils/scoring/leetcodeScore.js";
 import { getPdfContent } from "../utils/pdfUtils.js";
-import { MAX_PDF_SIZE } from "../utils/constants.js";
+import { MAX_PDF_SIZE } from "../constant/constants.js";
 
 const analyzeGithub = async (req, res) => {
     try {

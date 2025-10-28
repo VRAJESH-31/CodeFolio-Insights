@@ -1,7 +1,7 @@
-import { githubGraphQlQuery, githubRestApiQuery, scrapeSpideyAPI } from "../axiosInstance.js";
-import { getCommitAnalysis} from "../geminiResponse.js";
-import { SCRAPE_SPIDEY_API_KEY } from "../config.js";
-import { gitHubApiQueries } from "../constants.js";
+import { githubGraphQlQuery, githubRestApiQuery, scrapeSpideyAPI } from "../../api/axiosInstance.js";
+import { getCommitAnalysis} from "../geminiUtils.js";
+import { SCRAPE_SPIDEY_API_KEY } from "../../config/config.js";
+import { gitHubApiQueries } from "../../constant/constants.js";
 
 const PAGE_SIZE = 100;
 const TOTAL_COMMITS_LIMIT = 25;
@@ -37,19 +37,10 @@ const getCommitsQualityReport = async (username) => {
     return getCommitAnalysis(commitsArray);
 }
 
-const getCommitsPerRepo = async (repoName, username) => {
-
-    let commitCount = 0;
-    let pageNo = 1;
-
-    while (true){
-        const temp = await githubRestApiQuery(`/repos/${username}/${repoName}/commits?per_page=${PAGE_SIZE}&page=${pageNo}`);
-        if (temp == null) continue;
-        if (temp.length == 0) break;
-        commitCount = commitCount + temp.length;
-        pageNo++;
-    }
-
+const getCommitsPerRepo = async (reponame, username) => {
+    const query = gitHubApiQueries.GITHUB_REPO_TOTAL_COMMITS_COUNT;
+    const commitCount = await githubGraphQlQuery(query, {username, reponame});
+    if (commitCount==null) return 0;
     return commitCount;
 }
 
@@ -131,7 +122,7 @@ const getRepoLanguages = async (username, repoName) => {
 }
 
 const getLastYearCommitsCount = async (username) => {
-    const query = gitHubApiQueries.GITHUB_LAST_YEAR_COMMITS_COUNT;
+    const query = gitHubApiQueries.GITHUB_LAST_YEAR_COMMITS_COUNT_QUERY;
     const lastYearCommitsData = await githubGraphQlQuery(query, {username});
     if (lastYearCommitsData == null) return 0;
     return lastYearCommitsData["data"]["user"]["contributionsCollection"]["contributionCalendar"]["totalContributions"];

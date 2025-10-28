@@ -1,5 +1,5 @@
-import { SCRAPE_SPIDEY_API_KEY } from '../config.js';
-import { scrapeSpideyApiQuery } from '../axiosInstance.js';
+import { SCRAPE_SPIDEY_API_KEY } from '../../config/config.js';
+import { scrapeSpideyApiQuery } from '../../api/axiosInstance.js';
 
 const fetchGfgUserData = async (username) => {
     return await scrapeSpideyApiQuery(`/api/v1/gfg/user/profile?user=${username}&apiKey=${SCRAPE_SPIDEY_API_KEY}&includeContest=true`);

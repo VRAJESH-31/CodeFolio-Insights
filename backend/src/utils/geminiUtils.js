@@ -1,6 +1,6 @@
 import { GoogleGenAI, Type} from "@google/genai";
-import { GEMINI_API_KEY } from "./config.js";
-import { complexAnalysisSchema, simpleAnalysisSchema, simpleListSchema, jobDescriptionSchema } from "./responseSchema.js";
+import { GEMINI_API_KEY } from "../config/config.js";
+import { complexAnalysisSchema, simpleAnalysisSchema, simpleListSchema, jobDescriptionSchema } from "./schema/geminiResponse.js";
 
 const ai = new GoogleGenAI({apiKey : GEMINI_API_KEY});
 

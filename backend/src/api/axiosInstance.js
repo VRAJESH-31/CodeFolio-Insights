@@ -1,5 +1,5 @@
 import axios from "axios";
-import { GITHUB_TOKEN, SCRAPE_SPIDEY_API_KEY } from "./config.js";
+import { GITHUB_TOKEN, SCRAPE_SPIDEY_API_KEY } from "../config/config.js";
 
 // Github Instance
 const githubAPI = axios.create({
