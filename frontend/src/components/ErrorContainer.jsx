@@ -1,45 +1,10 @@
 import { AlertTriangle, Server, UserX, WifiOff, RefreshCw } from "lucide-react";
 import conf from "../config/config";
+import {v4 as uuid} from "uuid"
 
 const ErrorContainer = ({ error, onRetry, isLoading, errorAdditionalHelp }) => {
-    // Determine error type and message
+
     const getErrorDetails = () => {
-        if (!error) {
-            return {
-                icon: <Server className="w-16 h-16" />,
-                title: "Analysis Failed",
-                message: "We couldn't generate your LeetCode analysis. Please try again.",
-                subMessage: "This might be due to temporary server issues or invalid data."
-            };
-        }
-
-        if (error.message?.includes('Network Error') || error.message?.includes('Failed to fetch')) {
-            return {
-                icon: <WifiOff className="w-16 h-16" />,
-                title: "Connection Error",
-                message: "Unable to connect to LeetCode services",
-                subMessage: "Please check your internet connection and try again."
-            };
-        }
-
-        if (error.message?.includes('User not found') || error.status === 404) {
-            return {
-                icon: <UserX className="w-16 h-16" />,
-                title: "User Not Found",
-                message: "We couldn't find this LeetCode username",
-                subMessage: "Please check the username and try again."
-            };
-        }
-
-        if (error.status === 429) {
-            return {
-                icon: <AlertTriangle className="w-16 h-16" />,
-                title: "Rate Limit Exceeded",
-                message: "Too many requests to LeetCode API",
-                subMessage: "Please wait a few minutes before trying again."
-            };
-        }
-
         return {
             icon: <AlertTriangle className="w-16 h-16" />,
             title: "Analysis Failed",
@@ -99,9 +64,9 @@ const ErrorContainer = ({ error, onRetry, isLoading, errorAdditionalHelp }) => {
 
                     {/* Additional Help */}
                     <div className="text-xs text-gray-400 space-y-1">
-                        <p>Make sure the LeetCode username is correct</p>
-                        <p>Ensure the user has a public profile</p>
-                        <p>Try again in a few minutes if issues persist</p>
+                        {errorAdditionalHelp.map((point)=>(
+                            <p key={uuid()}>{point}</p>
+                        ))}
                     </div>
                 </div>
 

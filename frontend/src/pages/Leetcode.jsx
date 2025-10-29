@@ -53,8 +53,9 @@ import VideoSuggestion from '../components/VideoSuggestion.jsx';
 import ScoreMeter from '../components/ScoreMeter.jsx';
 import TopicStats from '../components/TopicStats.jsx';
 import ProblemStats from '../components/ProblemStats.jsx';
-import { getMemeForScore } from '../utils/helper.js';
+import ErrorContainer from '../components/ErrorContainer.jsx';
 import MemeContainer from '../components/MemeContainer.jsx';
+import LeetCodeContestStats from '../components/LeetcodeContestStats.jsx';
 
 const LeetCode = () => {
     const [userId, setUserId] = useState('');
@@ -242,10 +243,10 @@ const LeetCode = () => {
                             ))}
                         </div>
 
-                        <BadgeCollection 
-                            badges={data.badges.badges} 
-                            contestData={data.contestData} 
-                        />
+                        <div className="space-y-8">
+                            <LeetCodeContestStats contestData={data.contestData} />
+                            <BadgeCollection badges={data.badges.badges} />
+                        </div>
 
                         {/* Charts Grid */}
                         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
@@ -301,10 +302,11 @@ const LeetCode = () => {
                 )}
 
                 {isError && (
-                    <ErrorBlock 
+                    <ErrorContainer
                         error={error}
                         onRetry={handleAnalyze}
                         isLoading={isFetching}
+                        errorAdditionalHelp={["Make sure the LeetCode username is correct","Ensure the user has a public profile", "Try again in a few minutes if issues persist"]}
                     />
                 )}
             </main>
