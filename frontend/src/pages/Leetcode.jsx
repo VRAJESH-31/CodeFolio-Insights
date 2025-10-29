@@ -108,20 +108,8 @@ const LeetCode = () => {
             0% { opacity: 0; transform: translateY(30px) scale(0.9); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
-        @keyframes glowPulse {
-            0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.2), 0 0 40px rgba(139, 92, 246, 0.1); }
-            50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.4), 0 0 60px rgba(139, 92, 246, 0.2); }
-        }
-        @keyframes borderGlow {
-            0%, 100% { border-color: rgba(59, 130, 246, 0.3); }
-            50% { border-color: rgba(139, 92, 246, 0.5); }
-        }
         @keyframes scoreProgress {
             0% { stroke-dashoffset: 283; }
-        }
-        @keyframes shimmer {
-            0% { background-position: -200px 0; }
-            100% { background-position: 200px 0; }
         }
         @keyframes bounceIn {
             0% { transform: scale(0.3); opacity: 0; }
@@ -130,14 +118,7 @@ const LeetCode = () => {
             100% { transform: scale(1); opacity: 1; }
         }
         .animate-float-in { animation: floatIn 0.6s ease-out forwards; }
-        .animate-glow-pulse { animation: glowPulse 3s ease-in-out infinite; }
-        .animate-border-glow { animation: borderGlow 2s ease-in-out infinite; }
         .animate-score-progress { animation: scoreProgress 2s ease-out forwards; }
-        .animate-shimmer {
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
-            background-size: 200px 100%;
-            animation: shimmer 3s infinite;
-        }
         .animate-bounce-in { animation: bounceIn 1s ease-out forwards; }
     `;
 
@@ -154,59 +135,56 @@ const LeetCode = () => {
             />
 
             {/* Main Content */}
-            <main className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8">
+            <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-6 md:space-y-8">
                 {/* Header Section */}
-                <div className="text-center space-y-4 animate-float-in">
-                    <div className="relative inline-block">
-                        <h1 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent leading-tight relative z-10">
-                            LeetCode Analytics
-                        </h1>
-                        <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 blur-xl opacity-20 -z-10"></div>
-                    </div>
-                    <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-medium">
+                <div className="text-center space-y-3 md:space-y-4 animate-float-in">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent leading-tight px-2">
+                        LeetCode Analytics
+                    </h1>
+                    <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-medium px-4">
                         Master your coding journey with AI-powered insights and personalized recommendations
                     </p>
                 </div>
 
                 {/* Input Section */}
-                <div className="relative bg-white/90 backdrop-blur-sm p-8 rounded-3xl shadow-2xl animate-float-in animate-border-glow border-2 border-blue-300/30" style={{animationDelay: '100ms'}}>
-                    <div className="flex items-center gap-4 mb-6">
-                        <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl shadow-lg animate-glow-pulse">
-                            <Rocket className="h-7 w-7 text-white" />
+                <div className="bg-white/90 backdrop-blur-sm p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl shadow-xl border border-gray-200/80 animate-float-in hover:shadow-2xl transition-all duration-300" style={{animationDelay: '100ms'}}>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                        <div className="p-2 sm:p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl sm:rounded-2xl shadow-lg w-fit">
+                            <Rocket className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 text-white" />
                         </div>
                         <div className="flex-1">
-                            <h3 className="text-2xl md:text-3xl font-black text-gray-800 mb-1">Analyze Your Profile</h3>
-                            <p className="text-gray-500 text-base font-medium">Enter your LeetCode username to get started</p>
+                            <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-gray-800 mb-1">Analyze Your Profile</h3>
+                            <p className="text-sm sm:text-base text-gray-500 font-medium">Enter your LeetCode username to get started</p>
                         </div>
                     </div>
                     
-                    <div className="flex flex-col md:flex-row gap-4 items-stretch">
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch">
                         <div className="flex-1 relative">
                             <input
                                 type="text"
                                 value={userId}
                                 onChange={(e) => setUserId(e.target.value)}
                                 placeholder="Enter your LeetCode UserID..."
-                                className="w-full p-4 pl-12 text-lg border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 bg-white/80 backdrop-blur-sm hover:border-blue-300 font-medium"
+                                className="w-full p-3 sm:p-4 pl-10 sm:pl-12 text-base sm:text-lg border-2 border-gray-200 rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 bg-white/80 backdrop-blur-sm hover:border-blue-300 font-medium"
                             />
-                            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                            <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                         </div>
                         <button
                             onClick={handleAnalyze}
                             disabled={isFetching}
-                            className={`flex items-center justify-center gap-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold px-8 py-4 rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-500 transform hover:-translate-y-1 disabled:opacity-60 disabled:cursor-not-allowed min-w-[160px] animate-glow-pulse ${
+                            className={`flex items-center justify-center gap-2 sm:gap-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold px-4 sm:px-6 md:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed min-w-[120px] sm:min-w-[160px] ${
                                 isLoading ? 'cursor-wait' : 'hover:from-blue-600 hover:to-purple-700'
                             }`}
                         >
                             {isFetching ? (
                                 <>
-                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                    <span className="text-lg font-semibold">Analyzing...</span>
+                                    <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    <span className="text-sm sm:text-base font-semibold">Analyzing...</span>
                                 </>
                             ) : (
                                 <>
-                                    <Brain className="w-5 h-5" />
-                                    <span className="text-lg font-semibold">Deep Analysis</span>
+                                    <Brain className="w-4 h-4 sm:w-5 sm:h-5" />
+                                    <span className="text-sm sm:text-base font-semibold">Deep Analysis</span>
                                 </>
                             )}
                         </button>
@@ -215,37 +193,35 @@ const LeetCode = () => {
 
                 {/* Results Section */}
                 {data && !isError && (
-                    <div className="space-y-8">
-                        {/* Score and Meme Section - Top Position */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
-                            {/* Score Circle - Left Side */}
+                    <div className="space-y-6 md:space-y-8">
+                        {/* Score and Meme Section */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 items-stretch">
+                            {/* Score Circle */}
                             <div className="lg:col-span-1">
-                                <div className="relative bg-white/90 backdrop-blur-sm p-6 rounded-3xl shadow-2xl border-2 border-blue-300/30 animate-float-in animate-border-glow h-full">
+                                <div className="bg-white/90 backdrop-blur-sm p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-xl border border-gray-200/80 animate-float-in h-full">
                                     <ScoreMeter score={data.score}/>
                                 </div>
                             </div>
 
-                            {/* Meme and Review - Right Side */}
-                            <div className="lg:col-span-2 relative bg-white/90 backdrop-blur-sm p-8 rounded-3xl shadow-2xl border-2 border-purple-300/30 animate-float-in animate-border-glow" style={{animationDelay: '200ms'}}>
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl animate-glow-pulse">
-                                        <MessageSquareQuote className="h-6 w-6 text-white" />
+                            {/* Meme and Review */}
+                            <div className="lg:col-span-2 bg-white/90 backdrop-blur-sm p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl shadow-xl border border-gray-200/80 animate-float-in" style={{animationDelay: '200ms'}}>
+                                <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+                                    <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg">
+                                        <MessageSquareQuote className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-white" />
                                     </div>
-                                    <h3 className="text-2xl font-black text-gray-800">AI Performance Review</h3>
+                                    <h3 className="text-xl sm:text-2xl font-black text-gray-800">AI Performance Review</h3>
                                 </div>
                                 <MemeContainer score={data.score}/>
                             </div>
 
-                            {/* Analysis - Full width below */}
-                            <div className="lg:col-span-3 relative animate-float-in" style={{animationDelay: '300ms'}}>
-                                <div className="animate-border-glow border-2 border-indigo-300/30 rounded-3xl">
-                                    <AnalysisContainer profileAnalysis={data.profileAnalysis}/>
-                                </div>
+                            {/* Analysis */}
+                            <div className="lg:col-span-3 animate-float-in" style={{animationDelay: '300ms'}}>
+                                <AnalysisContainer profileAnalysis={data.profileAnalysis}/>
                             </div>
                         </div>
 
-                        {/* Enhanced Stats Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {/* Stats Grid */}
+                        <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
                             {[
                                 { icon: CheckCircle, title: "Total Solved", value: data.problemsCount.acSubmissionNum[0].count, color: "green" },
                                 { icon: Target, title: "Acceptance Rate", value: (data.acceptanceRate*100).toFixed(2), color: "blue" },
@@ -253,38 +229,32 @@ const LeetCode = () => {
                                 { icon: Award, title: "Contest Rating", value: Math.round(data?.contestData?.rating ?? 0), color: "purple" },
                             ].map((stat, index) => (
                                 <div key={stat.title} className="animate-float-in" style={{animationDelay: `${400 + index * 100}ms`}}>
-                                    <div className="animate-border-glow border-2 border-blue-300/20 rounded-2xl">
-                                        <StatCard {...stat} delay={index * 100} />
-                                    </div>
+                                    <StatCard {...stat} delay={index * 100} />
                                 </div>
                             ))}
                         </div>
 
                         {/* Contest Stats and Badges */}
-                        <div className="space-y-8">
-                            <div className="relative animate-float-in" style={{animationDelay: '800ms'}}>
-                                <div className="animate-border-glow border-2 border-orange-300/30 rounded-3xl">
-                                    <LeetCodeContestStats contestData={data.contestData} />
-                                </div>
+                        <div className="space-y-6 md:space-y-8">
+                            <div className="animate-float-in" style={{animationDelay: '800ms'}}>
+                                <LeetCodeContestStats contestData={data.contestData} />
                             </div>
-                            <div className="relative animate-float-in" style={{animationDelay: '900ms'}}>
-                                <div className="animate-border-glow border-2 border-green-300/30 rounded-3xl">
-                                    <BadgeCollection badges={data.badges.badges} />
-                                </div>
+                            <div className="animate-float-in" style={{animationDelay: '900ms'}}>
+                                <BadgeCollection badges={data.badges.badges} />
                             </div>
                         </div>
 
                         {/* Charts Grid */}
-                        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
                             {/* Submission Activity */}
-                            <div className="xl:col-span-2 relative bg-white/90 backdrop-blur-sm p-8 rounded-3xl shadow-2xl border-2 border-blue-300/30 animate-float-in animate-border-glow" style={{animationDelay: '1000ms'}}>
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl animate-glow-pulse">
-                                        <BarChart2 className="w-5 h-5 text-white" />
+                            <div className="xl:col-span-2 bg-white/90 backdrop-blur-sm p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl shadow-xl border border-gray-200/80 animate-float-in" style={{animationDelay: '1000ms'}}>
+                                <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+                                    <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl shadow-lg">
+                                        <BarChart2 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                                     </div>
-                                    <h3 className="text-2xl font-black text-gray-800">Submission Activity</h3>
+                                    <h3 className="text-xl sm:text-2xl font-black text-gray-800">Submission Activity</h3>
                                 </div>
-                                <div style={{ width: '100%', height: 300 }}>
+                                <div className="w-full h-64 sm:h-72 md:h-80">
                                     <ResponsiveContainer>
                                         <LineChart data={getLeetcodeSubmissionData(JSON.parse(data?.submissionCalendar?.submissionCalendar))} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
                                             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -313,42 +283,34 @@ const LeetCode = () => {
                             </div>
 
                             {/* Problem Difficulty */}
-                            <div className="relative animate-float-in" style={{animationDelay: '1100ms'}}>
-                                <div className="animate-border-glow border-2 border-amber-300/30 rounded-3xl h-full">
-                                    <ProblemStats problemsData={getLeetcodeDifficultyData(data.problemsCount.acSubmissionNum)}/>
-                                </div>
+                            <div className="animate-float-in" style={{animationDelay: '1100ms'}}>
+                                <ProblemStats problemsData={getLeetcodeDifficultyData(data.problemsCount.acSubmissionNum)}/>
                             </div>
                         </div>
 
                         {/* Additional Insights */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
                             {/* Topic Mastery */}
-                            <div className="relative animate-float-in" style={{animationDelay: '1200ms'}}>
-                                <div className="animate-border-glow border-2 border-emerald-300/30 rounded-3xl h-full">
-                                    <TopicStats topicData={getLeetcodeTopicData(data.topicWiseProblems)}/>
-                                </div>
+                            <div className="animate-float-in" style={{animationDelay: '1200ms'}}>
+                                <TopicStats topicData={getLeetcodeTopicData(data.topicWiseProblems)}/>
                             </div>
 
                             {/* AI Recommended Video */}
-                            <div className="relative animate-float-in" style={{animationDelay: '1300ms'}}>
-                                <div className="animate-border-glow border-2 border-red-300/30 rounded-3xl h-full">
-                                    <VideoSuggestion suggestedVideo={data.profileAnalysis.video}/>
-                                </div>
+                            <div className="animate-float-in" style={{animationDelay: '1300ms'}}>
+                                <VideoSuggestion suggestedVideo={data.profileAnalysis.video}/>
                             </div>
                         </div>
                     </div>
                 )}
 
                 {isError && (
-                    <div className="relative animate-float-in">
-                        <div className="animate-border-glow border-2 border-red-300/30 rounded-3xl">
-                            <ErrorContainer
-                                error={error}
-                                onRetry={handleAnalyze}
-                                isLoading={isFetching}
-                                errorAdditionalHelp={["Make sure the LeetCode username is correct","Ensure the user has a public profile", "Try again in a few minutes if issues persist"]}
-                            />
-                        </div>
+                    <div className="animate-float-in">
+                        <ErrorContainer
+                            error={error}
+                            onRetry={handleAnalyze}
+                            isLoading={isFetching}
+                            errorAdditionalHelp={["Make sure the LeetCode username is correct","Ensure the user has a public profile", "Try again in a few minutes if issues persist"]}
+                        />
                     </div>
                 )}
             </main>
