@@ -13,7 +13,7 @@ const LeetCodeContestStats = ({contestData}) => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
                 <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl border border-purple-200">
                     <div className="text-3xl font-black text-purple-600 mb-2">
-                        {Math.round(contestData.rating)}
+                        {contestData?.rating ? Math.round(contestData.rating) : 0}
                     </div>
                     <div className="text-sm font-semibold text-purple-800">Current Rating</div>
                     <div className="text-xs text-purple-600 mt-1">Competitive Programmer</div>
@@ -21,15 +21,15 @@ const LeetCodeContestStats = ({contestData}) => {
                 
                 <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl border border-blue-200">
                     <div className="text-3xl font-black text-blue-600 mb-2">
-                        {contestData.globalRanking?.toLocaleString()}
+                        {contestData?.globalRanking?.toLocaleString() ?? "N/A"}
                     </div>
                     <div className="text-sm font-semibold text-blue-800">Global Rank</div>
-                    <div className="text-xs text-blue-600 mt-1">Top {contestData.topPercentage}%</div>
+                    <div className="text-xs text-blue-600 mt-1">Top {contestData?.topPercentage ?? "–"}%</div>
                 </div>
                 
                 <div className="text-center p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border border-green-200">
                     <div className="text-3xl font-black text-green-600 mb-2">
-                        {contestData.attendedContestsCount}
+                        {contestData?.attendedContestsCount ?? 0}
                     </div>
                     <div className="text-sm font-semibold text-green-800">Contests Attended</div>
                     <div className="text-xs text-green-600 mt-1">Total Participation</div>
@@ -37,7 +37,7 @@ const LeetCodeContestStats = ({contestData}) => {
                 
                 <div className="text-center p-6 bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl border border-orange-200">
                     <div className="text-3xl font-black text-orange-600 mb-2">
-                        {contestData.topPercentage}%
+                        {contestData?.topPercentage ?? 0}%
                     </div>
                     <div className="text-sm font-semibold text-orange-800">Top Percentage</div>
                     <div className="text-xs text-orange-600 mt-1">Among All Participants</div>
