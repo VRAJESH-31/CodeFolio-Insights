@@ -26,6 +26,7 @@ const UserSchema = new Schema({
     },
     jobTitle: {
         type: String,
+    },
     isAdmin: {
         type: Boolean,
         default: false,

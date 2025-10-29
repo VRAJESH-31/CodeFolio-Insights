@@ -1,5 +1,5 @@
 // src/pages/LeetCode.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState} from 'react';
 import {
     Search,
     CheckCircle,
@@ -21,7 +21,8 @@ import {
     Rocket,
     Brain,
     Lightbulb,
-    Shield
+    Shield,
+    CloudDownload
 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import {
@@ -39,61 +40,51 @@ import {
     BarChart,
     Bar,
 } from 'recharts';
+import { useLeetcodeAnalysis } from '../../hooks/useAnalyzer.js';
 
 const LeetCode = () => {
     const [userId, setUserId] = useState('');
-    const [analysis, setAnalysis] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [mounted, setMounted] = useState(false);
 
-    useEffect(() => {
-        setMounted(true);
-    }, []);
+    const getLeetcodeSubmissionData = (submissionData) => {
+        return Object.entries(submissionData).sort((x,y)=>x[0]-y[0]).map((dailyData)=>{
+            const date = ((new Date(dailyData[0]*1000).toString()).split(" ").slice(1,4)).join(" ");
+            const submissions = dailyData[1];
 
-    const submissionData = [
-        { name: 'Mar 18', solved: 2, submissions: 4 },
-        { name: 'Jun 10', solved: 5, submissions: 8 },
-        { name: 'Jun 18', solved: 2, submissions: 3 },
-        { name: 'Jun 26', solved: 3, submissions: 5 },
-        { name: 'Jul 3', solved: 1, submissions: 2 },
-        { name: 'Jul 4', solved: 1, submissions: 1 },
-        { name: 'Jul 23', solved: 1, submissions: 2 },
-        { name: 'Aug 5', solved: 1, submissions: 1 },
-        { name: 'Aug 21', solved: 2, submissions: 3 },
-    ];
+            return {
+                name: date,
+                submissions: submissions,
+            }
+        })
+    }
 
-    const difficultyData = [
-        { name: 'Easy', value: 12, color: '#34D399' },
-        { name: 'Medium', value: 6, color: '#F59E0B' },
-        { name: 'Hard', value: 1, color: '#EF4444' },
-    ];
+    const getLeetcodeDifficultyData = (difficultyData) => {
+        return [
+            {name: 'Easy', value: difficultyData[1].count, color: '#34D399'},
+            {name: 'Medium', value: difficultyData[2].count, color: '#F59E0B'},
+            {name: 'Hard', value: difficultyData[3].count, color: '#EF4444'}
+        ]
+    }
 
-    const topicData = [
-        { name: 'Arrays', value: 8, mastery: 65 },
-        { name: 'DP', value: 3, mastery: 40 },
-        { name: 'Trees', value: 5, mastery: 75 },
-        { name: 'Graphs', value: 2, mastery: 30 },
-        { name: 'Strings', value: 6, mastery: 70 },
-    ];
+    const getLeetcodeTopicData = (topicData) => {
+        const responseTopicData = [];
+        const topicDataArray = Object.entries(topicData).map((topicLevelData)=>topicLevelData[1]);
+        for (let i=0; i<topicDataArray.length; i++){
+            for (let j=0; j<topicDataArray[i].length; j++){
+                responseTopicData.push({
+                    name: topicDataArray[i][j].tagName,
+                    value: topicDataArray[i][j].problemsSolved, 
+                    mastery: Math.min(100, topicDataArray[i][j].problemsSolved*2)
+                })
+            }
+        }
+        return responseTopicData.sort((x,y)=>y.value-x.value);
+    }
+
+    const { data, isLoading, isError, error, refetch, isFetching } = useLeetcodeAnalysis(userId.trim());
 
     const handleAnalyze = () => {
         if (!userId.trim()) return;
-        
-        setIsLoading(true);
-        setTimeout(() => {
-            setAnalysis({
-                totalSolved: 19,
-                acceptanceRate: '80.77%',
-                currentStreak: 0,
-                longestStreak: 2,
-                ranking: '3,719,824',
-                profileScore: 82,
-                weeklyRank: 'Top 45%',
-                dailyChallenge: '3/7',
-                contestRating: 1520,
-            });
-            setIsLoading(false);
-        }, 2000);
+        refetch();
     };
 
     const animationStyles = `
@@ -178,12 +169,12 @@ const LeetCode = () => {
                         </div>
                         <button
                             onClick={handleAnalyze}
-                            disabled={isLoading}
+                            disabled={isFetching}
                             className={`flex items-center justify-center gap-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-black px-8 py-4 rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-500 transform hover:-translate-y-1 disabled:opacity-60 disabled:cursor-not-allowed ${
                                 isLoading ? 'cursor-wait' : 'hover:from-blue-600 hover:to-purple-700'
                             }`}
                         >
-                            {isLoading ? (
+                            {isFetching ? (
                                 <>
                                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                                     <span className="text-lg">Analyzing...</span>
@@ -199,7 +190,7 @@ const LeetCode = () => {
                 </div>
 
                 {/* Results Section */}
-                {analysis && (
+                {data && (
                     <div className="space-y-8">
                         {/* Score and Meme Section - Top Position */}
                         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
@@ -233,7 +224,7 @@ const LeetCode = () => {
                                                     strokeWidth="8"
                                                     strokeLinecap="round"
                                                     strokeDasharray="283"
-                                                    strokeDashoffset={283 - (283 * analysis.profileScore) / 100}
+                                                    strokeDashoffset={283 - (283 * data.score) / 100}
                                                     className="animate-score-progress"
                                                 />
                                                 <defs>
@@ -245,18 +236,18 @@ const LeetCode = () => {
                                             </svg>
                                             <div className="absolute inset-0 flex flex-col items-center justify-center">
                                                 <span className="text-5xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                                                    {analysis.profileScore}
+                                                    {(data.score).toFixed(1)}
                                                 </span>
                                                 <span className="text-lg text-gray-500 font-semibold">/100</span>
-                                                <div className="flex items-center gap-1 mt-2">
+                                                {/* <div className="flex items-center gap-1 mt-2">
                                                     <TrendingUp className="h-4 w-4 text-green-500" />
                                                     <span className="text-sm text-green-600 font-semibold">+12% this month</span>
-                                                </div>
+                                                </div> */}
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="space-y-3">
+                                    {/* <div className="space-y-3">
                                         <div className="flex justify-between items-center text-sm">
                                             <span className="text-gray-600">Progress to next level</span>
                                             <span className="font-semibold text-blue-600">68%</span>
@@ -267,23 +258,23 @@ const LeetCode = () => {
                                                 style={{ width: '68%' }}
                                             ></div>
                                         </div>
-                                    </div>
+                                    </div> */}
                                 </div>
                             </div>
 
                             {/* Meme and Review - Right Side */}
                             <div className="xl:col-span-2 bg-white/90 backdrop-blur-sm p-8 rounded-3xl shadow-2xl border border-white/60 animate-float-in" style={{animationDelay: '200ms'}}>
-                                <ProfileScoreReview score={analysis.profileScore} />
+                                <ProfileScoreReview score={data?.score} profileAnalysis={data?.profileAnalysis} />
                             </div>
                         </div>
 
                         {/* Enhanced Stats Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             {[
-                                { icon: CheckCircle, title: "Total Solved", value: analysis.totalSolved, change: "+5", color: "green" },
-                                { icon: Target, title: "Acceptance Rate", value: analysis.acceptanceRate, change: "+2.3%", color: "blue" },
-                                { icon: Zap, title: "Current Streak", value: analysis.currentStreak, change: "🔥", color: "yellow" },
-                                { icon: Award, title: "Contest Rating", value: analysis.contestRating, change: "+45", color: "purple" },
+                                { icon: CheckCircle, title: "Total Solved", value: data.problemsCount.acSubmissionNum[0].count, change: "+5", color: "green" },
+                                { icon: Target, title: "Acceptance Rate", value: (data.acceptanceRate*100).toFixed(2), change: "+2.3%", color: "blue" },
+                                { icon: Zap, title: "Current Streak", value: data.submissionCalendar.streak, change: "🔥", color: "yellow" },
+                                { icon: Award, title: "Contest Rating", value: Math.round(data.contestData.rating), change: "+45", color: "purple" },
                             ].map((stat, index) => (
                                 <StatCard key={stat.title} {...stat} delay={index * 100} />
                             ))}
@@ -301,7 +292,7 @@ const LeetCode = () => {
                                 </div>
                                 <div style={{ width: '100%', height: 300 }}>
                                     <ResponsiveContainer>
-                                        <LineChart data={submissionData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+                                        <LineChart data={getLeetcodeSubmissionData(JSON.parse(data?.submissionCalendar?.submissionCalendar))} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
                                             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                                             <XAxis dataKey="name" stroke="#6b7280" fontSize={12} />
                                             <YAxis stroke="#6b7280" fontSize={12} />
@@ -314,21 +305,21 @@ const LeetCode = () => {
                                                 }}
                                             />
                                             <Legend />
-                                            <Line 
+                                            {/* <Line 
                                                 type="monotone" 
                                                 dataKey="solved" 
                                                 stroke="#3b82f6" 
                                                 strokeWidth={3} 
                                                 dot={{ fill: '#3b82f6', r: 4 }} 
                                                 activeDot={{ r: 6, fill: '#1d4ed8' }}
-                                            />
+                                            /> */}
                                             <Line 
                                                 type="monotone" 
                                                 dataKey="submissions" 
-                                                stroke="#8b5cf6" 
+                                                stroke="#3b82f6" 
                                                 strokeWidth={2} 
-                                                strokeDasharray="3 3"
-                                                dot={{ fill: '#8b5cf6', r: 3 }}
+                                                // strokeDasharray="3 3"
+                                                dot={{ fill: '#0000ff', r: 3 }}
                                             />
                                         </LineChart>
                                     </ResponsiveContainer>
@@ -347,7 +338,7 @@ const LeetCode = () => {
                                     <ResponsiveContainer>
                                         <PieChart>
                                             <Pie
-                                                data={difficultyData}
+                                                data={getLeetcodeDifficultyData(data.problemsCount.acSubmissionNum)}
                                                 cx="50%"
                                                 cy="50%"
                                                 innerRadius={60}
@@ -355,7 +346,7 @@ const LeetCode = () => {
                                                 paddingAngle={2}
                                                 dataKey="value"
                                             >
-                                                {difficultyData.map((entry, index) => (
+                                                {getLeetcodeDifficultyData(data.problemsCount.acSubmissionNum).map((entry, index) => (
                                                     <Cell key={`cell-${index}`} fill={entry.color} />
                                                 ))}
                                             </Pie>
@@ -371,7 +362,7 @@ const LeetCode = () => {
                                     </ResponsiveContainer>
                                 </div>
                                 <div className="grid grid-cols-3 gap-4 mt-6">
-                                    {difficultyData.map((item, index) => (
+                                    {getLeetcodeDifficultyData(data.problemsCount.acSubmissionNum).map((item, index) => (
                                         <div key={item.name} className="text-center p-3 rounded-2xl bg-gray-50/80">
                                             <div className="text-sm font-semibold text-gray-600">{item.name}</div>
                                             <div className="text-xl font-black text-gray-800">{item.value}</div>
@@ -393,7 +384,7 @@ const LeetCode = () => {
                                     <h3 className="text-2xl font-black text-gray-800">Topic Mastery</h3>
                                 </div>
                                 <div className="space-y-4">
-                                    {topicData.map((topic, index) => (
+                                    {getLeetcodeTopicData(data.topicWiseProblems).map((topic, index) => (
                                         <div key={topic.name} className="space-y-2">
                                             <div className="flex justify-between items-center">
                                                 <span className="font-semibold text-gray-700">{topic.name}</span>
@@ -404,7 +395,7 @@ const LeetCode = () => {
                                                     className="h-2 rounded-full transition-all duration-1000"
                                                     style={{ 
                                                         width: `${topic.mastery}%`,
-                                                        background: `linear-gradient(90deg, ${topicData[index].color}, ${topicData[index].color}99)`
+                                                        background: `linear-gradient(90deg, ${topic.color}, ${topic.color}99)`
                                                     }}
                                                 ></div>
                                             </div>
@@ -425,25 +416,25 @@ const LeetCode = () => {
                                     <div className="aspect-video bg-gray-900 rounded-2xl mb-4 overflow-hidden shadow-lg">
                                         <iframe
                                             className="w-full h-full rounded-2xl"
-                                            src="https://www.youtube.com/embed/P6FORpg0KVo"
+                                            src={data.video.link}
                                             title="Dynamic Programming Tutorial"
                                             frameBorder="0"
                                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                             allowFullScreen
                                         ></iframe>
                                     </div>
-                                    <h4 className="text-xl font-black text-gray-800">Dynamic Programming: From Zero to Hero</h4>
+                                    <h4 className="text-xl font-black text-gray-800">{data.video.title}</h4>
                                     <p className="text-gray-600 leading-relaxed">
-                                        Master Dynamic Programming concepts with this AI-selected video. Focuses on your weak areas and provides practical examples.
+                                        {data.video.description}
                                     </p>
                                     <div className="flex items-center gap-4 pt-4">
                                         <div className="flex items-center gap-2 text-sm text-gray-500">
                                             <Clock className="w-4 h-4" />
-                                            <span>45 min watch</span>
+                                            <span>{data.video.time/60}min {data.video.time%60}sec watch</span>
                                         </div>
                                         <div className="flex items-center gap-2 text-sm text-gray-500">
                                             <Users className="w-4 h-4" />
-                                            <span>1.2M views</span>
+                                            <span>{data.video.views} views</span>
                                         </div>
                                     </div>
                                 </div>
@@ -457,7 +448,7 @@ const LeetCode = () => {
 };
 
 /* --- Enhanced Profile Score & Meme Review --- */
-const ProfileScoreReview = ({ score }) => {
+const ProfileScoreReview = ({ score, profileAnalysis }) => {
     const getMemeForScore = (score) => {
         if (score <= 10) return { 
             text: "Bhai... kya kar raha hai tu?", 
@@ -539,9 +530,14 @@ const ProfileScoreReview = ({ score }) => {
                         <span className="font-semibold text-blue-800">Strengths</span>
                     </div>
                     <ul className="text-sm text-blue-700 space-y-1">
-                        <li>• High acceptance rate on Easy problems</li>
+                        {
+                            profileAnalysis?.strongPoints?.map((point)=>(
+                                <li>• {point}</li>
+                            ))
+                        }
+                        {/* <li>• High acceptance rate on Easy problems</li>
                         <li>• Consistent weekly activity</li>
-                        <li>• Good progress in Arrays & Strings</li>
+                        <li>• Good progress in Arrays & Strings</li> */}
                     </ul>
                 </div>
                 
@@ -551,9 +547,14 @@ const ProfileScoreReview = ({ score }) => {
                         <span className="font-semibold text-amber-800">Areas to Improve</span>
                     </div>
                     <ul className="text-sm text-amber-700 space-y-1">
-                        <li>• Struggling with Medium problems</li>
+                        {
+                            profileAnalysis?.improvementAreas?.map((point)=>(
+                                <li>• {point}</li>
+                            ))
+                        }
+                        {/* <li>• Struggling with Medium problems</li>
                         <li>• Need more Dynamic Programming practice</li>
-                        <li>• Inconsistent submission patterns</li>
+                        <li>• Inconsistent submission patterns</li> */}
                     </ul>
                 </div>
             </div>
