@@ -20,6 +20,7 @@
     "react-router-dom": "^6.30.1",
     "recharts": "^3.3.0",
     "tailwindcss": "^4.1.13",
+    "uuid": "^13.0.0",
     "zustand": "^5.0.8"
   },
   "devDependencies": {

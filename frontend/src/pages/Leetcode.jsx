@@ -22,7 +22,10 @@ import {
     Brain,
     Lightbulb,
     Shield,
-    CloudDownload
+    Medal,
+    CloudDownload,
+    AlertTriangle,
+    RefreshCw,
 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import {
@@ -40,7 +43,9 @@ import {
     BarChart,
     Bar,
 } from 'recharts';
-import { useLeetcodeAnalysis } from '../../hooks/useAnalyzer.js';
+import { useLeetcodeAnalysis } from '../hooks/useAnalyzer.js';
+import { getMemeForScore, getRandomHexColor } from '../utils/helper.js';
+import {v4 as uuid} from "uuid";
 
 const LeetCode = () => {
     const [userId, setUserId] = useState('');
@@ -73,11 +78,12 @@ const LeetCode = () => {
                 responseTopicData.push({
                     name: topicDataArray[i][j].tagName,
                     value: topicDataArray[i][j].problemsSolved, 
-                    mastery: Math.min(100, topicDataArray[i][j].problemsSolved*2)
+                    mastery: Math.min(100, topicDataArray[i][j].problemsSolved*2),
+                    color: getRandomHexColor(),
                 })
             }
         }
-        return responseTopicData.sort((x,y)=>y.value-x.value);
+        return responseTopicData.sort((x,y)=>Math.random()-0.5).filter((_, index)=>index<10);
     }
 
     const { data, isLoading, isError, error, refetch, isFetching } = useLeetcodeAnalysis(userId.trim());
@@ -87,7 +93,7 @@ const LeetCode = () => {
         refetch();
     };
 
-    const animationStyles = `
+    const animationStyles = `    
         @keyframes floatIn {
             0% { opacity: 0; transform: translateY(30px) scale(0.9); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
@@ -190,7 +196,7 @@ const LeetCode = () => {
                 </div>
 
                 {/* Results Section */}
-                {data && (
+                {data && !isError && (
                     <div className="space-y-8">
                         {/* Score and Meme Section - Top Position */}
                         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
@@ -239,26 +245,9 @@ const LeetCode = () => {
                                                     {(data.score).toFixed(1)}
                                                 </span>
                                                 <span className="text-lg text-gray-500 font-semibold">/100</span>
-                                                {/* <div className="flex items-center gap-1 mt-2">
-                                                    <TrendingUp className="h-4 w-4 text-green-500" />
-                                                    <span className="text-sm text-green-600 font-semibold">+12% this month</span>
-                                                </div> */}
                                             </div>
                                         </div>
                                     </div>
-
-                                    {/* <div className="space-y-3">
-                                        <div className="flex justify-between items-center text-sm">
-                                            <span className="text-gray-600">Progress to next level</span>
-                                            <span className="font-semibold text-blue-600">68%</span>
-                                        </div>
-                                        <div className="w-full bg-gray-200 rounded-full h-2">
-                                            <div 
-                                                className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-1000 animate-shimmer"
-                                                style={{ width: '68%' }}
-                                            ></div>
-                                        </div>
-                                    </div> */}
                                 </div>
                             </div>
 
@@ -271,14 +260,19 @@ const LeetCode = () => {
                         {/* Enhanced Stats Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             {[
-                                { icon: CheckCircle, title: "Total Solved", value: data.problemsCount.acSubmissionNum[0].count, change: "+5", color: "green" },
-                                { icon: Target, title: "Acceptance Rate", value: (data.acceptanceRate*100).toFixed(2), change: "+2.3%", color: "blue" },
-                                { icon: Zap, title: "Current Streak", value: data.submissionCalendar.streak, change: "🔥", color: "yellow" },
-                                { icon: Award, title: "Contest Rating", value: Math.round(data.contestData.rating), change: "+45", color: "purple" },
+                                { icon: CheckCircle, title: "Total Solved", value: data.problemsCount.acSubmissionNum[0].count,  color: "green" },
+                                { icon: Target, title: "Acceptance Rate", value: (data.acceptanceRate*100).toFixed(2), color: "blue" },
+                                { icon: Zap, title: "Current Streak", value: data.submissionCalendar.streak, color: "yellow" },
+                                { icon: Award, title: "Contest Rating", value: Math.round(data.contestData.rating), color: "purple" },
                             ].map((stat, index) => (
                                 <StatCard key={stat.title} {...stat} delay={index * 100} />
                             ))}
                         </div>
+
+                        <HorizontalBadgesDisplay 
+                            badges={data.badges.badges} 
+                            contestData={data.contestData} 
+                        />
 
                         {/* Charts Grid */}
                         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
@@ -305,14 +299,6 @@ const LeetCode = () => {
                                                 }}
                                             />
                                             <Legend />
-                                            {/* <Line 
-                                                type="monotone" 
-                                                dataKey="solved" 
-                                                stroke="#3b82f6" 
-                                                strokeWidth={3} 
-                                                dot={{ fill: '#3b82f6', r: 4 }} 
-                                                activeDot={{ r: 6, fill: '#1d4ed8' }}
-                                            /> */}
                                             <Line 
                                                 type="monotone" 
                                                 dataKey="submissions" 
@@ -395,7 +381,7 @@ const LeetCode = () => {
                                                     className="h-2 rounded-full transition-all duration-1000"
                                                     style={{ 
                                                         width: `${topic.mastery}%`,
-                                                        background: `linear-gradient(90deg, ${topic.color}, ${topic.color}99)`
+                                                        backgroundColor: `${topic.color}`
                                                     }}
                                                 ></div>
                                             </div>
@@ -416,25 +402,25 @@ const LeetCode = () => {
                                     <div className="aspect-video bg-gray-900 rounded-2xl mb-4 overflow-hidden shadow-lg">
                                         <iframe
                                             className="w-full h-full rounded-2xl"
-                                            src={data.video.link}
+                                            src={data.profileAnalysis.video.link}
                                             title="Dynamic Programming Tutorial"
                                             frameBorder="0"
                                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                             allowFullScreen
                                         ></iframe>
                                     </div>
-                                    <h4 className="text-xl font-black text-gray-800">{data.video.title}</h4>
+                                    <h4 className="text-xl font-black text-gray-800">{data.profileAnalysis.video.title}</h4>
                                     <p className="text-gray-600 leading-relaxed">
-                                        {data.video.description}
+                                        {data.profileAnalysis.video.description}
                                     </p>
                                     <div className="flex items-center gap-4 pt-4">
                                         <div className="flex items-center gap-2 text-sm text-gray-500">
                                             <Clock className="w-4 h-4" />
-                                            <span>{data.video.time/60}min {data.video.time%60}sec watch</span>
+                                            <span>{data.profileAnalysis.video.time/60}min watch</span>
                                         </div>
                                         <div className="flex items-center gap-2 text-sm text-gray-500">
                                             <Users className="w-4 h-4" />
-                                            <span>{data.video.views} views</span>
+                                            <span>{data.profileAnalysis.video.views} views</span>
                                         </div>
                                     </div>
                                 </div>
@@ -442,51 +428,141 @@ const LeetCode = () => {
                         </div>
                     </div>
                 )}
+
+                {isError && (
+                    <LeetCodeError 
+                        error={error}
+                        onRetry={handleAnalyze}
+                        isLoading={isFetching}
+                    />
+                )}
             </main>
+        </div>
+    );
+};
+
+const LeetCodeError = ({ error, onRetry, isLoading }) => {
+    // Determine error type and message
+    const getErrorDetails = () => {
+        if (!error) {
+            return {
+                icon: <Server className="w-16 h-16" />,
+                title: "Analysis Failed",
+                message: "We couldn't generate your LeetCode analysis. Please try again.",
+                subMessage: "This might be due to temporary server issues or invalid data."
+            };
+        }
+
+        if (error.message?.includes('Network Error') || error.message?.includes('Failed to fetch')) {
+            return {
+                icon: <WifiOff className="w-16 h-16" />,
+                title: "Connection Error",
+                message: "Unable to connect to LeetCode services",
+                subMessage: "Please check your internet connection and try again."
+            };
+        }
+
+        if (error.message?.includes('User not found') || error.status === 404) {
+            return {
+                icon: <UserX className="w-16 h-16" />,
+                title: "User Not Found",
+                message: "We couldn't find this LeetCode username",
+                subMessage: "Please check the username and try again."
+            };
+        }
+
+        if (error.status === 429) {
+            return {
+                icon: <AlertTriangle className="w-16 h-16" />,
+                title: "Rate Limit Exceeded",
+                message: "Too many requests to LeetCode API",
+                subMessage: "Please wait a few minutes before trying again."
+            };
+        }
+
+        return {
+            icon: <AlertTriangle className="w-16 h-16" />,
+            title: "Analysis Failed",
+            message: "We encountered an error while analyzing your profile",
+            subMessage: "This might be due to LeetCode API limitations or server issues."
+        };
+    };
+
+    const errorDetails = getErrorDetails();
+
+    return (
+        <div className="min-h-[60vh] flex items-center justify-center p-6">
+            <div className="bg-white/90 backdrop-blur-sm p-8 rounded-3xl shadow-2xl border border-white/60 max-w-md w-full text-center animate-float-in">
+                {/* Error Icon */}
+                <div className="flex justify-center mb-6">
+                    <div className="p-4 bg-gradient-to-br from-red-100 to-orange-100 rounded-2xl border border-red-200">
+                        <div className="text-red-500">
+                            {errorDetails.icon}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Error Title */}
+                <h3 className="text-2xl font-black text-gray-800 mb-3">
+                    {errorDetails.title}
+                </h3>
+
+                {/* Error Message */}
+                <p className="text-gray-600 mb-4 leading-relaxed">
+                    {errorDetails.message}
+                </p>
+
+                {/* Sub Message */}
+                <p className="text-sm text-gray-500 mb-8">
+                    {errorDetails.subMessage}
+                </p>
+
+                {/* Action Buttons */}
+                <div className="space-y-4">
+                    <button
+                        onClick={onRetry}
+                        disabled={isLoading}
+                        className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                        {isLoading ? (
+                            <>
+                                <RefreshCw className="w-5 h-5 animate-spin" />
+                                <span>Retrying...</span>
+                            </>
+                        ) : (
+                            <>
+                                <RefreshCw className="w-5 h-5" />
+                                <span>Try Again</span>
+                            </>
+                        )}
+                    </button>
+
+                    {/* Additional Help */}
+                    <div className="text-xs text-gray-400 space-y-1">
+                        <p>Make sure the LeetCode username is correct</p>
+                        <p>Ensure the user has a public profile</p>
+                        <p>Try again in a few minutes if issues persist</p>
+                    </div>
+                </div>
+
+                {/* Debug Info (only in development) */}
+                {process.env.NODE_ENV === 'development' && error && (
+                    <details className="mt-6 text-left">
+                        <summary className="text-sm text-gray-500 cursor-pointer hover:text-gray-700">
+                            Debug Information
+                        </summary>
+                        <pre className="mt-2 p-3 bg-gray-100 rounded-lg text-xs text-gray-600 overflow-auto max-h-32">
+                            {JSON.stringify(error, null, 2)}
+                        </pre>
+                    </details>
+                )}
+            </div>
         </div>
     );
 };
 
 /* --- Enhanced Profile Score & Meme Review --- */
 const ProfileScoreReview = ({ score, profileAnalysis }) => {
-    const getMemeForScore = (score) => {
-        if (score <= 10) return { 
-            text: "Bhai... kya kar raha hai tu?", 
-            meme: "https://media1.tenor.com/m/9rWnSoV8cU0AAAAC/ab-sale.gif",
-            comment: "Not great. Start from basics.",
-            bg: "from-red-50 to-orange-50",
-            border: "border-red-200"
-        };
-        if (score <= 30) return { 
-            text: "Okay, we have a foundation.", 
-            meme: "https://media1.tenor.com/m/6gB-_c6lVqoAAAAC/baburao-style-hai.gif",
-            comment: "Focus on consistency and practice.",
-            bg: "from-orange-50 to-yellow-50",
-            border: "border-orange-200"
-        };
-        if (score <= 60) return { 
-            text: "Average hai, overconfident mat hona.", 
-            meme: "https://media1.tenor.com/m/6vEVb2uGj8kAAAAC/50-ruppee-kat-rajkumar-hirani.gif",
-            comment: "Slightly above average! Keep pushing.",
-            bg: "from-yellow-50 to-lime-50",
-            border: "border-yellow-200"
-        };
-        if (score <= 80) return { 
-            text: "Good job! Thoda aur...", 
-            meme: "https://media1.tenor.com/m/5cIs6QvX3uMAAAAC/gajab-bezzati-salman-khan.gif",
-            comment: "You're showing strong consistency.",
-            bg: "from-green-50 to-emerald-50",
-            border: "border-green-200"
-        };
-        if (score <= 100) return { 
-            text: "Legendary! Sab phod diya.", 
-            meme: "https://media1.tenor.com/m/4zRz1b9W1bAAAAAC/maula-mere-maula.gif",
-            comment: "Outstanding work! You're crushing it.",
-            bg: "from-blue-50 to-purple-50",
-            border: "border-blue-200"
-        };
-        return { text: "", meme: "", comment: "", bg: "", border: "" };
-    };
 
     const review = getMemeForScore(score);
 
@@ -532,12 +608,9 @@ const ProfileScoreReview = ({ score, profileAnalysis }) => {
                     <ul className="text-sm text-blue-700 space-y-1">
                         {
                             profileAnalysis?.strongPoints?.map((point)=>(
-                                <li>• {point}</li>
+                                <li key={uuid()}>• {point}</li>
                             ))
                         }
-                        {/* <li>• High acceptance rate on Easy problems</li>
-                        <li>• Consistent weekly activity</li>
-                        <li>• Good progress in Arrays & Strings</li> */}
                     </ul>
                 </div>
                 
@@ -552,9 +625,6 @@ const ProfileScoreReview = ({ score, profileAnalysis }) => {
                                 <li>• {point}</li>
                             ))
                         }
-                        {/* <li>• Struggling with Medium problems</li>
-                        <li>• Need more Dynamic Programming practice</li>
-                        <li>• Inconsistent submission patterns</li> */}
                     </ul>
                 </div>
             </div>
@@ -569,7 +639,7 @@ const ProfileScoreReview = ({ score, profileAnalysis }) => {
 };
 
 /* --- Enhanced Stat Card --- */
-const StatCard = ({ icon: Icon, title, value, change, color, delay }) => {
+const StatCard = ({ icon: Icon, title, value, color, delay }) => {
     const colorClasses = {
         green: { bg: 'from-green-500 to-emerald-600', text: 'text-green-600', bgLight: 'bg-green-100' },
         blue: { bg: 'from-blue-500 to-cyan-600', text: 'text-blue-600', bgLight: 'bg-blue-100' },
@@ -588,9 +658,6 @@ const StatCard = ({ icon: Icon, title, value, change, color, delay }) => {
                 <div className={`p-3 rounded-2xl bg-gradient-to-br ${colors.bg} shadow-lg`}>
                     <Icon className="w-6 h-6 text-white" />
                 </div>
-                <span className={`text-sm font-bold ${colors.text} bg-white/80 px-2 py-1 rounded-full border`}>
-                    {change}
-                </span>
             </div>
             <div className="space-y-2">
                 <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">{title}</p>
@@ -601,6 +668,161 @@ const StatCard = ({ icon: Icon, title, value, change, color, delay }) => {
                     className={`h-1.5 rounded-full bg-gradient-to-r ${colors.bg} transition-all duration-1000 animate-shimmer`}
                     style={{ width: '75%' }}
                 ></div>
+            </div>
+        </div>
+    );
+};
+
+const HorizontalBadgesDisplay = ({ badges, contestData }) => {
+    const scrollStyle = `
+        @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .animate-scroll {
+            animation: scroll 30s linear infinite;
+        }
+        .animate-scroll:hover {
+            animation-play-state: paused;
+        }
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    `;
+
+    return (
+        <div className="space-y-8">
+            <style>{scrollStyle}</style>
+            {/* Contest Rating Section */}
+            <div className="bg-white/90 backdrop-blur-sm p-8 rounded-3xl shadow-2xl border border-white/60 animate-float-in">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl">
+                        <Trophy className="w-5 h-5 text-white" />
+                    </div>
+                    <h3 className="text-2xl font-black text-gray-800">Contest Performance</h3>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl border border-purple-200">
+                        <div className="text-3xl font-black text-purple-600 mb-2">
+                            {Math.round(contestData.rating)}
+                        </div>
+                        <div className="text-sm font-semibold text-purple-800">Current Rating</div>
+                        <div className="text-xs text-purple-600 mt-1">Competitive Programmer</div>
+                    </div>
+                    
+                    <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl border border-blue-200">
+                        <div className="text-3xl font-black text-blue-600 mb-2">
+                            {contestData.globalRanking?.toLocaleString()}
+                        </div>
+                        <div className="text-sm font-semibold text-blue-800">Global Rank</div>
+                        <div className="text-xs text-blue-600 mt-1">Top {contestData.topPercentage}%</div>
+                    </div>
+                    
+                    <div className="text-center p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border border-green-200">
+                        <div className="text-3xl font-black text-green-600 mb-2">
+                            {contestData.attendedContestsCount}
+                        </div>
+                        <div className="text-sm font-semibold text-green-800">Contests Attended</div>
+                        <div className="text-xs text-green-600 mt-1">Total Participation</div>
+                    </div>
+                    
+                    <div className="text-center p-6 bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl border border-orange-200">
+                        <div className="text-3xl font-black text-orange-600 mb-2">
+                            {contestData.topPercentage}%
+                        </div>
+                        <div className="text-sm font-semibold text-orange-800">Top Percentage</div>
+                        <div className="text-xs text-orange-600 mt-1">Among All Participants</div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Horizontal Badges Slider */}
+            <div className="bg-white/90 backdrop-blur-sm p-8 rounded-3xl shadow-2xl border border-white/60 animate-float-in" style={{animationDelay: '100ms'}}>
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-gradient-to-br from-yellow-500 to-amber-600 rounded-xl">
+                        <Medal className="w-5 h-5 text-white" />
+                    </div>
+                    <h3 className="text-2xl font-black text-gray-800">Achievements & Badges</h3>
+                </div>
+                
+                {badges.length > 0 ? (
+                    <div className="relative">
+                        <div className="overflow-hidden">
+                            <div className="flex gap-6 animate-scroll hover:pause">
+                                {/* Double the badges for seamless looping */}
+                                {[...badges, ...badges].map((badge, index) => (
+                                    <HorizontalBadgeCard key={`${badge.id}-${index}`} badge={badge} index={index} />
+                                ))}
+                            </div>
+                        </div>
+                        
+                        {/* Gradient overlays for smooth edges */}
+                        <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white/90 to-transparent pointer-events-none"></div>
+                        <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white/90 to-transparent pointer-events-none"></div>
+                    </div>
+                ) : (
+                    <div className="text-center py-12">
+                        <Medal className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                        <h4 className="text-lg font-semibold text-gray-500">No badges earned yet</h4>
+                        <p className="text-gray-400 mt-2">Keep solving problems to earn achievements!</p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+/* --- Individual Horizontal Badge Card --- */
+const HorizontalBadgeCard = ({ badge, index }) => {
+    const getBadgeColor = (badgeName) => {
+        if (badgeName.includes('365')) return 'from-purple-500 to-pink-600';
+        if (badgeName.includes('200')) return 'from-red-500 to-orange-600';
+        if (badgeName.includes('100')) return 'from-blue-500 to-cyan-600';
+        if (badgeName.includes('50')) return 'from-green-500 to-emerald-600';
+        return 'from-gray-500 to-gray-600';
+    };
+
+    return (
+        <div className="flex-shrink-0 w-48 bg-gradient-to-br from-white to-gray-50 p-4 rounded-2xl border border-gray-200 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+            <div className="text-center space-y-3">
+                {/* Original LeetCode Badge Icon */}
+                <div className="flex justify-center">
+                    <img 
+                        src={badge.icon} 
+                        alt={badge.displayName}
+                        className="w-12 h-12 object-contain rounded-lg"
+                        onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                        }}
+                    />
+                    <div 
+                        className={`w-12 h-12 rounded-lg bg-gradient-to-br ${getBadgeColor(badge.displayName)} flex items-center justify-center hidden`}
+                    >
+                        <Medal className="w-6 h-6 text-white" />
+                    </div>
+                </div>
+                
+                <div className="space-y-1">
+                    <h4 className="font-bold text-gray-800 text-sm leading-tight line-clamp-2">
+                        {badge.displayName}
+                    </h4>
+                    <div className="flex items-center justify-center gap-1 text-xs text-gray-500">
+                        <Calendar className="w-3 h-3" />
+                        <span>{new Date(badge.creationDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                    </div>
+                </div>
+                
+                {!badge.expired && (
+                    <div className="inline-flex items-center gap-1 bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold">
+                        <Shield className="w-2 h-2" />
+                        Active
+                    </div>
+                )}
             </div>
         </div>
     );
