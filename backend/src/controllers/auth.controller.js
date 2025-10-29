@@ -94,15 +94,6 @@ const getCurrentUser = (req, res) => {
     }
 };
 
-
-const getCurrentUser = (req, res) => {
-    if (req.isAuthenticated()) {
-        res.status(200).json(req.user);
-    } else {
-        res.status(401).json({ message: 'Not authenticated' });
-    }
-};
-
 const logout = (req, res, next) => {
     req.logout(function(err) {
         if (err) { return next(err); }
