@@ -83,7 +83,7 @@ const getUsers = async (req, res) => {
     } catch (error){
         console.log("Something went wrong while fetching users", error.message);
         console.log(error.stack);
-        return null;
+        return res.status(500).json({message: "Could not fetch users"});
     }
 }
 

@@ -1,13 +1,17 @@
 import pdf from "pdf-parse";
+import {readFile} from "fs/promises";
 
-const getPdfContent = async (file) => {
+const getPdfContent = async (filePath) => {
     try{
-        const pdfData = await pdf(file.data);
+        const pdfDataBuffer = await readFile(filePath);
+        const pdfData = await pdf(pdfDataBuffer);
         const noOfPages = pdfData.numpages;
         let pdfText = pdfData.text;
         return {noOfPages, pdfText};
     } catch (error){
-        return ""
+        console.log(error.message);
+        console.log(error.stack);
+        return {noOfPages:0, pdfText:""};
     }
 }
 
