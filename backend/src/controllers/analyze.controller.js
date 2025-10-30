@@ -27,11 +27,11 @@ const analyzeGithub = async (req, res) => {
 
         userReposStat = await githubFetching.getUserRepos(username, repoCount);
 
-        starsCount = userReposStat.reduce((totalStars, repoData)=>totalStars+repoData["stargazers_count"], 0);
-        forksCount = userReposStat.reduce((totalForks, repoData)=>totalForks+repoData["forks_count"], 0);
+        starsCount = userReposStat.filter((repo)=>repo["fork"]==false).reduce((totalStars, repoData)=>totalStars+repoData["stargazers_count"], 0);
+        forksCount = userReposStat.filter((repo)=>repo["fork"]==false).reduce((totalForks, repoData)=>totalForks+repoData["forks_count"], 0);
 
         userReposLanguageStat = await Promise.all(
-            userReposStat.map(async (repoData) => ({
+            userReposStat.filter((repo)=>repo["fork"]==false).map(async (repoData) => ({
                 repoId: repoData.id,
                 repoName: repoData.name,
                 repoUrl: repoData.html_url,

@@ -119,10 +119,10 @@ const updateUserInfo = async (req, res) => {
 
         if (file){
             const previousProfileImageUrl = updatedUser.profile;
-            const newProfileImageUrl = await uploadFile(file.path, "Codefolio");
+            const newProfileImageUrl = await uploadFile(file.path, "Codefolio/Profiles");
 
             if (newProfileImageUrl){
-                if (previousProfileImageUrl) destroyFile(previousProfileImageUrl);
+                if (previousProfileImageUrl) await destroyFile(previousProfileImageUrl, "Codefolio/Profiles");
                 updatedUser.profile = newProfileImageUrl;
                 updatedUser.save();
             } else {

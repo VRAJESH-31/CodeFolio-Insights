@@ -1,6 +1,6 @@
 import { GoogleGenAI, Type} from "@google/genai";
 import { GEMINI_API_KEY } from "../config/config.js";
-import { complexAnalysisSchema, simpleAnalysisSchema, simpleListSchema, jobDescriptionSchema } from "./schema/geminiResponse.js";
+import { complexAnalysisSchema, simpleAnalysisSchema, simpleListSchema, jobDescriptionSchema, videoSchema } from "./schema/geminiResponse.js";
 
 const ai = new GoogleGenAI({apiKey : GEMINI_API_KEY});
 
@@ -48,6 +48,7 @@ const getGithubProfileAnalysis = async (githubData) => {
                 analysis: This will contain a analysis on user github data like what he has done and all other stuff. 
                 strongPoints: This will be an array of 3-5 length and in each element you should try to compliment the user on the basis of data you received but remember if there's nothing to talk about then no need to sugar-clot the stuff and just provide general analysis.
                 improvementAreas: This will be an array of 3-5 length with each element being a short point that gives suggestion for improvement based on the data provided
+                suggestedVideo: This will contain a video suggestion that user will need to see to enhance his github profile. Structure of video object: {link: A link that can be used in iframe to embed youtube video component, title: title of the video, description: description of the video, time: length of the video in seconds, views: Total views of the video}
             }
 
             Take care that you should not miss to return any field empty and try to align the content with respect to user data
@@ -72,9 +73,10 @@ const getGithubProfileAnalysis = async (githubData) => {
                             items: {
                                 type: Type.STRING,
                             }
-                        }
+                        },
+                        video: videoSchema,
                     },
-                    required: ["analysis", "strongPoints", "improvementAreas"]
+                    required: ["analysis", "strongPoints", "improvementAreas", "video"],
                 }
             }
         });
@@ -122,27 +124,7 @@ const getLeetCodeProfileAnalysis = async (leetCodeData) => {
                                 type: Type.STRING,
                             }
                         },
-                        video: {
-                            type: Type.OBJECT,
-                            properties: {
-                                link: {
-                                    type: Type.STRING
-                                },
-                                title: {
-                                    type: Type.STRING
-                                },
-                                description: {
-                                    type: Type.STRING
-                                },
-                                time: {
-                                    type: Type.NUMBER
-                                },
-                                views: {
-                                    type: Type.NUMBER
-                                },
-                            },
-                            required: ["link", "title", "description", "time", "views"]
-                        }
+                        video: videoSchema
                     },
                     required: ["analysis", "strongPoints", "improvementAreas", "video"],
                 }
