@@ -114,12 +114,12 @@ const analyzeGithub = async (req, res) => {
             followersCount: userData["followers"],
             followingCount: userData["following"],
             public_repos: userData["public_repos"],
+            userReposStat,
             contributionCalendar,
             activeDays,
             currentStreak,
             maxStreak,
             languageUsageInBytes,
-            userReposLanguageStat,
             githubContributionBadges,
             profileAnalysis,
         });
