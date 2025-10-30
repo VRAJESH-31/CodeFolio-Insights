@@ -38,7 +38,7 @@ const getCommitsQualityReport = async (username) => {
 }
 
 const getCommitsPerRepo = async (reponame, username) => {
-    const query = gitHubApiQueries.GITHUB_REPO_TOTAL_COMMITS_COUNT;
+    const query = gitHubApiQueries.GITHUB_REPO_TOTAL_COMMITS_COUNT_QUERY;
     const commitCount = await githubGraphQlQuery(query, {username, reponame});
     if (commitCount==null) return 0;
     return commitCount;

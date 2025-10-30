@@ -88,7 +88,7 @@ const login = async (req, res) => {
 
 const getCurrentUser = (req, res) => {
     if (req.isAuthenticated()) {
-        res.json(req.user);
+        res.status(200).json(req.user);
     } else {
         res.status(401).json({ message: 'Not authenticated' });
     }

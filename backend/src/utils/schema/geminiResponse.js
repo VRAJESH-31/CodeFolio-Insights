@@ -68,9 +68,32 @@ const jobDescriptionSchema = {
     required: ["score", "analysis", "isJobDescriptionGiven", "keywordsPresent", "keywordsAbsent"],
 };
 
+const videoSchema = {
+    type: Type.OBJECT,
+    properties: {
+        link: {
+            type: Type.STRING
+        },
+        title: {
+            type: Type.STRING
+        },
+        description: {
+            type: Type.STRING
+        },
+        time: {
+            type: Type.NUMBER
+        },
+        views: {
+            type: Type.NUMBER
+        },
+    },
+    required: ["link", "title", "description", "time", "views"]
+}
+
 export {
     simpleAnalysisSchema,
     complexAnalysisSchema,
     simpleListSchema,
     jobDescriptionSchema,
+    videoSchema,
 }
