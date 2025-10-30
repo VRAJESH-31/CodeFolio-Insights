@@ -6,7 +6,7 @@ const getLeetCodeProblemsCount = async (username) => {
     const variables = { username };
     const data = (await leetCodeQuery(query, variables)).data;
     if (data) return data["matchedUser"]["submitStats"];
-    return data;
+    return null;
 }
 
 const getLeetCodeUserStreaksAndCalendar = async (username) => {
