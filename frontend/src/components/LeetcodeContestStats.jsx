@@ -79,7 +79,7 @@ const LeetCodeContestStats = ({contestData}) => {
                     <div className="flex justify-center mb-3">
                         <div className="p-2 bg-orange-100 rounded-lg">
                             <Award className="w-4 h-4 text-orange-600" />
-                        </div>
+                        </div> 
                     </div>
                     <div className="text-2xl font-black text-orange-600 mb-1">
                         {contestData?.topPercentage ?? 0}%
