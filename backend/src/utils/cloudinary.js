@@ -8,13 +8,12 @@ cloudinary.config({
     api_secret: CLOUDINARY_API_SECRET,
 });
 
-const extractPublicId = (url) => {
-    const parts = url.split("/");
-    const fileWithExtension = parts.pop();  // e.g. "abc123xyz.jpg"
-    const withoutExtension = fileWithExtension.split(".")[0]; // "abc123xyz"
-    const folderWithCloudName = parts.slice(parts.indexOf("upload") + 1).join("/"); // e.g. "cloud_name/profile_pics"
-    const folder = folderWithCloudName.split("/")[1]; // "profile_pics"
-    return folder + "/" + withoutExtension;  // "profile_pics/abc123xyz"
+const extractPublicId = (url,  topFolder) => {
+    // url example : https://res.cloudinary.com/dvjkkh0tf/image/upload/v1761793971/Codefolio/Profiles/fbmrlx7ejdaugrxy9x7m.png Codefolio/Profiles/fbmrlx7ejdaugrxy9x7m
+    const urlTrimmed = url.split(".")[2];  // urlTrimmed: com/dvjkkh0tf/image/upload/v1761793971/Codefolio/Profiles/fbmrlx7ejdaugrxy9x7m
+    if (!topFolder) return urlTrimmed.split("/").at(-1);   // return fbmrlx7ejdaugrxy9x7m
+    const publicId = topFolder + urlTrimmed.split(topFolder)[1];    // publicId : fbmrlx7ejdaugrxy9x7m
+    return publicId;
 }
 
 const uploadFile = async (filePath, folder) => {
@@ -27,8 +26,8 @@ const uploadFile = async (filePath, folder) => {
     return uploadedResponse.secure_url;
 }
 
-const destroyFile = async (url) => {
-    const publicId = extractPublicId(url);
+const destroyFile = async (url, topFolder) => {
+    const publicId = extractPublicId(url, topFolder);
     await cloudinary.uploader.destroy(publicId);
 }
 
