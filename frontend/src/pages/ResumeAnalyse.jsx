@@ -153,7 +153,7 @@ const ResumeAnalysis = ({
     `;
 
     return (
-        <div className="flex min-h-screen bg-gradient-to-br from-purple-50/30 via-white to-pink-50/30 font-sans">
+        <div className="flex h-screen bg-gradient-to-br from-purple-50/30 via-white to-pink-50/30 font-sans">
             <style>{animationStyles}</style>
             
             <Sidebar

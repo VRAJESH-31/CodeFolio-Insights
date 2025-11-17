@@ -142,7 +142,7 @@ const GitHub = () => {
     `;
 
     return (
-        <div className="flex min-h-screen bg-gradient-to-br from-green-50/30 via-white to-blue-50/30 font-sans">
+        <div className="flex h-screen bg-gradient-to-br from-green-50/30 via-white to-blue-50/30 font-sans">
             <style>{animationStyles}</style>
 
             <Sidebar
