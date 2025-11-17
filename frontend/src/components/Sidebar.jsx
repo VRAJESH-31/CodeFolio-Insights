@@ -16,7 +16,6 @@ const Sidebar = ({ isSidebarCollapsed, activeMenu, setActiveMenu, user, handleLo
         { name: 'GitHub', icon: 'fa-brands fa-github', path: '/github' },
         { name: 'Gfg', icon: 'fa-brands fa-linkedin-in', path: '/gfg' },
         { name: 'Resume Analysis', icon: 'fa-solid fa-file-lines', path: '/resume-analyse' },
-        { name: 'Settings', icon: 'fa-solid fa-gear', path: '/settings' },
     ];
 
     // Enhanced animations CSS

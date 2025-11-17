@@ -123,7 +123,7 @@ const LeetCode = () => {
     `;
 
     return (
-        <div className="flex min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-purple-50/30 font-sans">
+        <div className="flex h-screen bg-gradient-to-br from-blue-50/30 via-white to-purple-50/30 font-sans">
             <style>{animationStyles}</style>
             
             <Sidebar

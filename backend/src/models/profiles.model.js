@@ -31,10 +31,6 @@ const ProfileSchema = new Schema({
         type: String,
         default: "",
     },
-    linkedinUsername: {
-        type: String,
-        default: "",
-    },
     portfolioWebsiteLink: {
         type: String,
         default: "",
