@@ -296,9 +296,9 @@ const LeetCode = () => {
                             </div>
 
                             {/* AI Recommended Video */}
-                            <div className="animate-float-in" style={{animationDelay: '1300ms'}}>
+                            {data?.profileAnalysis?.video && <div className="animate-float-in" style={{animationDelay: '1300ms'}}>
                                 <VideoSuggestion suggestedVideo={data.profileAnalysis.video}/>
-                            </div>
+                            </div>}
                         </div>
                     </div>
                 )}

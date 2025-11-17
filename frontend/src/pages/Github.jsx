@@ -67,6 +67,41 @@ const GitHub = () => {
         }
     }, [analysis, isError, error]);
 
+    // --- Data Mapping for Charts ---
+    // Commit Activity Chart
+    const commitData = analysis?.contributionCalendar?.[0]?.contributionDays?.map(day => ({
+        name: day.date?.slice(5),
+        commits: day.contributionCount,
+        additions: 0 // If you have additions data, map here
+    })) || [];
+
+    // Language Distribution Pie Chart
+    const languageColors = [
+        '#10b981', '#3b82f6', '#f59e0b', '#6366f1', '#ef4444', '#a21caf', '#14b8a6', '#eab308', '#64748b', '#db2777', '#0ea5e9', '#22d3ee'
+    ];
+    const languageData = analysis?.languageUsageInBytes
+        ? Object.entries(analysis.languageUsageInBytes)
+            .map(([name, bytes], idx) => ({
+                name,
+                value: Math.round((bytes / Object.values(analysis.languageUsageInBytes).reduce((a, b) => a + b, 0)) * 100),
+                color: languageColors[idx % languageColors.length]
+            }))
+        : [];
+
+    // Repo Type Bar Chart (dummy, as no type info in API)
+    const repoTypeData = [
+        { name: 'Personal', value: analysis?.public_repos || 0, color: '#10b981' },
+        { name: 'Forked', value: analysis?.forksCount || 0, color: '#6366f1' },
+        { name: 'Starred', value: analysis?.starsCount || 0, color: '#f59e0b' }
+    ];
+
+    // Weekly Activity Bar Chart (dummy, as no week breakdown in API)
+    const activityData = commitData.slice(-7).map((item, idx) => ({
+        name: item.name,
+        commits: item.commits,
+        prs: analysis?.pullRequestsCount || 0,
+        issues: analysis?.issueRequestsCount || 0
+    }));
     const handleAnalyze = async () => {
         if (!username.trim()) return;
         await refetch(); // ✅ trigger API fetch
@@ -209,7 +244,7 @@ const GitHub = () => {
                                                     strokeWidth="8"
                                                     strokeLinecap="round"
                                                     strokeDasharray="283"
-                                                    strokeDashoffset={283 - (283 * analysis.profileScore) / 100}
+                                                    strokeDashoffset={283 - (283 * analysis.score) / 100}
                                                     className="animate-score-progress"
                                                 />
                                                 <defs>
@@ -221,7 +256,7 @@ const GitHub = () => {
                                             </svg>
                                             <div className="absolute inset-0 flex flex-col items-center justify-center">
                                                 <span className="text-5xl font-black bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-                                                    {analysis.profileScore}
+                                                    {analysis.score.toFixed(0)}
                                                 </span>
                                                 <span className="text-lg text-gray-500 font-semibold">/100</span>
                                                 <div className="flex items-center gap-1 mt-2">
@@ -249,17 +284,17 @@ const GitHub = () => {
 
                             {/* Meme and Review - Right Side */}
                             <div className="xl:col-span-2 bg-white/90 backdrop-blur-sm p-8 rounded-3xl shadow-2xl border border-white/60 animate-float-in" style={{ animationDelay: '200ms' }}>
-                                <GitHubScoreReview score={analysis.profileScore} />
+                                <GitHubScoreReview score={analysis.score} />
                             </div>
                         </div>
 
                         {/* Enhanced Stats Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             {[
-                                { icon: FolderOpen, title: "Total Repositories", value: analysis.totalRepos, change: "+3", color: "green" },
-                                { icon: GitCommit, title: "Total Commits", value: analysis.totalCommits, change: "+45", color: "blue" },
-                                { icon: Star, title: "Total Stars", value: analysis.totalStars, change: "+12", color: "yellow" },
-                                { icon: GitBranch, title: "Total Forks", value: analysis.totalForks, change: "+5", color: "purple" },
+                                { icon: FolderOpen, title: "Total Repositories", value: analysis.public_repos, change: "+3", color: "green" },
+                                { icon: GitCommit, title: "Total Commits", value: analysis.lastYearCommitsCount, change: "+45", color: "blue" },
+                                { icon: Star, title: "Total Stars", value: analysis.starsCount, change: "+12", color: "yellow" },
+                                { icon: GitBranch, title: "Total Forks", value: analysis.forksCount, change: "+5", color: "purple" },
                             ].map((stat, index) => (
                                 <GitHubStatCard key={stat.title} {...stat} delay={index * 100} />
                             ))}
@@ -268,10 +303,10 @@ const GitHub = () => {
                         {/* Additional Stats Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             {[
-                                { icon: Users, title: "Followers", value: analysis.followers, change: "+8", color: "indigo" },
-                                { icon: Eye, title: "Following", value: analysis.following, change: "+2", color: "pink" },
-                                { icon: GitPullRequest, title: "Pull Requests", value: analysis.pullRequests, change: "+7", color: "orange" },
-                                { icon: Zap, title: "Contributions", value: analysis.contributions, change: "+89", color: "cyan" },
+                                { icon: Users, title: "Followers", value: analysis.followersCount, change: "+8", color: "indigo" },
+                                { icon: Eye, title: "Following", value: analysis.followingCount, change: "+2", color: "pink" },
+                                { icon: GitPullRequest, title: "Pull Requests", value: analysis.pullRequestsCount || analysis.contributionCount?.pullRequestContributions?.totalCount || 0, change: "+7", color: "orange" },
+                                { icon: Zap, title: "Contributions", value: (analysis.contributionCount?.pullRequestContributions?.totalCount || 0) + (analysis.contributionCount?.issueContributions?.totalCount || 0), change: "+89", color: "cyan" },
                             ].map((stat, index) => (
                                 <GitHubStatCard key={stat.title} {...stat} delay={(index + 4) * 100} />
                             ))}
@@ -450,18 +485,12 @@ const GitHub = () => {
                                         Strengths
                                     </h4>
                                     <ul className="space-y-2 text-gray-600">
-                                        <li className="flex items-center gap-2">
-                                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                            Consistent commit activity throughout the year
-                                        </li>
-                                        <li className="flex items-center gap-2">
-                                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                            Strong presence in JavaScript and TypeScript
-                                        </li>
-                                        <li className="flex items-center gap-2">
-                                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                            Active in open source contributions
-                                        </li>
+                                        {analysis.profileAnalysis?.strongPoints?.map((point, idx) => (
+                                            <li key={idx} className="flex items-center gap-2">
+                                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                                {point}
+                                            </li>
+                                        ))}
                                     </ul>
                                 </div>
                                 <div className="space-y-4">
@@ -470,18 +499,12 @@ const GitHub = () => {
                                         Areas to Improve
                                     </h4>
                                     <ul className="space-y-2 text-gray-600">
-                                        <li className="flex items-center gap-2">
-                                            <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                                            Increase documentation in repositories
-                                        </li>
-                                        <li className="flex items-center gap-2">
-                                            <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                                            More engagement with community projects
-                                        </li>
-                                        <li className="flex items-center gap-2">
-                                            <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                                            Diversify into backend technologies
-                                        </li>
+                                        {analysis.profileAnalysis?.improvementAreas?.map((point, idx) => (
+                                            <li key={idx} className="flex items-center gap-2">
+                                                <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                                                {point}
+                                            </li>
+                                        ))}
                                     </ul>
                                 </div>
                             </div>
