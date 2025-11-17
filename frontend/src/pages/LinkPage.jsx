@@ -157,267 +157,222 @@ const LinkPage = () => {
         saveLinks(updatedLinks);
     };
 
-    const animationStyles = `
-        @keyframes floatIn {
-            0% { opacity: 0; transform: translateY(20px) scale(0.95); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-10px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        .animate-float-in { animation: floatIn 0.5s ease-out forwards; }
-        .animate-slide-in { animation: slideIn 0.3s ease-out forwards; }
-    `;
-
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4 font-sans">
-            <style>{animationStyles}</style>
-            
-            <div className="w-full max-w-4xl">
-                {/* Header */}
-                <div className="text-center mb-12 animate-float-in">
-                    <div className="flex items-center justify-center gap-3 mb-4">
-                        <div className="p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl shadow-lg">
-                            <LinkIcon className="h-8 w-8 text-white" />
-                        </div>
-                        <h1 className="text-4xl md:text-5xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                            Profile Links
-                        </h1>
-                    </div>
-                    <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-                        Manage all your coding profiles and social links in one place
-                    </p>
+        <div className="min-h-screen bg-white p-6 font-sans">
+            {/* Header */}
+            <div className="mb-8">
+                <h1 className="text-3xl font-bold text-gray-900">Platforms</h1>
+                <p className="text-gray-600 mt-2">You can update and verify your platform details here.</p>
+            </div>
+
+            {/* Add Link Button */}
+            {!isAdding && !editingId && (
+                <div className="mb-6">
+                    <button
+                        onClick={handleAdd}
+                        className="inline-flex items-center gap-2 bg-blue-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        <Plus className="h-4 w-4" />
+                        Add Platform
+                    </button>
                 </div>
+            )}
 
-                {/* Stats Summary */}
-                {links.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 animate-float-in" style={{animationDelay: '100ms'}}>
-                        <div className="bg-white/80 backdrop-blur-sm p-4 rounded-2xl shadow-lg border border-white/60 text-center">
-                            <div className="text-2xl font-black text-gray-800">{links.length}</div>
-                            <div className="text-sm text-gray-600">Total Links</div>
+            {/* Add/Edit Form */}
+            {(isAdding || editingId) && (
+                <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8 shadow-sm">
+                    <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                        {editingId ? 'Edit Platform' : 'Add New Platform'}
+                    </h2>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Platform Selection */}
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700">Platform</label>
+                            <select
+                                value={formData.platform}
+                                onChange={(e) => setFormData({...formData, platform: e.target.value})}
+                                className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 outline-none"
+                            >
+                                <option value="">Select Platform</option>
+                                {platforms.map(platform => (
+                                    <option key={platform.value} value={platform.value}>
+                                        {platform.label}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
-                        <div className="bg-white/80 backdrop-blur-sm p-4 rounded-2xl shadow-lg border border-white/60 text-center">
-                            <div className="text-2xl font-black text-gray-800">
-                                {links.filter(l => l.visibility === 'public').length}
-                            </div>
-                            <div className="text-sm text-gray-600">Public Links</div>
+
+                        {/* Username */}
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700">
+                                Username/URL
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.username}
+                                onChange={(e) => setFormData({...formData, username: e.target.value})}
+                                placeholder={platforms.find(p => p.value === formData.platform)?.placeholder || 'Enter username or URL'}
+                                className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 outline-none"
+                            />
                         </div>
-                        <div className="bg-white/80 backdrop-blur-sm p-4 rounded-2xl shadow-lg border border-white/60 text-center">
-                            <div className="text-2xl font-black text-gray-800">
-                                {links.filter(l => l.visibility === 'private').length}
-                            </div>
-                            <div className="text-sm text-gray-600">Private Links</div>
+
+                        {/* Custom URL */}
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700">
+                                Custom URL (Optional)
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.url}
+                                onChange={(e) => setFormData({...formData, url: e.target.value})}
+                                placeholder="Leave empty for default URL"
+                                className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 outline-none"
+                            />
+                        </div>
+
+                        {/* Visibility */}
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700">Visibility</label>
+                            <select
+                                value={formData.visibility}
+                                onChange={(e) => setFormData({...formData, visibility: e.target.value})}
+                                className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 outline-none"
+                            >
+                                <option value="public">Public</option>
+                                <option value="private">Private</option>
+                            </select>
                         </div>
                     </div>
-                )}
 
-                {/* Add Link Button */}
-                {!isAdding && !editingId && (
-                    <div className="text-center mb-8 animate-float-in" style={{animationDelay: '200ms'}}>
-                        
-                            
-                       
+                    {/* Action Buttons */}
+                    <div className="flex gap-3 mt-6">
+                        <button
+                            onClick={handleSave}
+                            disabled={!formData.platform || !formData.username}
+                            className="flex items-center gap-2 bg-blue-600 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <Check className="h-4 w-4" />
+                            Save
+                        </button>
+                        <button
+                            onClick={handleCancel}
+                            className="flex items-center gap-2 bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-md hover:bg-gray-300 transition-colors"
+                        >
+                            <X className="h-4 w-4" />
+                            Cancel
+                        </button>
                     </div>
-                )}
+                </div>
+            )}
 
-                {/* Add/Edit Form */}
-                {(isAdding || editingId) && (
-                    <div className="bg-white/90 backdrop-blur-sm p-8 rounded-3xl shadow-2xl border border-white/60 mb-8 animate-float-in">
-                        <h2 className="text-2xl font-black text-gray-800 mb-6 text-center">
-                            {editingId ? 'Edit Link' : 'Add New Link'}
-                        </h2>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Platform Selection */}
-                            <div className="space-y-2">
-                                <label className="block text-sm font-semibold text-gray-700">Platform</label>
-                                <select
-                                    value={formData.platform}
-                                    onChange={(e) => setFormData({...formData, platform: e.target.value})}
-                                    className="w-full p-3 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 bg-white/80"
-                                >
-                                    <option value="">Select Platform</option>
-                                    {platforms.map(platform => (
-                                        <option key={platform.value} value={platform.value}>
-                                            {platform.label}
-                                        </option>
-                                    ))}
-                                </select>
+            {/* Links Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {links.map((link, index) => {
+                    const platformConfig = platforms.find(p => p.value === link.platform);
+                    const IconComponent = platformConfig?.icon || Globe;
+                    
+                    return (
+                        <div 
+                            key={link.id}
+                            className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow"
+                        >
+                            {/* Platform Header */}
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className={`p-2 rounded-lg bg-gradient-to-r ${link.color || 'from-gray-500 to-gray-600'}`}>
+                                        <IconComponent className="h-5 w-5 text-white" />
+                                    </div>
+                                    <span className="font-semibold text-gray-800">{link.label}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <button
+                                        onClick={() => toggleVisibility(link.id)}
+                                        className={`p-1 rounded transition-colors ${
+                                            link.visibility === 'public' 
+                                                ? 'text-green-500 hover:bg-green-50' 
+                                                : 'text-gray-400 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        {link.visibility === 'public' ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Username */}
-                            <div className="space-y-2">
-                                <label className="block text-sm font-semibold text-gray-700">
-                                    Username/URL
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formData.username}
-                                    onChange={(e) => setFormData({...formData, username: e.target.value})}
-                                    placeholder={platforms.find(p => p.value === formData.platform)?.placeholder || 'Enter username or URL'}
-                                    className="w-full p-3 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 bg-white/80"
-                                />
+                            <div className="mb-4">
+                                <p className="text-sm text-gray-600 mb-1">Username</p>
+                                <p className="font-medium text-gray-800 truncate">{link.username}</p>
                             </div>
 
-                            {/* Custom URL */}
-                            <div className="space-y-2">
-                                <label className="block text-sm font-semibold text-gray-700">
-                                    Custom URL (Optional)
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formData.url}
-                                    onChange={(e) => setFormData({...formData, url: e.target.value})}
-                                    placeholder="Leave empty for default URL"
-                                    className="w-full p-3 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 bg-white/80"
-                                />
+                            {/* URL Preview */}
+                            <div className="mb-4">
+                                <p className="text-sm text-gray-600 mb-1">URL</p>
+                                <div className="flex items-center gap-2">
+                                    <p className="text-sm text-blue-600 truncate flex-1">{link.url}</p>
+                                    <button
+                                        onClick={() => copyToClipboard(link.url, link.id)}
+                                        className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                                    >
+                                        {copiedId === link.id ? (
+                                            <Check className="h-4 w-4 text-green-500" />
+                                        ) : (
+                                            <Copy className="h-4 w-4" />
+                                        )}
+                                    </button>
+                                </div>
                             </div>
 
-                            {/* Visibility */}
-                            <div className="space-y-2">
-                                <label className="block text-sm font-semibold text-gray-700">Visibility</label>
-                                <select
-                                    value={formData.visibility}
-                                    onChange={(e) => setFormData({...formData, visibility: e.target.value})}
-                                    className="w-full p-3 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 bg-white/80"
+                            {/* Action Buttons */}
+                            <div className="flex gap-2">
+                                <a
+                                    href={link.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex-1 flex items-center justify-center gap-2 bg-gray-100 text-gray-800 py-2 px-3 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
                                 >
-                                    <option value="public">Public</option>
-                                    <option value="private">Private</option>
-                                </select>
+                                    <ExternalLink className="h-3 w-3" />
+                                    Visit
+                                </a>
+                                <button
+                                    onClick={() => handleEdit(link)}
+                                    className="flex items-center justify-center gap-2 bg-blue-100 text-blue-700 py-2 px-3 rounded-md text-sm font-medium hover:bg-blue-200 transition-colors"
+                                >
+                                    <Edit3 className="h-3 w-3" />
+                                </button>
+                                <button
+                                    onClick={() => handleDelete(link.id)}
+                                    className="flex items-center justify-center gap-2 bg-red-100 text-red-700 py-2 px-3 rounded-md text-sm font-medium hover:bg-red-200 transition-colors"
+                                >
+                                    <Trash2 className="h-3 w-3" />
+                                </button>
                             </div>
                         </div>
-
-                        {/* Action Buttons */}
-                        <div className="flex gap-4 mt-8 justify-center">
-                            <button
-                                onClick={handleSave}
-                                disabled={!formData.platform || !formData.username}
-                                className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold py-3 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <Check className="h-4 w-4" />
-                                Save
-                            </button>
-                            <button
-                                onClick={handleCancel}
-                                className="flex items-center gap-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white font-semibold py-3 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
-                            >
-                                <X className="h-4 w-4" />
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {/* Links Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {links.map((link, index) => {
-                        const platformConfig = platforms.find(p => p.value === link.platform);
-                        const IconComponent = platformConfig?.icon || Globe;
-                        
-                        return (
-                            <div 
-                                key={link.id}
-                                className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/60 p-6 animate-float-in hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-1"
-                                style={{animationDelay: `${(index + 3) * 100}ms`}}
-                            >
-                                {/* Platform Header */}
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`p-2 rounded-xl bg-gradient-to-r ${link.color || 'from-gray-500 to-gray-600'}`}>
-                                            <IconComponent className="h-5 w-5 text-white" />
-                                        </div>
-                                        <span className="font-bold text-gray-800">{link.label}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                        <button
-                                            onClick={() => toggleVisibility(link.id)}
-                                            className={`p-1 rounded-lg transition-colors ${
-                                                link.visibility === 'public' 
-                                                    ? 'text-green-500 hover:bg-green-50' 
-                                                    : 'text-gray-400 hover:bg-gray-50'
-                                            }`}
-                                        >
-                                            {link.visibility === 'public' ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Username */}
-                                <div className="mb-4">
-                                    <p className="text-sm text-gray-600 mb-1">Username</p>
-                                    <p className="font-semibold text-gray-800 truncate">{link.username}</p>
-                                </div>
-
-                                {/* URL Preview */}
-                                <div className="mb-4">
-                                    <p className="text-sm text-gray-600 mb-1">URL</p>
-                                    <div className="flex items-center gap-2">
-                                        <p className="text-sm text-blue-600 truncate flex-1">{link.url}</p>
-                                        <button
-                                            onClick={() => copyToClipboard(link.url, link.id)}
-                                            className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
-                                        >
-                                            {copiedId === link.id ? (
-                                                <Check className="h-4 w-4 text-green-500" />
-                                            ) : (
-                                                <Copy className="h-4 w-4" />
-                                            )}
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Action Buttons */}
-                                <div className="flex gap-2">
-                                    <a
-                                        href={link.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 px-3 rounded-xl text-sm font-semibold hover:shadow-lg transition-all duration-200"
-                                    >
-                                        <ExternalLink className="h-3 w-3" />
-                                        Visit
-                                    </a>
-                                    <button
-                                        onClick={() => handleEdit(link)}
-                                        className="flex items-center justify-center gap-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white py-2 px-3 rounded-xl text-sm font-semibold hover:shadow-lg transition-all duration-200"
-                                    >
-                                        <Edit3 className="h-3 w-3" />
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(link.id)}
-                                        className="flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-red-600 text-white py-2 px-3 rounded-xl text-sm font-semibold hover:shadow-lg transition-all duration-200"
-                                    >
-                                        <Trash2 className="h-3 w-3" />
-                                    </button>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-
-                {/* Empty State */}
-                {links.length === 0 && !isAdding && (
-                    <div className="text-center py-16 animate-float-in">
-                        <div className="p-8 bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/60 max-w-md mx-auto">
-                            <div className="p-4 bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl inline-block mb-4">
-                                <LinkIcon className="h-12 w-12 text-blue-500" />
-                            </div>
-                            <h3 className="text-xl font-black text-gray-800 mb-2">No Links Added Yet</h3>
-                            <p className="text-gray-600 mb-6">
-                                Start by adding your first profile link to showcase your coding journey
-                            </p>
-                            <button
-                                onClick={handleAdd}
-                                className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold py-3 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
-                            >
-                                <Plus className="h-4 w-4" />
-                                Add Your First Link
-                            </button>
-                        </div>
-                    </div>
-                )}
+                    );
+                })}
             </div>
+
+            {/* Empty State */}
+            {links.length === 0 && !isAdding && (
+                <div className="text-center py-12">
+                    <div className="p-6 bg-gray-50 rounded-lg max-w-md mx-auto">
+                        <div className="p-3 bg-blue-100 rounded-lg inline-block mb-4">
+                            <LinkIcon className="h-8 w-8 text-blue-600" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-800 mb-2">No Platforms Added Yet</h3>
+                        <p className="text-gray-600 mb-4">
+                            Start by adding your first platform to showcase your profiles
+                        </p>
+                        <button
+                            onClick={handleAdd}
+                            className="inline-flex items-center gap-2 bg-blue-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                            <Plus className="h-4 w-4" />
+                            Add Your First Platform
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
