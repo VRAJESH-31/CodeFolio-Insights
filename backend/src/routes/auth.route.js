@@ -1,19 +1,23 @@
 import express from "express";
 import passport from "passport";
-import { signup, login, logout } from "../controllers/auth.controller.js";
+import { signup, login, logout, checkAuth, getCurrentUser } from "../controllers/auth.controller.js";
 import { signupValidation, loginValidation, validate } from "../middlewares/auth.middleware.js";
+import { getAnalytics } from "../middlewares/analytics.middleware.js";
 
 const router = express.Router();
 
-router.post('/signup', signupValidation, validate, signup);
-router.post('/login', loginValidation, validate, login);
+router.post('/signup', signupValidation, validate, getAnalytics, signup);
+router.post('/login', loginValidation, validate, getAnalytics, login);
+router.get("/check", checkAuth);
+router.get('/user', getCurrentUser);
+router.post('/logout', getAnalytics, logout);
 
-router.post('/logout', logout);
-
-router.get('/google',
+router.get('/google', 
+    getAnalytics,
     passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-router.get('/google/callback',
+router.get('/google/callback', 
+    getAnalytics,
     passport.authenticate('google', { failureRedirect: 'http://localhost:5173/login' }),
     (req, res) => {
         res.redirect('http://localhost:5173/home');

@@ -7,6 +7,10 @@ const ProfileSchema = new Schema({
         ref: "users",
         require: true,
     },
+    linkedinUsername : {
+        type: String,
+        default: "",
+    },
     githubUsername : {
         type: String,
         default: "",
@@ -26,8 +30,12 @@ const ProfileSchema = new Schema({
     codechefUsername: {
         type: String,
         default: "",
+    },
+    portfolioWebsiteLink: {
+        type: String,
+        default: "",
     }
-});
+}, {timestamps: true});
 
 const ProfileModel = mongoose.model('profiles', ProfileSchema);
 

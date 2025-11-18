@@ -1,9 +1,12 @@
 import express from "express"
-import { getProfiles, updateProfiles } from "../controllers/profiles.controller.js";
+import { getProfiles, updateProfiles, fetchProfilesData } from "../controllers/profiles.controller.js";
+import { optionalAuth, protectRoute } from "../middlewares/auth.middleware.js";
+import { getAnalytics } from "../middlewares/analytics.middleware.js";
 
 const router = express.Router();
 
-router.get("/", getProfiles);
-router.patch("/", updateProfiles);
+router.get("/:userId", optionalAuth, getAnalytics, getProfiles);
+router.patch("/", protectRoute,  getAnalytics, updateProfiles);
+router.get("/fetch/:username", optionalAuth, getAnalytics, fetchProfilesData);
 
 export default router;

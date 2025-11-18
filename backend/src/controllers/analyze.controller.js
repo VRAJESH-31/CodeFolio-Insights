@@ -1,10 +1,12 @@
-import * as githubScoring from "../utils/githubScore.js";
-import * as githubFetching from "../utils/githubFetch.js"
-import * as leetCodeFetching from "../utils/leetcodeFetch.js"
-import { getGithubProfileAnalysis, getLeetCodeProfileAnalysis, getResumeAnalysis } from "../utils/geminiResponse.js";
-import * as leetCodeScoring from "../utils/leetcodeScore.js";
+import * as githubScoring from "../utils/scoring/githubScore.js";
+import * as githubFetching from "../utils/fetching/githubFetch.js"
+import * as leetCodeFetching from "../utils/fetching/leetcodeFetch.js"
+import { getGithubProfileAnalysis, getLeetCodeProfileAnalysis, getResumeAnalysis } from "../utils/geminiUtils.js";
+import * as leetCodeScoring from "../utils/scoring/leetcodeScore.js";
 import { getPdfContent } from "../utils/pdfUtils.js";
-import { MAX_PDF_SIZE } from "../utils/constants.js";
+import { MAX_PDF_SIZE } from "../constant/constants.js";
+import scoreModel from "../models/score.model.js";
+
 
 const analyzeGithub = async (req, res) => {
     try {
@@ -27,11 +29,11 @@ const analyzeGithub = async (req, res) => {
 
         userReposStat = await githubFetching.getUserRepos(username, repoCount);
 
-        starsCount = userReposStat.reduce((totalStars, repoData)=>totalStars+repoData["stargazers_count"], 0);
-        forksCount = userReposStat.reduce((totalForks, repoData)=>totalForks+repoData["forks_count"], 0);
+        starsCount = userReposStat.filter((repo)=>repo["fork"]==false).reduce((totalStars, repoData)=>totalStars+repoData["stargazers_count"], 0);
+        forksCount = userReposStat.filter((repo)=>repo["fork"]==false).reduce((totalForks, repoData)=>totalForks+repoData["forks_count"], 0);
 
         userReposLanguageStat = await Promise.all(
-            userReposStat.map(async (repoData) => ({
+            userReposStat.filter((repo)=>repo["fork"]==false).map(async (repoData) => ({
                 repoId: repoData.id,
                 repoName: repoData.name,
                 repoUrl: repoData.html_url,
@@ -97,6 +99,12 @@ const analyzeGithub = async (req, res) => {
 
         score = repoCountScore*0.1 + followersCountScore*0.025 + followingRatioScore*0.025 + languagesCountScore*0.05 + totalCommitsScore*0.1 + forksCountScore*0.1 + starsCountScore*0.1 + profileReadmeScore*0.1 + pinnedReposCountScore*0.05 + pullRequestsCountScore*0.1 + issuesCountScore*0.1 + streakScore*0.05 + commitsQualityScore*0.1;
 
+        try {
+            await scoreModel.create({ username: username, score: score, platform: "Github" });
+        } catch (error) {
+            console.log('Failed to save github score:', error.message);
+        }
+
         return res.status(200).json({
             score,
             avatarUrl : userData["avatar_url"],
@@ -106,12 +114,18 @@ const analyzeGithub = async (req, res) => {
             followersCount: userData["followers"],
             followingCount: userData["following"],
             public_repos: userData["public_repos"],
+            lastYearCommitsCount,
+            starsCount,
+            forksCount,
+            contributionCount,
+            issueRequestsCount,
+            pullRequestsCount,
+            userReposStat,
             contributionCalendar,
             activeDays,
             currentStreak,
             maxStreak,
             languageUsageInBytes,
-            userReposLanguageStat,
             githubContributionBadges,
             profileAnalysis,
         });
@@ -160,6 +174,12 @@ const analyzeLeetCode = async (req, res) => {
 
         score = acceptanceRateScore*0.1 + badgesScore*0.1 + submissionConsistencyScore*0.2 + contestScore*0.2 + problemsSolvedScore*0.2 + profileScore * 0.05 + topicWiseProblemsScore*0.05;
 
+        try {
+            await scoreModel.create({ username: username, score: score, platform: "Leetcode" });
+        } catch (error) {
+            console.log('Failed to save leetcode score:', error.message);
+        }
+
         return res.status(200).json({
             score,
             problemsCount,
@@ -183,28 +203,17 @@ const analyzeLeetCode = async (req, res) => {
 
 const analyzeResume = async (req, res) => {
     try {
-        if (!req?.files?.resume) return res.status(400).json({"message" : "Resume Not provided"});
-
-        let resumePdf = null;
+        const file = req.file;
         const experienceInYears = req.body.experienceInYears || 0;
         const jobDescription = req.body.jobDescription || "";
 
-        if (!Array.isArray(req.files.resume)){
-            if (req.files.resume.mimetype=="application/pdf" && req.files.resume.size<=MAX_PDF_SIZE){
-                resumePdf = req.files.resume;
-            }
-        } else {
-            for (let i=0; i<req.files.resume.length; i++){
-                if (req.files.resume[i].mimetype=="application/pdf" && req.files.resume[i].size<=MAX_PDF_SIZE){
-                    resumePdf = req.files.resume;
-                    break;
-                }
-            }
-        }
+        if (!file) return res.status(400).json({message: "Resume pdf not provided!"});
+        if (file.mimetype!="application/pdf") return res.status(400).json({message: "Resume should be in only pdf format!"});
+        if (file.size>MAX_PDF_SIZE) return res.status(400).json({message: `Size of resume should not surpass ${MAX_PDF_SIZE/(1024*1204)} MB!`});
 
-        if (!resumePdf) return res.status(400).json({"message" : "Resume Not provided"});
-
-        const {noOfPages, pdfText} = await getPdfContent(resumePdf);
+        const {noOfPages, pdfText} = await getPdfContent(file.path);
+        if (noOfPages==0) return res.status(500).json({message: "Something went wrong while parsing pdf content! Try Again!"});
+        
         const resumeAnalysis = await getResumeAnalysis({resumeContent : pdfText, experienceInYears, noOfResumePages : noOfPages, jobDescription: jobDescription});
 
         if (Object.keys(resumeAnalysis).length == 0) return res.status(500).json({"message" : "Something Went Wrong while analyzing the resume"});
@@ -244,12 +253,17 @@ const analyzeResume = async (req, res) => {
         const baseScore = (professionalismScore*resumeScoringWeights.PROFESSIONALISM + contactScore*resumeScoringWeights.CONTACT  + achievementScore*resumeScoringWeights.ACHIEVEMENT + courseworkScore*resumeScoringWeights.COURSEWORK + educationScore*resumeScoringWeights.EDUCATION + experienceScore*resumeScoringWeights.EXPERIENCE + projectsScore*resumeScoringWeights.PROJECT + technicalSkillsScore*resumeScoringWeights.TECHNICAL_SKILLS + impactScore*resumeScoringWeights.IMPACT);
 
         const scoreMultiplier = (logicalFlowScore*resumeScoringMultiplierWeights.LOGICAL_FLOW + resumeLengthScore*resumeScoringMultiplierWeights.RESUME_LENGTH) / 100;
-
         const jobDescriptionMatchMultiplier = jobDescriptionScore/100;
 
         const score = baseScore * scoreMultiplier * jobDescriptionMatchMultiplier;
-
         resumeAnalysis["score"] = score;
+
+        const platform = resumeAnalysis?.scoreAnalysis?.jobDescription?.isJobDescriptionGiven ? "Resume with JD" : "Generic Resume";
+        try {
+            await scoreModel.create({ userId: req.user?._id, score: score, platform });
+        } catch (error) {
+            console.log('Failed to save resume score:', error.message);
+        }
 
         return res.status(200).json({resumeAnalysis});
 

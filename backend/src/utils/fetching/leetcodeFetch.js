@@ -1,12 +1,12 @@
-import { leetCodeQuery } from "./axiosInstance.js";
-import { leetCodeApiQueries } from "./constants.js";
+import { leetCodeQuery } from "../../api/axiosInstance.js";
+import { leetCodeApiQueries } from "../../constant/constants.js";
 
 const getLeetCodeProblemsCount = async (username) => {
     const query = leetCodeApiQueries.LEETCODE_USER_PROBLEMS_SOLVED_QUERY;
     const variables = { username };
     const data = (await leetCodeQuery(query, variables)).data;
     if (data) return data["matchedUser"]["submitStats"];
-    return data;
+    return null;
 }
 
 const getLeetCodeUserStreaksAndCalendar = async (username) => {

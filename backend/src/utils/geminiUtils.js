@@ -1,6 +1,6 @@
 import { GoogleGenAI, Type} from "@google/genai";
-import { GEMINI_API_KEY } from "./config.js";
-import { complexAnalysisSchema, simpleAnalysisSchema, simpleListSchema, jobDescriptionSchema } from "./responseSchema.js";
+import { GEMINI_API_KEY } from "../config/config.js";
+import { complexAnalysisSchema, simpleAnalysisSchema, simpleListSchema, jobDescriptionSchema, videoSchema } from "./schema/geminiResponse.js";
 
 const ai = new GoogleGenAI({apiKey : GEMINI_API_KEY});
 
@@ -45,8 +45,10 @@ const getGithubProfileAnalysis = async (githubData) => {
             model: "gemini-2.5-flash",
             contents: `You will be given an object which will contain a lot of user github data and you need to return an object :
             {
-                analysis: This will contain a analysis on user github data like what he has done and all other stuff. You should try to compliment the user on the basis of data you received but remember if there's nothing to talk about then no need to sugar-clot the stuff and just provide general analysis.
+                analysis: This will contain a analysis on user github data like what he has done and all other stuff. 
+                strongPoints: This will be an array of 3-5 length and in each element you should try to compliment the user on the basis of data you received but remember if there's nothing to talk about then no need to sugar-clot the stuff and just provide general analysis.
                 improvementAreas: This will be an array of 3-5 length with each element being a short point that gives suggestion for improvement based on the data provided
+                suggestedVideo: This will contain a video suggestion that user will need to see to enhance his github profile. Structure of video object: {link: A link that can be used in iframe to embed youtube video component, title: title of the video, description: description of the video, time: length of the video in seconds, views: Total views of the video}
             }
 
             Take care that you should not miss to return any field empty and try to align the content with respect to user data
@@ -60,13 +62,21 @@ const getGithubProfileAnalysis = async (githubData) => {
                         analysis : {
                             type: Type.STRING,
                         },
+                        strongPoints : {
+                            type: Type.ARRAY,
+                            items: {
+                                type: Type.STRING,
+                            }
+                        },
                         improvementAreas : {
                             type: Type.ARRAY,
                             items: {
                                 type: Type.STRING,
                             }
-                        }
+                        },
+                        video: videoSchema,
                     },
+                    required: ["analysis", "strongPoints", "improvementAreas", "video"],
                 }
             }
         });
@@ -85,13 +95,15 @@ const getLeetCodeProfileAnalysis = async (leetCodeData) => {
             model: "gemini-2.5-flash",
             contents: `You will be given an object which will contain a lot of user leetCode data and you need to return an object :
             {
-                analysis: This will contain a analysis on user leetCode data like what he has done and all other stuff. You should try to compliment the user on the basis of data you received but remember if there's nothing to talk about then no need to sugar-clot the stuff and just provide general analysis.
+                analysis: This will contain a analysis on user leetCode data like what he has done and all other stuff. 
+                strongPoints: This will be an array of 3-5 length and in each element you should try to compliment the user on the basis of data you received but remember if there's nothing to talk about then no need to sugar-clot the stuff and just provide general analysis.
                 improvementAreas: This will be an array of 3-5 length with each element being a short point that gives suggestion for improvement based on the data provided
+                suggestedVideo: This will contain a video suggestion that user will need to see to enhance his leetcode profile by up skilling his problem solving skills. Structure of video object: {link: A link that can be used in iframe to embed youtube video component, title: title of the video, description: description of the video, time: length of the video in seconds, views: Total views of the video}
             }
 
             Take care that you should not miss to return any field empty and try to align the content with respect to user data
             
-            Github Data: ${JSON.stringify(leetCodeData)}`,
+            Leetcode Data: ${JSON.stringify(leetCodeData)}`,
             config: {
                 responseMimeType: "application/json",
                 responseSchema: {
@@ -100,13 +112,21 @@ const getLeetCodeProfileAnalysis = async (leetCodeData) => {
                         analysis : {
                             type: Type.STRING,
                         },
+                        strongPoints: {
+                            type: Type.ARRAY,
+                            items: {
+                                type: Type.STRING,
+                            }
+                        },
                         improvementAreas : {
                             type: Type.ARRAY,
                             items: {
                                 type: Type.STRING,
                             }
-                        }
+                        },
+                        video: videoSchema
                     },
+                    required: ["analysis", "strongPoints", "improvementAreas", "video"],
                 }
             }
         });
@@ -228,7 +248,11 @@ const getResumeAnalysis = async (resumeData) => {
                         // Judges on the basis of how much a user's resume match to the job description.
                         // In case the job description is not provided, score the user 100 directly.
                         // In the analysis of this section, you will mention user what stuff of his/her resume matches with the job description and on what doesn't.
-                        // In case job description is provided, there will be three extra fields: 'Job Description Given', 'Keywords present' and 'Keywords absent', first will contain if the job description is given or not while other two will signify each and every keyword mentioned and not mentioned. In case job description is absent, skip these fields. And remember you should mention any kind of keyword in  1-2 words, and at max 3-4 keyword (if required). I don't want something like this - 'good in problem solving and analytical thinking', 'problem solving' and 'analytical thinking' are good keywords
+                        // In case job description is provided, there will be three extra fields: 
+                            1. 'Job Description Given' : It will contain if the job description is given or not, 
+                            2. 'Keywords present' : signify each and every keyword mentioned in the resume
+                            3. 'Keywords absent' : signify each and every keyword not mentioned in the resume
+                            In case job description is absent, skip these fields. And remember you should mention any kind of keyword in  1-2 words, and at max 3-4 keyword (if required). I don't want something like this - 'good in problem solving and analytical thinking', 'problem solving' and 'analytical thinking' are good keywords. Plus, try to search for as many as possible 'Valid' keywords by reading job description properly. Yes, valid only valid ones. Just because I've told you to find many keywords, it doesn't mean you will add every next word to keyword list.
                     }
                 },
                 "strengths": [

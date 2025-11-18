@@ -1,5 +1,5 @@
-import { githubAPI } from "./axiosInstance.js";
-import { TOTAL_COMMITS_LIMIT } from "./githubFetch.js";
+import { githubAPI } from "../../api/axiosInstance.js";
+import { TOTAL_COMMITS_LIMIT } from "../fetching/githubFetch.js";
 
 const getRepoCountScore = (repoCount) => {
     const value = (Math.min(repoCount, 30) / 30) * 100;

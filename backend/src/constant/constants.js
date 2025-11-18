@@ -161,7 +161,7 @@ const gitHubApiQueries = {
         }
     `,
 
-    GITHUB_LAST_YEAR_COMMITS_COUNT : `
+    GITHUB_LAST_YEAR_COMMITS_COUNT_QUERY : `
         query($username: String!){
             user(login: $username) {
                 contributionsCollection {
@@ -172,6 +172,21 @@ const gitHubApiQueries = {
             }
         }
     `,
+
+    GITHUB_REPO_TOTAL_COMMITS_COUNT_QUERY : `
+        query($username: String!, $reponame: String!) {
+            repository(owner: $username, name: $reponame) {
+                defaultBranchRef {
+                    target {
+                        ... on Commit {
+                            history {
+                                totalCount
+                            }
+                        }
+                    }
+            }
+        }
+    }`
 }
 
 export {
