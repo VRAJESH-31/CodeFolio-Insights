@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ApexCharts from 'apexcharts';
 import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import useAuthStore from '../../store/useAuthStore.js';
 
 const ReactApexChart = ({ options, series, type, width, height }) => {
     const chartRef = useRef(null);
@@ -40,32 +40,32 @@ const ReactApexChart = ({ options, series, type, width, height }) => {
 const App = () => {
     const [activeMenu, setActiveMenu] = useState('Dashboard');
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-    const [user, setUser] = useState(null);
+    const user = useAuthStore((state)=>state.user);
     const [mounted, setMounted] = useState(false);
 
     const navigate = useNavigate();
 
-    useEffect(() => {
-        setMounted(true);
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-        } else {
-            const fetchUser = async () => {
-                try {
-                    const res = await fetch('http://localhost:8080/auth/user', { credentials: 'include' });
-                    if (res.ok) {
-                        const data = await res.json();
-                        setUser(data);
-                        localStorage.setItem('user', JSON.stringify(data));
-                    }
-                } catch (error) {
-                    console.error('Error fetching user:', error);
-                }
-            };
-            fetchUser();
-        }
-    }, [navigate]);
+    // useEffect(() => {
+    //     setMounted(true);
+    //     const storedUser = localStorage.getItem('user');
+    //     if (storedUser) {
+    //         setUser(JSON.parse(storedUser));
+    //     } else {
+    //         const fetchUser = async () => {
+    //             try {
+    //                 const res = await fetch('http://localhost:8080/auth/user', { credentials: 'include' });
+    //                 if (res.ok) {
+    //                     const data = await res.json();
+    //                     setUser(data);
+    //                     localStorage.setItem('user', JSON.stringify(data));
+    //                 }
+    //             } catch (error) {
+    //                 console.error('Error fetching user:', error);
+    //             }
+    //         };
+    //         fetchUser();
+    //     }
+    // }, [navigate]);
 
     const handleLogout = async () => {
         localStorage.removeItem('token');

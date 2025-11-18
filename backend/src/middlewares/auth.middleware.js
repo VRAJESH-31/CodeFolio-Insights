@@ -29,7 +29,7 @@ export const validate = (req, res, next) => {
 
 export const protectRoute = async (req, res, next) => {
     try {
-        const token = req.header("Authorization")?.replace("Bearer ", "");
+        const token = req.cookies.token || req.header("Authorization")?.replace("Bearer ", "");
         if (!token) return res.status(401).json({message : "Unauthenticated User! Token not provided"});
 
         const decodedToken = jwt.verify(token, JWT_SECRET);

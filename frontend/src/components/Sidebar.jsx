@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import useAuthStore from '../../store/useAuthStore';
 
-const Sidebar = ({ isSidebarCollapsed, activeMenu, setActiveMenu, user, handleLogout }) => {
+const Sidebar = ({ isSidebarCollapsed, activeMenu, setActiveMenu }) => {
     const [hoveredItem, setHoveredItem] = useState(null);
     const [mounted, setMounted] = useState(false);
     const location = useLocation();
+    const user = useAuthStore((state)=>state.user);
+    const logout = useAuthStore((state)=>state.logout);
 
     useEffect(() => {
         setMounted(true);
@@ -206,9 +209,9 @@ const Sidebar = ({ isSidebarCollapsed, activeMenu, setActiveMenu, user, handleLo
                                         <p className="text-sm font-bold text-gray-800 truncate">
                                             {user?.name || 'Guest User'}
                                         </p>
-                                        <p className="text-xs text-gray-600 truncate mt-1">
-                                            {user?.jobTitle || 'Full Stack Developer'}
-                                        </p>
+                                        {<p className="text-xs text-gray-600 truncate mt-1">
+                                            {user?.jobTitle || 'Programmer'}
+                                        </p>}
                                     </div>
                                     <i className="fa-solid fa-chevron-up ml-2 text-gray-500 transition-all duration-500 group-open:rotate-180 flex-shrink-0 text-sm group-hover:text-blue-600"></i>
                                 </>
@@ -225,7 +228,7 @@ const Sidebar = ({ isSidebarCollapsed, activeMenu, setActiveMenu, user, handleLo
                                     <span className="font-medium">Manage Links</span>
                                 </a>
                                 <button
-                                    onClick={handleLogout}
+                                    onClick={logout}
                                     className="w-full flex items-center gap-4 px-4 py-3 text-sm text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl mt-3 group/item transform hover:scale-[1.02]"
                                 >
                                     <i className="fa-solid fa-arrow-right-from-bracket w-4 text-center group-hover/item:translate-x-1 transition-transform duration-300"></i>

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Landing from "./pages/Landing.jsx";
 import LoginPage from './pages/LoginPage.jsx';
@@ -10,8 +10,16 @@ import LeetCode from './pages/Leetcode.jsx';
 import GitHub from './pages/Github.jsx';
 import LinkPage from './pages/LinkPage.jsx';
 import GFG from './pages/GFG.jsx';
+import useAuthStore from '../store/useAuthStore.js';
 
 const App = () => {
+
+    const checkAuth = useAuthStore((state)=>state.checkAuth);
+
+    useEffect(()=>{
+        checkAuth();
+    }, []);
+
     return (
         <Routes>
             <Route path="/" element={<Landing />} />

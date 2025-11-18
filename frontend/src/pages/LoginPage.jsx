@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import conf from '../config/config.js';
+import useAuthStore from '../../store/useAuthStore.js';
 
 const LoginPage = () => {
+    const login = useAuthStore((state)=>state.login);
+
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -11,7 +15,7 @@ const LoginPage = () => {
     const { email, password } = formData;
 
     const handleGoogleLogin = () => {
-        window.location.href = "http://localhost:8080/auth/google";
+        window.location.href = `${conf.SERVER_BASE_URL}/auth/google`;
     };
 
     const handleChange = (e) => {
@@ -20,29 +24,7 @@ const LoginPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault(); // Prevent default form submission
-        try {
-            const res = await fetch('http://localhost:8080/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
-
-            const data = await res.json();
-
-            if (res.ok) {
-                // Store the token and redirect on successful login
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('user', JSON.stringify(data.user));
-                navigate('/home');
-            } else {
-                // Handle errors (e.g., display "Invalid Credentials")
-                console.error(data.message || 'Login failed');
-            }
-        } catch (err) {
-            console.error('Server error:', err);
-        }
+        login(formData, navigate);
     };
 
 
