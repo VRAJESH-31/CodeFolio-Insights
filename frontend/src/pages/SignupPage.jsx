@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/useAuthStore';
+import conf from '../config/config.js';
 
 const SignupPage = () => {
     const signup = useAuthStore((state)=>state.signup);
@@ -15,7 +16,7 @@ const SignupPage = () => {
     const { name, email, password } = formData;
 
     const handleGoogleSignup = () => {
-        window.location.href = "http://localhost:8080/auth/google";
+        window.location.href = `${conf.SERVER_BASE_URL}/auth/google`;
     };
 
     const handleChange = (e) => {
