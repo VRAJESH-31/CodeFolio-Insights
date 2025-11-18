@@ -33,7 +33,7 @@ const useAuthStore = create(
 
             logout : async () => {
                 try {
-                    const response = await axiosInstance.post(`${conf.SERVER_BASE_URL}/auth/logout`, {}, {requiresAuth : true});
+                    const response = await axiosInstance.post(`${conf.SERVER_BASE_URL}/auth/logout`, {}, {requiresAuth : true, withCredentials: true});
                     const data = response.data;
                     localStorage.removeItem("loggedInUser");
                     set({user:null, token: null});
@@ -45,7 +45,7 @@ const useAuthStore = create(
 
             checkAuth : async () => {
                 try {
-                    const response = await axiosInstance.get(`${conf.SERVER_BASE_URL}/auth/check`, {requiresAuth : true});
+                    const response = await axiosInstance.get(`${conf.SERVER_BASE_URL}/auth/check`, {requiresAuth : true, withCredentials: true});
                     const data = response.data;
                     set({user:data.user, token: data.token});
                 } catch (err) {

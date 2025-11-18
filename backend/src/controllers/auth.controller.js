@@ -94,7 +94,7 @@ const logout = (req, res, next) => {
 
 const checkAuth = async (req, res) => {
     try {
-        const token = req.header("Authorization")?.replace("Bearer ", "") || null;
+        const token = req.cookies.token || req.header("Authorization")?.replace("Bearer ", "") || null;
         if (!token) return res.status(401).json({ message: "Unauthenticated User! Token not provided" });
 
         const decodedToken = jwt.verify(token, JWT_SECRET);
