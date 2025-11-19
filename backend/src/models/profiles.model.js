@@ -11,6 +11,10 @@ const ProfileSchema = new Schema({
         type: String,
         default: "",
     },
+    twitterUsername : {
+        type: String,
+        default: "",
+    },
     githubUsername : {
         type: String,
         default: "",
@@ -32,6 +36,10 @@ const ProfileSchema = new Schema({
         default: "",
     },
     portfolioWebsiteLink: {
+        type: String,
+        default: "",
+    },
+    resumeLink: {
         type: String,
         default: "",
     }
