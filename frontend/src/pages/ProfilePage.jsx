@@ -90,6 +90,7 @@ const ProfilePage = () => {
             // use axiosInstance which should be configured with withCredentials: true
             const res = await axiosInstance.patch('/user', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
+                requiresAuth: true,
             });
 
             const updatedUser = res.data;
