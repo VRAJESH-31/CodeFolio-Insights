@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/useAuthStore';
 
 const Sidebar = ({ isSidebarCollapsed, activeMenu, setActiveMenu }) => {
     const [hoveredItem, setHoveredItem] = useState(null);
     const [mounted, setMounted] = useState(false);
     const location = useLocation();
+    const navigate = useNavigate();
     const user = useAuthStore((state)=>state.user);
     const logout = useAuthStore((state)=>state.logout);
 
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    const handleLogout = async () => {
+        await logout(); // Wait for store to clear data
+        navigate('/'); // Redirect user
+    };
 
     const sidebarItems = [
         { name: 'Dashboard', icon: 'fa-solid fa-table-columns', path: '/home' },
@@ -228,7 +234,7 @@ const Sidebar = ({ isSidebarCollapsed, activeMenu, setActiveMenu }) => {
                                     <span className="font-medium">Manage Links</span>
                                 </a>
                                 <button
-                                    onClick={logout}
+                                    onClick={handleLogout}
                                     className="w-full flex items-center gap-4 px-4 py-3 text-sm text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl mt-3 group/item transform hover:scale-[1.02]"
                                 >
                                     <i className="fa-solid fa-arrow-right-from-bracket w-4 text-center group-hover/item:translate-x-1 transition-transform duration-300"></i>

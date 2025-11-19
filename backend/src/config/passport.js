@@ -19,7 +19,7 @@ passport.use(new GoogleStrategy({
                     googleId: profile.id,
                     name: profile.displayName,
                     email: profile.emails[0].value,
-                    profilePicture: profile.photos[0].value,
+                    profile: profile.photos[0].value,
                     jobTitle: 'Developer' // Default job title
                 });
 
