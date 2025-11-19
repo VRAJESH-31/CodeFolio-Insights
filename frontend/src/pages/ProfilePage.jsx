@@ -14,18 +14,20 @@ import {
     Edit3,
     EyeOff
 } from 'lucide-react';
+import axiosInstance from '../api/axiosInstance';
 
 const ProfilePage = () => {
-    const [user, setUser] = useState({ 
-        name: '', 
-        email: '', 
-        jobTitle: '', 
-        profilePicture: '',
+    const [user, setUser] = useState({
+        name: '',
+        email: '',
+        jobTitle: '',
+        profile: '',
         bio: '',
         location: '',
         website: '',
         phone: ''
     });
+    const [selectedFile, setSelectedFile] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('profile');
@@ -40,7 +42,7 @@ const ProfilePage = () => {
                 name: userData.name || '',
                 email: userData.email || '',
                 jobTitle: userData.jobTitle || 'Full Stack Developer',
-                profilePicture: userData.profilePicture || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+                profile: userData.profile || userData.profilePicture || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
                 bio: userData.bio || 'Passionate developer building amazing applications',
                 location: userData.location || 'San Francisco, CA',
                 website: userData.website || '',
@@ -56,57 +58,65 @@ const ProfilePage = () => {
     };
 
     const handleImageUpload = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                setUser(prev => ({ ...prev, profilePicture: e.target.result }));
-            };
-            reader.readAsDataURL(file);
-        }
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setSelectedFile(file);
+        const previewUrl = URL.createObjectURL(file);
+        setUser(prev => ({ ...prev, profile: previewUrl }));
+    };
+
+    const triggerFileInput = () => {
+        fileInputRef.current?.click();
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-        
-        const token = localStorage.getItem('token');
+
         try {
-            const res = await fetch('http://localhost:8080/auth/user', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ 
-                    name: user.name, 
-                    jobTitle: user.jobTitle,
-                    bio: user.bio,
-                    location: user.location,
-                    website: user.website,
-                    phone: user.phone,
-                    profilePicture: user.profilePicture
-                }),
+            const formData = new FormData();
+            formData.append('name', user.name || '');
+            formData.append('jobTitle', user.jobTitle || '');
+            formData.append('bio', user.bio || '');
+            formData.append('location', user.location || '');
+            formData.append('website', user.website || '');
+            formData.append('phone', user.phone || '');
+
+            if (selectedFile) {
+                // backend expected field name for image (adjust if backend uses a different name)
+                formData.append('profileImage', selectedFile);
+            }
+
+            // use axiosInstance which should be configured with withCredentials: true
+            const res = await axiosInstance.patch('/user', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
             });
 
-            if (res.ok) {
-                const updatedUser = await res.json();
+            const updatedUser = res.data;
+            if (updatedUser) {
+                // ensure localStorage and state are in sync with server response
                 localStorage.setItem('user', JSON.stringify(updatedUser));
+                setUser(prev => ({
+                    ...prev,
+                    name: updatedUser.name ?? prev.name,
+                    email: updatedUser.email ?? prev.email,
+                    jobTitle: updatedUser.jobTitle ?? prev.jobTitle,
+                    profile: updatedUser.profile ?? updatedUser.profilePicture ?? prev.profile,
+                    bio: updatedUser.bio ?? prev.bio,
+                    location: updatedUser.location ?? prev.location,
+                    website: updatedUser.website ?? prev.website,
+                    phone: updatedUser.phone ?? prev.phone
+                }));
                 setIsEditing(false);
-                setTimeout(() => setIsLoading(false), 1000);
             } else {
                 alert('Failed to update profile.');
-                setIsLoading(false);
             }
         } catch (error) {
             console.error('Error updating profile:', error);
             alert('An error occurred while updating the profile.');
+        } finally {
             setIsLoading(false);
         }
-    };
-
-    const triggerFileInput = () => {
-        fileInputRef.current?.click();
     };
 
     const animationStyles = `
@@ -134,9 +144,8 @@ const ProfilePage = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-purple-50/30 p-4 font-sans">
             <style>{animationStyles}</style>
-            
+
             <div className="max-w-6xl mx-auto">
-                {/* Header */}
                 <div className="text-center mb-8 animate-float-in">
                     <h1 className="text-4xl md:text-5xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
                         Profile Settings
@@ -147,30 +156,28 @@ const ProfilePage = () => {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                    {/* Sidebar Navigation */}
-                    <div className="lg:col-span-1 animate-float-in" style={{animationDelay: '100ms'}}>
+                    <div className="lg:col-span-1 animate-float-in" style={{ animationDelay: '100ms' }}>
                         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-blue-100/50 p-6">
-                            {/* Profile Summary */}
                             <div className="text-center mb-6">
                                 <div className="relative inline-block mb-4">
                                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full blur-md opacity-30 animate-glow-pulse"></div>
-                                    <img 
-                                        src={user.profilePicture} 
-                                        alt="Profile" 
+                                    <img
+                                        src={user.profile || user.profilePicture}
+                                        alt="Profile"
                                         className="relative w-20 h-20 rounded-full object-cover border-2 border-blue-500/50 shadow-lg"
                                     />
-                                    <button 
+                                    <button
                                         onClick={triggerFileInput}
                                         className="absolute bottom-0 right-0 p-1.5 bg-blue-600 rounded-full border-2 border-white hover:bg-blue-700 transition-all duration-300 transform hover:scale-110"
                                     >
                                         <Camera className="w-3 h-3 text-white" />
                                     </button>
-                                    <input 
-                                        type="file" 
-                                        ref={fileInputRef} 
-                                        onChange={handleImageUpload} 
-                                        accept="image/*" 
-                                        className="hidden" 
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        onChange={handleImageUpload}
+                                        accept="image/*"
+                                        className="hidden"
                                     />
                                 </div>
                                 <h3 className="font-bold text-lg text-gray-800">{user.name}</h3>
@@ -181,7 +188,6 @@ const ProfilePage = () => {
                                 </div>
                             </div>
 
-                            {/* Navigation Tabs */}
                             <nav className="space-y-2">
                                 {[
                                     { id: 'profile', icon: User, label: 'Profile Info' },
@@ -191,8 +197,8 @@ const ProfilePage = () => {
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
                                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-300 ${
-                                            activeTab === tab.id 
-                                                ? 'bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-700 font-semibold border border-blue-200' 
+                                            activeTab === tab.id
+                                                ? 'bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-700 font-semibold border border-blue-200'
                                                 : 'text-gray-600 hover:text-gray-800 hover:bg-blue-50/50'
                                         }`}
                                     >
@@ -202,14 +208,13 @@ const ProfilePage = () => {
                                 ))}
                             </nav>
 
-                            {/* Stats */}
                             <div className="mt-6 p-4 bg-blue-50/50 rounded-xl border border-blue-200/50">
                                 <div className="flex items-center justify-between mb-3">
                                     <span className="text-sm text-gray-600">Profile Completion</span>
                                     <span className="text-sm font-bold text-blue-600">85%</span>
                                 </div>
                                 <div className="w-full bg-gray-200 rounded-full h-2">
-                                    <div 
+                                    <div
                                         className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-1000 animate-shimmer"
                                         style={{ width: '85%' }}
                                     ></div>
@@ -218,11 +223,9 @@ const ProfilePage = () => {
                         </div>
                     </div>
 
-                    {/* Main Content */}
                     <div className="lg:col-span-3 space-y-8">
-                        {/* Profile Tab */}
                         {activeTab === 'profile' && (
-                            <div className="animate-float-in" style={{animationDelay: '200ms'}}>
+                            <div className="animate-float-in" style={{ animationDelay: '200ms' }}>
                                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-blue-100/50 p-8">
                                     <div className="flex items-center justify-between mb-6">
                                         <h2 className="text-2xl font-black text-gray-800 flex items-center gap-3">
@@ -254,10 +257,10 @@ const ProfilePage = () => {
                                                     <User className="w-4 h-4 text-blue-500" />
                                                     Full Name
                                                 </label>
-                                                <input 
-                                                    type="text" 
-                                                    name="name" 
-                                                    value={user.name} 
+                                                <input
+                                                    type="text"
+                                                    name="name"
+                                                    value={user.name}
                                                     onChange={handleChange}
                                                     disabled={!isEditing}
                                                     className="w-full px-4 py-3 bg-white/50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -269,10 +272,10 @@ const ProfilePage = () => {
                                                     <Mail className="w-4 h-4 text-blue-500" />
                                                     Email Address
                                                 </label>
-                                                <input 
-                                                    type="email" 
-                                                    name="email" 
-                                                    value={user.email} 
+                                                <input
+                                                    type="email"
+                                                    name="email"
+                                                    value={user.email}
                                                     disabled
                                                     className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-gray-500 cursor-not-allowed"
                                                 />
@@ -283,10 +286,10 @@ const ProfilePage = () => {
                                                     <Briefcase className="w-4 h-4 text-blue-500" />
                                                     Job Title
                                                 </label>
-                                                <input 
-                                                    type="text" 
-                                                    name="jobTitle" 
-                                                    value={user.jobTitle} 
+                                                <input
+                                                    type="text"
+                                                    name="jobTitle"
+                                                    value={user.jobTitle}
                                                     onChange={handleChange}
                                                     disabled={!isEditing}
                                                     className="w-full px-4 py-3 bg-white/50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -298,10 +301,10 @@ const ProfilePage = () => {
                                                     <MapPin className="w-4 h-4 text-blue-500" />
                                                     Location
                                                 </label>
-                                                <input 
-                                                    type="text" 
-                                                    name="location" 
-                                                    value={user.location} 
+                                                <input
+                                                    type="text"
+                                                    name="location"
+                                                    value={user.location}
                                                     onChange={handleChange}
                                                     disabled={!isEditing}
                                                     className="w-full px-4 py-3 bg-white/50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -313,10 +316,10 @@ const ProfilePage = () => {
                                                     <Globe className="w-4 h-4 text-blue-500" />
                                                     Website
                                                 </label>
-                                                <input 
-                                                    type="url" 
-                                                    name="website" 
-                                                    value={user.website} 
+                                                <input
+                                                    type="url"
+                                                    name="website"
+                                                    value={user.website}
                                                     onChange={handleChange}
                                                     disabled={!isEditing}
                                                     placeholder="https://yourwebsite.com"
@@ -329,10 +332,10 @@ const ProfilePage = () => {
                                                     <FileText className="w-4 h-4 text-blue-500" />
                                                     Phone
                                                 </label>
-                                                <input 
-                                                    type="tel" 
-                                                    name="phone" 
-                                                    value={user.phone} 
+                                                <input
+                                                    type="tel"
+                                                    name="phone"
+                                                    value={user.phone}
                                                     onChange={handleChange}
                                                     disabled={!isEditing}
                                                     placeholder="+1 (555) 123-4567"
@@ -346,9 +349,9 @@ const ProfilePage = () => {
                                                 <Sparkles className="w-4 h-4 text-blue-500" />
                                                 Bio
                                             </label>
-                                            <textarea 
-                                                name="bio" 
-                                                value={user.bio} 
+                                            <textarea
+                                                name="bio"
+                                                value={user.bio}
                                                 onChange={handleChange}
                                                 disabled={!isEditing}
                                                 rows="3"
@@ -378,15 +381,14 @@ const ProfilePage = () => {
                             </div>
                         )}
 
-                        {/* Appearance Tab */}
                         {activeTab === 'appearance' && (
-                            <div className="animate-float-in" style={{animationDelay: '200ms'}}>
+                            <div className="animate-float-in" style={{ animationDelay: '200ms' }}>
                                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-blue-100/50 p-8">
                                     <h2 className="text-2xl font-black text-gray-800 flex items-center gap-3 mb-6">
                                         <Palette className="w-6 h-6 text-blue-600" />
                                         Appearance Settings
                                     </h2>
-                                    
+
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div className="space-y-6">
                                             <div className="space-y-4">
@@ -400,8 +402,8 @@ const ProfilePage = () => {
                                                         <button
                                                             key={theme.id}
                                                             className={`p-4 rounded-xl border-2 transition-all duration-300 text-center ${
-                                                                theme.active 
-                                                                    ? 'border-blue-500 bg-blue-50 shadow-md' 
+                                                                theme.active
+                                                                    ? 'border-blue-500 bg-blue-50 shadow-md'
                                                                     : 'border-gray-200 bg-white hover:border-blue-300'
                                                             }`}
                                                         >
@@ -449,9 +451,9 @@ const ProfilePage = () => {
                                                         { id: 'spacious', name: 'Spacious', description: 'More whitespace' }
                                                     ].map((layout) => (
                                                         <label key={layout.id} className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 hover:bg-blue-50/50 transition-all duration-300 cursor-pointer">
-                                                            <input 
-                                                                type="radio" 
-                                                                name="layout" 
+                                                            <input
+                                                                type="radio"
+                                                                name="layout"
                                                                 checked={layout.active}
                                                                 onChange={() => {}}
                                                                 className="text-blue-500 focus:ring-blue-500"
@@ -469,10 +471,10 @@ const ProfilePage = () => {
                                                 <h3 className="font-semibold text-gray-800 text-lg">Font Size</h3>
                                                 <div className="flex items-center gap-4">
                                                     <span className="text-sm text-gray-600">Small</span>
-                                                    <input 
-                                                        type="range" 
-                                                        min="12" 
-                                                        max="18" 
+                                                    <input
+                                                        type="range"
+                                                        min="12"
+                                                        max="18"
                                                         defaultValue="16"
                                                         className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
                                                     />
