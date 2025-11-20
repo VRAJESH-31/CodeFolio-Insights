@@ -130,8 +130,6 @@ const LeetCode = () => {
                 isSidebarCollapsed={false}
                 activeMenu="LeetCode"
                 setActiveMenu={() => {}}
-                user={{ name: 'John Doe', jobTitle: 'Developer' }}
-                handleLogout={() => alert('Logged out')}
             />
 
             {/* Main Content */}

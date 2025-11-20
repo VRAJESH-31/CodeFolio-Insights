@@ -1,5 +1,7 @@
 // src/pages/LinkManager.jsx
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import useAuthStore from '../../store/useAuthStore.js';
 import {
     Plus,
     Trash2,
@@ -14,16 +16,95 @@ import {
     Twitter,
     Copy,
     ExternalLink,
-    Eye,
-    EyeOff,
     Link as LinkIcon,
     Sparkles,
     Zap,
     Users,
-    Shield,
     Star,
     TrendingUp
 } from 'lucide-react';
+import conf from '../config/config.js';
+
+const API_BASE_URL = `${conf.SERVER_BASE_URL}/profiles`;
+
+// Mapping between frontend 'platform' value and backend 'profile object key'
+// This mapping is crucial for talking to the fixed backend schema.
+const PLATFORM_TO_BACKEND_KEY = {
+    'leetcode': 'leetCodeUsername',
+    'interviewbit' : 'interviewbitUsername', // Added/Confirmed for InterviewBit
+    'github': 'githubUsername',
+    'linkedin': 'linkedinUsername', 
+    'gfg': 'gfgUsername',
+    'hackerrank': 'hackerRankUsername',
+    'codechef': 'codechefUsername',
+    'codeforces': 'codeForcesUsername',
+    'twitter': 'twitterUsername',
+    'portfolio': 'portfolioWebsiteLink', 
+    'resume': 'resumeLink', 
+};
+
+// Converts the backend's fixed object structure to the frontend's dynamic links array.
+const transformBackendToFrontend = (backendData, platforms) => {
+    const links = [];
+    const keys = Object.keys(PLATFORM_TO_BACKEND_KEY);
+
+    for (const key of keys) {
+        const backendKey = PLATFORM_TO_BACKEND_KEY[key];
+        const username = backendData[backendKey];
+
+        if (username) {
+            const platformConfig = platforms.find(p => p.value === key);
+            links.push({
+                // Unique ID required for frontend list management
+                id: `${key}_${Date.now()}_${Math.random()}`, 
+                platform: key,
+                username: username,
+                url: getDefaultUrl(key, username),
+                label: platformConfig?.label || key,
+                color: platformConfig?.color || 'from-gray-500 to-gray-600',
+                bgColor: platformConfig?.bgColor || 'bg-gray-500/10'
+            });
+        }
+    }
+    return links;
+};
+
+// Converts the frontend's dynamic links array to the backend's fixed object structure.
+const transformFrontendToBackend = (linksArray) => {
+    const backendData = {};
+    const seenPlatforms = new Set();
+    
+    // Enforces the constraint: only the first link found for a platform
+    // will be saved, as the backend schema only supports one per platform.
+    linksArray.forEach(link => {
+        const backendKey = PLATFORM_TO_BACKEND_KEY[link.platform];
+        
+        if (backendKey && !seenPlatforms.has(link.platform)) {
+            // Use 'username' field, which contains the username or the full URL for resume/portfolio
+            backendData[backendKey] = link.username; 
+            seenPlatforms.add(link.platform);
+        }
+    });
+
+    return backendData;
+};
+
+const getDefaultUrl = (platform, username) => {
+    const urlMap = {
+        leetcode: `https://leetcode.com/${username}`,
+        github: `https://github.com/${username}`,
+        linkedin: `https://linkedin.com/in/${username}`,
+        gfg: `https://auth.geeksforgeeks.org/user/${username}`,
+        hackerrank: `https://hackerrank.com/${username}`,
+        codechef: `https://codechef.com/users/${username}`,
+        codeforces: `https://codeforces.com/profile/${username}`,
+        twitter: `https://twitter.com/${username}`,
+        interviewbit: `https://www.interviewbit.com/profile/${username}`,
+    };
+    // For portfolio/resume, the 'username' is the full URL, so return it directly if no map exists
+    return urlMap[platform] || username;
+};
+
 
 const LinkPage = () => {
     const [links, setLinks] = useState([]);
@@ -32,11 +113,10 @@ const LinkPage = () => {
     const [formData, setFormData] = useState({
         platform: '',
         username: '',
-        url: '',
-        visibility: 'public'
     });
     const [copiedId, setCopiedId] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const userId = useAuthStore((state)=>state.user._id);
 
     const platforms = [
         { value: 'leetcode', label: 'LeetCode', icon: Code, color: 'from-orange-500 to-orange-600', bgColor: 'bg-orange-500/10', placeholder: 'leetcode_username' },
@@ -47,34 +127,58 @@ const LinkPage = () => {
         { value: 'codechef', label: 'CodeChef', icon: Code, color: 'from-yellow-600 to-yellow-700', bgColor: 'bg-yellow-500/10', placeholder: 'codechef_username' },
         { value: 'codeforces', label: 'CodeForces', icon: Code, color: 'from-red-500 to-red-600', bgColor: 'bg-red-500/10', placeholder: 'codeforces_username' },
         { value: 'twitter', label: 'Twitter', icon: Twitter, color: 'from-blue-400 to-blue-500', bgColor: 'bg-sky-500/10', placeholder: 'twitter_username' },
+        // Added InterviewBit platform configuration
+        { value: 'interviewbit', label: 'InterviewBit', icon: Code, color: 'from-blue-700 to-blue-900', bgColor: 'bg-blue-700/10', placeholder: 'interviewbit_username' },
         { value: 'portfolio', label: 'Portfolio', icon: Globe, color: 'from-purple-500 to-purple-600', bgColor: 'bg-purple-500/10', placeholder: 'yourportfolio.com' },
         { value: 'resume', label: 'Resume', icon: FileText, color: 'from-indigo-500 to-indigo-600', bgColor: 'bg-indigo-500/10', placeholder: 'drive.google.com/your-resume' },
     ];
 
-    useEffect(() => {
-        // Simulate loading delay for better UX
-        const timer = setTimeout(() => {
-            const savedLinks = localStorage.getItem('userLinks');
-            if (savedLinks) {
-                setLinks(JSON.parse(savedLinks));
-            }
+
+    // --- API & State Management ---
+
+    const fetchLinks = async () => {
+        try {
+            // GET request to retrieve the profile object using the backend route
+            const response = await axios.get(`${API_BASE_URL}/${userId}`);
+            const rawLinks = transformBackendToFrontend(response.data, platforms);
+            setLinks(rawLinks);
+        } catch (error) {
+            console.error('Failed to fetch profile links:', error);
+            setLinks([]); 
+        } finally {
             setIsLoading(false);
-        }, 800);
+        }
+    };
+    
+    // This function handles the PATCH request to update the backend
+    const updateLinksOnServer = async (newLinks) => {
+        // Optimistically update the state
+        setLinks(newLinks); 
+        
+        try {
+            // Transform the array into the fixed object structure required by the backend
+            const backendData = transformFrontendToBackend(newLinks); 
+            
+            // PATCH request to update the fixed fields using the backend route
+            await axios.patch(`${API_BASE_URL}/`, backendData, {withCredentials: true, requiresAuth: true});
+        } catch (error) {
+            console.error('Failed to update profile links on server:', error);
+            fetchLinks(); 
+        }
+    };
+
+    useEffect(() => {
+        // Fetch data when the component mounts
+        const timer = setTimeout(fetchLinks, 800);
         return () => clearTimeout(timer);
     }, []);
 
-    const saveLinks = (newLinks) => {
-        setLinks(newLinks);
-        localStorage.setItem('userLinks', JSON.stringify(newLinks));
-    };
 
     const handleAdd = () => {
         setIsAdding(true);
         setFormData({
             platform: '',
             username: '',
-            url: '',
-            visibility: 'public'
         });
     };
 
@@ -83,44 +187,40 @@ const LinkPage = () => {
         setFormData({
             platform: link.platform,
             username: link.username,
-            url: link.url,
-            visibility: link.visibility
         });
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!formData.platform || !formData.username) return;
 
-        const platformConfig = platforms.find(p => p.value === formData.platform);
-        const defaultUrl = getDefaultUrl(formData.platform, formData.username);
-        
+        // Create a new link object with all necessary frontend properties
         const linkData = {
             id: editingId || Date.now().toString(),
             platform: formData.platform,
             username: formData.username,
-            url: formData.url || defaultUrl,
-            visibility: formData.visibility,
-            label: platformConfig?.label || formData.platform,
-            color: platformConfig?.color || 'from-gray-500 to-gray-600',
-            bgColor: platformConfig?.bgColor || 'bg-gray-500/10'
         };
 
+        let updatedLinks;
+        // Format the new/updated link with platform details (color, label, url, etc.)
+        // This is necessary to correctly populate the 'url' field and platform data on the frontend
+        const formattedLinkData = transformBackendToFrontend(transformFrontendToBackend([linkData]), platforms)[0]; 
+
         if (editingId) {
-            const updatedLinks = links.map(link => 
-                link.id === editingId ? linkData : link
+            updatedLinks = links.map(link => 
+                // When editing, we replace the link with the matching ID
+                link.id === editingId ? formattedLinkData : link
             );
-            saveLinks(updatedLinks);
-            setEditingId(null);
         } else {
-            saveLinks([...links, linkData]);
+            updatedLinks = [...links, formattedLinkData];
             setIsAdding(false);
         }
 
+        await updateLinksOnServer(updatedLinks);
+
+        setEditingId(null);
         setFormData({
             platform: '',
             username: '',
-            url: '',
-            visibility: 'public'
         });
     };
 
@@ -130,28 +230,13 @@ const LinkPage = () => {
         setFormData({
             platform: '',
             username: '',
-            url: '',
-            visibility: 'public'
         });
     };
 
-    const handleDelete = (id) => {
+    const handleDelete = async (id) => {
         const updatedLinks = links.filter(link => link.id !== id);
-        saveLinks(updatedLinks);
-    };
-
-    const getDefaultUrl = (platform, username) => {
-        const urlMap = {
-            leetcode: `https://leetcode.com/${username}`,
-            github: `https://github.com/${username}`,
-            linkedin: `https://linkedin.com/in/${username}`,
-            gfg: `https://auth.geeksforgeeks.org/user/${username}`,
-            hackerrank: `https://hackerrank.com/${username}`,
-            codechef: `https://codechef.com/users/${username}`,
-            codeforces: `https://codeforces.com/profile/${username}`,
-            twitter: `https://twitter.com/${username}`,
-        };
-        return urlMap[platform] || username;
+        // The transformation function will automatically remove the corresponding backend field if no link remains for that platform
+        await updateLinksOnServer(updatedLinks);
     };
 
     const copyToClipboard = (text, id) => {
@@ -160,16 +245,7 @@ const LinkPage = () => {
         setTimeout(() => setCopiedId(null), 2000);
     };
 
-    const toggleVisibility = (id) => {
-        const updatedLinks = links.map(link => 
-            link.id === id 
-                ? { ...link, visibility: link.visibility === 'public' ? 'private' : 'public' }
-                : link
-        );
-        saveLinks(updatedLinks);
-    };
-
-    // Animation styles
+    // Animation styles (Unchanged for UI consistency)
     const animationStyles = `
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
@@ -197,20 +273,17 @@ const LinkPage = () => {
         .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
     `;
 
-    const publicLinks = links.filter(link => link.visibility === 'public').length;
-    const privateLinks = links.filter(link => link.visibility === 'private').length;
-
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6 font-sans relative overflow-hidden">
             <style>{animationStyles}</style>
             
-            {/* Animated Background Elements */}
+            {/* Animated Background Elements (Unchanged) */}
             <div className="absolute top-10 left-10 w-20 h-20 bg-blue-200/30 rounded-full blur-xl animate-float"></div>
             <div className="absolute bottom-20 right-20 w-32 h-32 bg-purple-200/30 rounded-full blur-2xl animate-float" style={{animationDelay: '1s'}}></div>
             <div className="absolute top-1/3 right-1/4 w-16 h-16 bg-green-200/20 rounded-full blur-lg animate-float" style={{animationDelay: '2s'}}></div>
             
             <div className="max-w-7xl mx-auto relative z-10">
-                {/* Enhanced Header */}
+                {/* Enhanced Header (Unchanged) */}
                 <div className="text-center mb-12 animate-slide-in">
                     <div className="inline-flex items-center gap-3 mb-4 p-4 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/60">
                         <div className="p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg">
@@ -225,9 +298,10 @@ const LinkPage = () => {
                     </div>
                 </div>
 
-                {/* Stats Cards */}
+                {/* Stats Cards (Simplified to remove Public/Private) */}
                 {links.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 animate-slide-in" style={{animationDelay: '0.1s'}}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-slide-in" style={{animationDelay: '0.1s'}}>
+                        {/* Total Links */}
                         <div className="bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-lg border border-white/60">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-blue-500/10 rounded-lg">
@@ -239,28 +313,10 @@ const LinkPage = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-lg border border-white/60">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-green-500/10 rounded-lg">
-                                    <Eye className="h-5 w-5 text-green-600" />
-                                </div>
-                                <div>
-                                    <div className="text-2xl font-black text-gray-800">{publicLinks}</div>
-                                    <div className="text-sm text-gray-600">Public</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-lg border border-white/60">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-gray-500/10 rounded-lg">
-                                    <EyeOff className="h-5 w-5 text-gray-600" />
-                                </div>
-                                <div>
-                                    <div className="text-2xl font-black text-gray-800">{privateLinks}</div>
-                                    <div className="text-sm text-gray-600">Private</div>
-                                </div>
-                            </div>
-                        </div>
+                        {/* Empty placeholders to maintain 4-column layout if desired (can be removed for 2-column) */}
+                        <div className="hidden md:block bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-lg border border-white/60 opacity-0 pointer-events-none"></div>
+                        <div className="hidden md:block bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-lg border border-white/60 opacity-0 pointer-events-none"></div>
+                        {/* Platforms Count */}
                         <div className="bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-lg border border-white/60">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-purple-500/10 rounded-lg">
@@ -274,8 +330,8 @@ const LinkPage = () => {
                         </div>
                     </div>
                 )}
-
-                {/* Enhanced Add Button */}
+                
+                {/* Enhanced Add Button (Unchanged) */}
                 {!isAdding && !editingId && (
                     <div className="text-center mb-8 animate-slide-in" style={{animationDelay: '0.2s'}}>
                         <button
@@ -291,7 +347,7 @@ const LinkPage = () => {
                     </div>
                 )}
 
-                {/* Enhanced Add/Edit Form */}
+                {/* Enhanced Add/Edit Form (Removed Custom URL and Visibility fields) */}
                 {(isAdding || editingId) && (
                     <div className="bg-white/95 backdrop-blur-sm p-8 rounded-3xl shadow-2xl border border-white/60 mb-8 animate-slide-in">
                         <div className="flex items-center gap-3 mb-6">
@@ -303,6 +359,7 @@ const LinkPage = () => {
                             </h2>
                         </div>
                         
+                        {/* Simplified grid layout as two form fields were removed */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Platform Selection */}
                             <div className="space-y-3">
@@ -338,40 +395,9 @@ const LinkPage = () => {
                                     className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 bg-white/80 hover:border-gray-300"
                                 />
                             </div>
-
-                            {/* Custom URL */}
-                            <div className="space-y-3">
-                                <label className="block text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                    <LinkIcon className="h-4 w-4 text-purple-500" />
-                                    Custom URL (Optional)
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formData.url}
-                                    onChange={(e) => setFormData({...formData, url: e.target.value})}
-                                    placeholder="Leave empty for default URL"
-                                    className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 bg-white/80 hover:border-gray-300"
-                                />
-                            </div>
-
-                            {/* Visibility */}
-                            <div className="space-y-3">
-                                <label className="block text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                    <Shield className="h-4 w-4 text-orange-500" />
-                                    Visibility
-                                </label>
-                                <select
-                                    value={formData.visibility}
-                                    onChange={(e) => setFormData({...formData, visibility: e.target.value})}
-                                    className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 bg-white/80 hover:border-gray-300"
-                                >
-                                    <option value="public">🌍 Public - Visible to everyone</option>
-                                    <option value="private">🔒 Private - Only visible to you</option>
-                                </select>
-                            </div>
                         </div>
 
-                        {/* Action Buttons */}
+                        {/* Action Buttons (Unchanged) */}
                         <div className="flex gap-4 mt-8 justify-center">
                             <button
                                 onClick={handleSave}
@@ -383,7 +409,7 @@ const LinkPage = () => {
                             </button>
                             <button
                                 onClick={handleCancel}
-                                className="group flex items-center gap-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                                className="group flex items-center gap-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white py-4 px-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                             >
                                 <X className="h-5 w-5 transition-transform group-hover:scale-110" />
                                 Cancel
@@ -392,7 +418,7 @@ const LinkPage = () => {
                     </div>
                 )}
 
-                {/* Enhanced Links Grid */}
+                {/* Enhanced Links Grid (Simplified) */}
                 {isLoading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {[...Array(6)].map((_, index) => (
@@ -423,7 +449,7 @@ const LinkPage = () => {
                                     {/* Shimmer effect on hover */}
                                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                                     
-                                    {/* Platform Header */}
+                                    {/* Platform Header (Simplified) */}
                                     <div className="flex items-center justify-between mb-4 relative z-10">
                                         <div className="flex items-center gap-3">
                                             <div className={`p-3 rounded-xl bg-gradient-to-r ${link.color} shadow-md group-hover:scale-110 transition-transform duration-300`}>
@@ -431,24 +457,11 @@ const LinkPage = () => {
                                             </div>
                                             <div>
                                                 <span className="font-bold text-gray-800 block">{link.label}</span>
-                                                <span className={`text-xs px-2 py-1 rounded-full ${link.visibility === 'public' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
-                                                    {link.visibility}
-                                                </span>
                                             </div>
                                         </div>
-                                        <button
-                                            onClick={() => toggleVisibility(link.id)}
-                                            className={`p-2 rounded-lg transition-all duration-300 ${
-                                                link.visibility === 'public' 
-                                                    ? 'text-green-500 hover:bg-green-50 hover:scale-110' 
-                                                    : 'text-gray-400 hover:bg-gray-50 hover:scale-110'
-                                            }`}
-                                        >
-                                            {link.visibility === 'public' ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                                        </button>
                                     </div>
 
-                                    {/* Username */}
+                                    {/* Username (Unchanged) */}
                                     <div className="mb-4 relative z-10">
                                         <p className="text-sm text-gray-600 mb-2 flex items-center gap-1">
                                             <Users className="h-3 w-3" />
@@ -459,7 +472,7 @@ const LinkPage = () => {
                                         </p>
                                     </div>
 
-                                    {/* URL Preview */}
+                                    {/* URL Copy Button (Moved to the bottom action bar for simplicity) */}
                                     <div className="mb-6 relative z-10">
                                         <p className="text-sm text-gray-600 mb-2 flex items-center gap-1">
                                             <LinkIcon className="h-3 w-3" />
@@ -480,7 +493,7 @@ const LinkPage = () => {
                                         </div>
                                     </div>
 
-                                    {/* Action Buttons */}
+                                    {/* Action Buttons (Unchanged) */}
                                     <div className="flex gap-2 relative z-10">
                                         <a
                                             href={link.url}
@@ -510,7 +523,7 @@ const LinkPage = () => {
                     </div>
                 )}
 
-                {/* Enhanced Empty State */}
+                {/* Enhanced Empty State (Unchanged) */}
                 {links.length === 0 && !isAdding && !isLoading && (
                     <div className="text-center py-16 animate-slide-in">
                         <div className="max-w-md mx-auto bg-white/90 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/60">

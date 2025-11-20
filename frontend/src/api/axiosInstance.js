@@ -13,14 +13,11 @@ axiosInstance.interceptors.request.use(
     (config) => {
         if (config.requiresAuth){
             const loggedInUser = localStorage.getItem("loggedInUser");
-            // Add safety check here
             if (loggedInUser) {
                 try {
                     const parsedUser = JSON.parse(loggedInUser);
                     const token = parsedUser?.state?.token;
-                    if (token) {
-                        config.headers.Authorization = `Bearer ${token}`;
-                    }
+                    if (token) config.headers.Authorization = `Bearer ${token}`;
                 } catch (error) {
                     console.error("Error parsing user data from local storage", error);
                 }

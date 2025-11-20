@@ -22,14 +22,7 @@ import {
 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 
-const ResumeAnalysis = ({
-    isSidebarCollapsed,
-    setIsSidebarCollapsed,
-    activeMenu,
-    setActiveMenu,
-    user,
-    handleLogout
-}) => {
+const ResumeAnalysis = () => {
 
     const [jobDescription, setJobDescription] = useState('');
     const [experience, setExperience] = useState('0-2');
@@ -157,11 +150,9 @@ const ResumeAnalysis = ({
             <style>{animationStyles}</style>
             
             <Sidebar
-                isSidebarCollapsed={isSidebarCollapsed}
-                activeMenu={activeMenu}
-                setActiveMenu={setActiveMenu}
-                user={user}
-                handleLogout={handleLogout}
+                isSidebarCollapsed={false}
+                activeMenu="Resume Analysis"
+                setActiveMenu={() => {}}
             />
 
             <main className={`flex-1 overflow-y-auto transition-all duration-500 `}>
