@@ -1,4 +1,4 @@
-import React, { useState} from 'react';
+import React, { useEffect, useState} from 'react';
 import {
     Search,
     CheckCircle,
@@ -56,9 +56,13 @@ import ProblemStats from '../components/ProblemStats.jsx';
 import ErrorContainer from '../components/ErrorContainer.jsx';
 import MemeContainer from '../components/MemeContainer.jsx';
 import LeetCodeContestStats from '../components/LeetcodeContestStats.jsx';
+import axios from 'axios';
+import useAuthStore from '../../store/useAuthStore.js';
+import conf from '../config/config.js';
 
 const LeetCode = () => {
     const [userId, setUserId] = useState('');
+    const user = useAuthStore((state)=>state.user);
 
     const getLeetcodeSubmissionData = (submissionData) => {
         return Object.entries(submissionData).sort((x,y)=>x[0]-y[0]).map((dailyData)=>{
@@ -95,6 +99,21 @@ const LeetCode = () => {
         }
         return responseTopicData.sort((x,y)=>Math.random()-0.5).filter((_, index)=>index<10);
     }
+
+    const getLeetcodeURL = async () => {
+        try {
+            const response = await axios.get(`${conf.SERVER_BASE_URL}/profiles/${user._id}`);
+            const data = response.data;
+            setUserId(data.leetCodeUsername);
+        } catch (error) {
+            console.log(error.response.data.message);
+            console.error(error);
+        }
+    }
+
+    useEffect(()=>{
+        getLeetcodeURL();
+    }, [])
 
     const { data, isLoading, isError, error, refetch, isFetching } = useLeetcodeAnalysis(userId.trim());
 

@@ -117,9 +117,13 @@ const updateUserInfo = async (req, res) => {
 
         if (!updatedUser) return res.status(500).json({message: "Could not update the user info"});
 
+        console.log(file);
+
         if (file){
             const previousProfileImageUrl = updatedUser.profile;
             const newProfileImageUrl = await uploadFile(file.path, "Codefolio/Profiles");
+
+            console.log(newProfileImageUrl);
 
             if (newProfileImageUrl){
                 if (previousProfileImageUrl) await destroyFile(previousProfileImageUrl, "Codefolio/Profiles");

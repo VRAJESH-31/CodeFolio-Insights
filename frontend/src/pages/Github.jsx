@@ -39,11 +39,15 @@ import {
     Bar,
 } from 'recharts';
 import { useGithubAnalysis } from "../hooks/useAnalyzer.js"; 
+import axios from 'axios';
+import useAuthStore from '../../store/useAuthStore.js';
+import conf from '../config/config.js';
 
 
 const GitHub = () => {
     const [username, setUsername] = useState("");
     const [mounted, setMounted] = useState(false);
+    const user = useAuthStore((state)=>state.user);
 
     const {
         data: analysis,
@@ -106,6 +110,21 @@ const GitHub = () => {
         if (!username.trim()) return;
         await refetch(); // ✅ trigger API fetch
     };
+
+    const getGithubUrl = async () => {
+        try {
+            const response = await axios.get(`${conf.SERVER_BASE_URL}/profiles/${user._id}`);
+            const data = response.data;
+            setUsername(data.githubUsername);
+        } catch (error) {
+            console.log(error.response.data.message);
+            console.error(error);
+        }
+    }
+
+    useEffect(()=>{
+        getGithubUrl();
+    }, [])
 
 
     const animationStyles = `

@@ -14,44 +14,19 @@ import {
     Edit3,
     EyeOff
 } from 'lucide-react';
-import axiosInstance from '../api/axiosInstance';
+import axiosInstance from '../api/axiosInstance.js';
+import useAuthStore from '../../store/useAuthStore.js';
+import toast from 'react-hot-toast';
 
 const ProfilePage = () => {
-    const [user, setUser] = useState({
-        name: '',
-        email: '',
-        jobTitle: '',
-        profile: '',
-        bio: '',
-        location: '',
-        website: '',
-        phone: ''
-    });
+    const [user, setUser] = useState(useAuthStore((state)=>state.user));
     const [selectedFile, setSelectedFile] = useState(null);
+    const [profileImageViewUrl, setProfileImageViewUrl] = useState(user?.profile || user?.profilePicture ||  "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face");
     const [isEditing, setIsEditing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('profile');
     const fileInputRef = useRef(null);
     const navigate = useNavigate();
-
-    useEffect(() => {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            const userData = JSON.parse(storedUser);
-            setUser({
-                name: userData.name || '',
-                email: userData.email || '',
-                jobTitle: userData.jobTitle || 'Full Stack Developer',
-                profile: userData.profile || userData.profilePicture || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-                bio: userData.bio || 'Passionate developer building amazing applications',
-                location: userData.location || 'San Francisco, CA',
-                website: userData.website || '',
-                phone: userData.phone || ''
-            });
-        } else {
-            navigate('/login');
-        }
-    }, [navigate]);
 
     const handleChange = (e) => {
         setUser({ ...user, [e.target.name]: e.target.value });
@@ -61,13 +36,48 @@ const ProfilePage = () => {
         const file = e.target.files?.[0];
         if (!file) return;
         setSelectedFile(file);
+        setUser(prev => ({ ...prev, profile: selectedFile }));
         const previewUrl = URL.createObjectURL(file);
-        setUser(prev => ({ ...prev, profile: previewUrl }));
+        setProfileImageViewUrl(previewUrl);
     };
 
     const triggerFileInput = () => {
         fileInputRef.current?.click();
     };
+
+    const updateImage = async () => {
+        setIsLoading(true);
+        try {
+            const formData = new FormData();
+            if (selectedFile) {
+                formData.append('profileImage', selectedFile);
+            }
+
+            const res = await axiosInstance.patch('/user', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+                requiresAuth: true,
+            });
+
+            const updatedUser = res.data;
+            if (updatedUser) {
+                setUser(prev => ({
+                    ...prev,
+                    profile: updatedUser.profile ?? updatedUser.profilePicture ?? prev.profile,
+                }));
+            } else {
+                toast.error("Failed to update the profile!");
+            }
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            toast.error("Failed to update the profile!");
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    useEffect(()=>{
+        updateImage();
+    }, [selectedFile]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -83,11 +93,9 @@ const ProfilePage = () => {
             formData.append('phone', user.phone || '');
 
             if (selectedFile) {
-                // backend expected field name for image (adjust if backend uses a different name)
                 formData.append('profileImage', selectedFile);
             }
 
-            // use axiosInstance which should be configured with withCredentials: true
             const res = await axiosInstance.patch('/user', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
                 requiresAuth: true,
@@ -95,8 +103,6 @@ const ProfilePage = () => {
 
             const updatedUser = res.data;
             if (updatedUser) {
-                // ensure localStorage and state are in sync with server response
-                localStorage.setItem('user', JSON.stringify(updatedUser));
                 setUser(prev => ({
                     ...prev,
                     name: updatedUser.name ?? prev.name,
@@ -110,11 +116,11 @@ const ProfilePage = () => {
                 }));
                 setIsEditing(false);
             } else {
-                alert('Failed to update profile.');
+                toast.error("failed to update profile");
             }
         } catch (error) {
             console.error('Error updating profile:', error);
-            alert('An error occurred while updating the profile.');
+            toast.error("failed to update profile");
         } finally {
             setIsLoading(false);
         }
@@ -163,7 +169,7 @@ const ProfilePage = () => {
                                 <div className="relative inline-block mb-4">
                                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full blur-md opacity-30 animate-glow-pulse"></div>
                                     <img
-                                        src={user.profile || user.profilePicture}
+                                        src={profileImageViewUrl}
                                         alt="Profile"
                                         className="relative w-20 h-20 rounded-full object-cover border-2 border-blue-500/50 shadow-lg"
                                     />
