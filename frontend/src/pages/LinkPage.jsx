@@ -116,7 +116,7 @@ const LinkPage = () => {
     });
     const [copiedId, setCopiedId] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const userId = useAuthStore((state)=>state.user._id);
+    const userId = useAuthStore((state)=>state?.user?._id);
 
     const platforms = [
         { value: 'leetcode', label: 'LeetCode', icon: Code, color: 'from-orange-500 to-orange-600', bgColor: 'bg-orange-500/10', placeholder: 'leetcode_username' },
@@ -127,14 +127,10 @@ const LinkPage = () => {
         { value: 'codechef', label: 'CodeChef', icon: Code, color: 'from-yellow-600 to-yellow-700', bgColor: 'bg-yellow-500/10', placeholder: 'codechef_username' },
         { value: 'codeforces', label: 'CodeForces', icon: Code, color: 'from-red-500 to-red-600', bgColor: 'bg-red-500/10', placeholder: 'codeforces_username' },
         { value: 'twitter', label: 'Twitter', icon: Twitter, color: 'from-blue-400 to-blue-500', bgColor: 'bg-sky-500/10', placeholder: 'twitter_username' },
-        // Added InterviewBit platform configuration
         { value: 'interviewbit', label: 'InterviewBit', icon: Code, color: 'from-blue-700 to-blue-900', bgColor: 'bg-blue-700/10', placeholder: 'interviewbit_username' },
         { value: 'portfolio', label: 'Portfolio', icon: Globe, color: 'from-purple-500 to-purple-600', bgColor: 'bg-purple-500/10', placeholder: 'yourportfolio.com' },
         { value: 'resume', label: 'Resume', icon: FileText, color: 'from-indigo-500 to-indigo-600', bgColor: 'bg-indigo-500/10', placeholder: 'drive.google.com/your-resume' },
     ];
-
-
-    // --- API & State Management ---
 
     const fetchLinks = async () => {
         try {
