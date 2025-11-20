@@ -204,12 +204,15 @@ const analyzeLeetCode = async (req, res) => {
 const analyzeResume = async (req, res) => {
     try {
         const file = req.file;
-        const experienceInYears = req.body.experienceInYears || 0;
+        const experienceInYears = req.body.experienceInYears || "0 - 2 Years (New Grad)";
         const jobDescription = req.body.jobDescription || "";
+
+        const validExperienceYearsRange = ["0 - 2 Years (New Grad)", "3 - 5 Years (Mid-Level)", "6 - 10 Years (Senior)", "10+ Years (Lead/Architect)"];
 
         if (!file) return res.status(400).json({message: "Resume pdf not provided!"});
         if (file.mimetype!="application/pdf") return res.status(400).json({message: "Resume should be in only pdf format!"});
         if (file.size>MAX_PDF_SIZE) return res.status(400).json({message: `Size of resume should not surpass ${MAX_PDF_SIZE/(1024*1204)} MB!`});
+        if (!validExperienceYearsRange.includes(experienceInYears)) return res.status(400).json({message: `Invalid experience years range!`});
 
         const {noOfPages, pdfText} = await getPdfContent(file.path);
         if (noOfPages==0) return res.status(500).json({message: "Something went wrong while parsing pdf content! Try Again!"});
