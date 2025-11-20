@@ -9,6 +9,15 @@ const Sidebar = ({ isSidebarCollapsed, activeMenu, setActiveMenu }) => {
     const navigate = useNavigate();
     const user = useAuthStore((state)=>state.user);
     const logout = useAuthStore((state)=>state.logout);
+    // Add local toggle handler if not provided by parent
+    const [localCollapsed, setLocalCollapsed] = useState(isSidebarCollapsed);
+    const handleToggleCollapse = () => {
+        if (typeof setActiveMenu === 'function' && setActiveMenu.name === 'setIsSidebarCollapsed') {
+            setActiveMenu(!isSidebarCollapsed);
+        } else {
+            setLocalCollapsed((prev) => !prev);
+        }
+    };
 
     useEffect(() => {
         setMounted(true);
@@ -23,7 +32,6 @@ const Sidebar = ({ isSidebarCollapsed, activeMenu, setActiveMenu }) => {
         { name: 'Dashboard', icon: 'fa-solid fa-table-columns', path: '/home' },
         { name: 'LeetCode', icon: 'fa-solid fa-code', path: '/leetcode' },
         { name: 'GitHub', icon: 'fa-brands fa-github', path: '/github' },
-        { name: 'Gfg', icon: 'fa-brands fa-linkedin-in', path: '/gfg' },
         { name: 'Resume Analysis', icon: 'fa-solid fa-file-lines', path: '/resume-analyse' },
     ];
 
@@ -79,16 +87,24 @@ const Sidebar = ({ isSidebarCollapsed, activeMenu, setActiveMenu }) => {
                     <div className="flex items-center space-x-3 overflow-hidden transition-all duration-500">
                         <div className="relative">
                             <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl blur-md opacity-30 animate-glow-pulse"></div>
-                        
                         </div>
                         {!isSidebarCollapsed && (
                             <div className="animate-slide-in-right">
                                 <span className="text-2xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">
-                                    CodeFolio-Insights
+                                    CodeFolio
                                 </span>
                                 <div className="h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mt-1 animate-shimmer"></div>
                             </div>
                         )}
+                        {/* Toggle Collapse Button - always visible */}
+                        <button
+                            onClick={handleToggleCollapse}
+                            className="ml-2 p-2 rounded-full bg-blue-100 hover:bg-blue-200 transition-all duration-300"
+                            title={isSidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+                            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                            <i className={`fa-solid ${isSidebarCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'} text-blue-600`}></i>
+                        </button>
                     </div>
                 </div>
 

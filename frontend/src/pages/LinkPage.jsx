@@ -23,8 +23,9 @@ import {
     Star,
     TrendingUp
 } from 'lucide-react';
+import conf from '../config/config.js';
 
-const API_BASE_URL = 'http://127.0.0.1:8080/profiles';
+const API_BASE_URL = `${conf.SERVER_BASE_URL}/profiles`;
 
 // Mapping between frontend 'platform' value and backend 'profile object key'
 // This mapping is crucial for talking to the fixed backend schema.
@@ -41,8 +42,6 @@ const PLATFORM_TO_BACKEND_KEY = {
     'portfolio': 'portfolioWebsiteLink', 
     'resume': 'resumeLink', 
 };
-
-// --- DATA TRANSFORMATION HELPERS ---
 
 // Converts the backend's fixed object structure to the frontend's dynamic links array.
 const transformBackendToFrontend = (backendData, platforms) => {
@@ -100,7 +99,6 @@ const getDefaultUrl = (platform, username) => {
         codechef: `https://codechef.com/users/${username}`,
         codeforces: `https://codeforces.com/profile/${username}`,
         twitter: `https://twitter.com/${username}`,
-        // Added InterviewBit URL rule
         interviewbit: `https://www.interviewbit.com/profile/${username}`,
     };
     // For portfolio/resume, the 'username' is the full URL, so return it directly if no map exists

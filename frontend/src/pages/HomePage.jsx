@@ -40,8 +40,8 @@ const ReactApexChart = ({ options, series, type, width, height }) => {
 const App = () => {
     const [activeMenu, setActiveMenu] = useState('Dashboard');
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-    const user = useAuthStore((state)=>state.user);
-    const [mounted, setMounted] = useState(false);
+    // const user = useAuthStore((state)=>state.user);
+    // const [mounted, setMounted] = useState(false);
 
     const navigate = useNavigate();
 
@@ -308,8 +308,6 @@ const App = () => {
                 isSidebarCollapsed={isSidebarCollapsed}
                 activeMenu={activeMenu}
                 setActiveMenu={setActiveMenu}
-                user={user}
-                handleLogout={handleLogout}
             />
 
             <div className="flex-1 flex flex-col overflow-hidden relative">

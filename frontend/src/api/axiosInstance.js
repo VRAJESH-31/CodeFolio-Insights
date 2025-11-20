@@ -17,7 +17,6 @@ axiosInstance.interceptors.request.use(
                 try {
                     const parsedUser = JSON.parse(loggedInUser);
                     const token = parsedUser?.state?.token;
-                    console.log(token);
                     if (token) config.headers.Authorization = `Bearer ${token}`;
                 } catch (error) {
                     console.error("Error parsing user data from local storage", error);
