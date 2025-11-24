@@ -172,7 +172,11 @@ const analyzeLeetCode = async (req, res) => {
         let submissionConsistencyScore = leetCodeScoring.getSubmissionConsistencyScore(submissionCalendar);
         let topicWiseProblemsScore = leetCodeScoring.getTopicWiseProblemsScore(topicWiseProblems);
 
-        score = acceptanceRateScore*0.1 + badgesScore*0.1 + submissionConsistencyScore*0.2 + contestScore*0.2 + problemsSolvedScore*0.2 + profileScore * 0.05 + topicWiseProblemsScore*0.05;
+        const contestBonus = 10 + Math.max(0, contestScore - 95) * 4;
+
+        score = acceptanceRateScore*0.1 + badgesScore*0.05 + submissionConsistencyScore*0.25 + contestScore*0.25 + problemsSolvedScore*0.25 + profileScore * 0.05 + topicWiseProblemsScore*0.05;
+
+        score = Math.min(100, score + contestBonus);
 
         try {
             await scoreModel.create({ username: username, score: score, platform: "Leetcode" });
