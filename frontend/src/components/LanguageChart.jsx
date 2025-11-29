@@ -1,48 +1,21 @@
 import React from 'react';
-import ReactApexChart from './ReactApexChart';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
 const LanguageChart = ({ githubData }) => {
     const languages = githubData?.languageUsageInBytes || {};
     const sortedLanguages = Object.entries(languages)
         .sort(([, a], [, b]) => b - a)
         .slice(0, 5);
-    const languageLabels = sortedLanguages.map(([lang]) => lang);
-    const languageSeries = sortedLanguages.map(([, bytes]) => bytes);
 
-    const options = {
-        chart: {
-            toolbar: { show: false },
-            fontFamily: 'Inter, sans-serif',
-            background: 'transparent',
-        },
-        dataLabels: { enabled: false },
-        labels: languageLabels.length > 0 ? languageLabels : ["No Data"],
-        colors: ["#3b82f6", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981"],
-        plotOptions: {
-            pie: {
-                donut: {
-                    size: "65%",
-                    background: 'transparent'
-                },
-            },
-        },
-        legend: {
-            position: "bottom",
-            horizontalAlign: "center",
-            fontSize: "13px",
-            fontFamily: 'Inter, sans-serif',
-            markers: {
-                radius: 4,
-                offsetX: -3,
-                offsetY: 1
-            }
-        },
-        stroke: {
-            colors: ['transparent']
-        }
-    };
+    const data = sortedLanguages.map(([lang, bytes], index) => ({
+        name: lang,
+        value: bytes,
+        fill: ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'][index]
+    }));
 
-    const series = languageSeries.length > 0 ? languageSeries : [1];
+    if (data.length === 0) {
+        data.push({ name: 'No Data', value: 1, fill: '#e5e7eb' });
+    }
 
     return (
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-blue-100/30 shadow-lg hover:shadow-xl transition-all duration-500 p-5 lg:p-6 animate-float-in" style={{ animationDelay: '200ms' }}>
@@ -53,7 +26,37 @@ const LanguageChart = ({ githubData }) => {
                 </div>
             </div>
             <div className="h-60 lg:h-64">
-                <ReactApexChart type="donut" height="100%" width="100%" series={series} options={options} />
+                <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                        <Pie
+                            data={data}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={80}
+                            paddingAngle={5}
+                            dataKey="value"
+                        >
+                            {data.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.fill} />
+                            ))}
+                        </Pie>
+                        <Tooltip
+                            contentStyle={{
+                                backgroundColor: '#fff',
+                                border: '1px solid #e5e7eb',
+                                borderRadius: '0.5rem',
+                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                            }}
+                        />
+                        <Legend
+                            verticalAlign="bottom"
+                            height={36}
+                            iconType="circle"
+                            wrapperStyle={{ paddingTop: '20px' }}
+                        />
+                    </PieChart>
+                </ResponsiveContainer>
             </div>
         </div>
     );

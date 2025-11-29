@@ -1,23 +1,120 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useMemo, useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import useDashboard from '../hooks/useDashboard';
-import { Loader2, AlertCircle } from 'lucide-react';
 import StatCard from '../components/StatCard';
-import ActivityChart from '../components/ActivityChart';
-import LanguageChart from '../components/LanguageChart';
-import DifficultyChart from '../components/DifficultyChart';
-import RepoTable from '../components/RepoTable';
 import TopicStats from '../components/TopicStats';
+import RepoTable from '../components/RepoTable';
+import DifficultyChart from '../components/DifficultyChart';
+import LanguageChart from '../components/LanguageChart';
+import { Loader2, AlertCircle, Code, Calendar, Flame, Award, GitCommit, Layers, ExternalLink, Trophy, Target, Zap } from 'lucide-react';
 import { getRandomHexColor } from '../utils/helper';
 
-const App = () => {
+// --- Utility Components ---
+
+const PlatformCard = ({ platform, data, icon, color, link }) => {
+    if (!data) return null;
+    const Icon = icon;
+
+    return (
+        <div className="bg-white/90 backdrop-blur-sm border border-gray-200 rounded-2xl p-6 flex flex-col h-full hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group animate-float-in">
+            <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                    <div className="p-3 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 group-hover:scale-110 transition-transform duration-300 shadow-md">
+                        <Icon className="w-6 h-6" style={{ color }} />
+                    </div>
+                    <h3 className="text-gray-900 font-black text-lg capitalize">{platform}</h3>
+                </div>
+                {link && (
+                    <a href={link} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-blue-600 transition-colors">
+                        <ExternalLink className="w-4 h-4" />
+                    </a>
+                )}
+            </div>
+
+            <div className="space-y-4 flex-1">
+                {Object.entries(data).map(([key, value]) => (
+                    <div key={key} className="flex justify-between items-center text-sm border-b border-gray-100 pb-3 last:border-0 last:pb-0 hover:bg-gray-50/50 px-2 py-1 rounded transition-colors">
+                        <span className="text-gray-600 font-semibold capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                        <span className="text-gray-900 font-black font-mono">{value}</span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+// --- Main Component ---
+
+const HomePage = () => {
     const [activeMenu, setActiveMenu] = useState('Dashboard');
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-    const navigate = useNavigate();
+    const { dashboardData, isLoading, error } = useDashboard();
 
-    const { githubData, leetcodeData, resumeData, profiles, isLoading } = useDashboard();
+    // Debug: Log data when it changes
+    useEffect(() => {
+        if (dashboardData) {
+            console.log('=== DASHBOARD DATA ===');
+            console.log('Full Data:', dashboardData);
+            console.log('LeetCode:', dashboardData.leetcode);
+            console.log('  - Profile:', dashboardData.leetcode?.profile);
+            console.log('  - Submission:', dashboardData.leetcode?.submission);
+            console.log('  - Contest:', dashboardData.leetcode?.contest);
+            console.log('  - Badges:', dashboardData.leetcode?.badges);
+            console.log('  - Problems:', dashboardData.leetcode?.problems);
+            console.log('  - ProblemsCount:', dashboardData.leetcode?.problemsCount);
+            console.log('  - TopicWiseProblems:', dashboardData.leetcode?.topicWiseProblems);
+            console.log('GitHub:', dashboardData.github);
+            console.log('  - Profile:', dashboardData.github?.profile);
+            console.log('  - Commits:', dashboardData.github?.commits);
+            console.log('  - Contributions:', dashboardData.github?.contributions);
+            console.log('  - Calendar:', dashboardData.github?.calendar);
+            console.log('  - Badges:', dashboardData.github?.badges);
+            console.log('  - LanguageStats:', dashboardData.github?.languageStats);
+            console.log('  - LanguageUsageInBytes:', dashboardData.github?.languageUsageInBytes);
+            console.log('  - UserReposStat:', dashboardData.github?.userReposStat);
+            console.log('GFG:', dashboardData.gfg);
+            console.log('CodeChef:', dashboardData.codechef);
+            console.log('InterviewBit:', dashboardData.interviewbit);
+        }
+    }, [dashboardData]);
 
+    // --- Client-Side Aggregation ---
+    const stats = useMemo(() => {
+        if (!dashboardData) return null;
+
+        const { leetcode, github, gfg, codechef, interviewbit } = dashboardData;
+
+        const totalQuestions = (
+            (leetcode?.submission?.totalSolved || 0) +
+            (gfg?.submission?.totalSolved || 0) +
+            (codechef?.submission?.totalSolved || 0) +
+            (interviewbit?.profile?.totalSolved || 0)
+        );
+
+        const githubActiveDays = github?.calendar?.totalActiveDays || 0;
+        const totalActiveDays = Math.max(githubActiveDays, 0);
+
+        const currentStreak = Math.max(
+            github?.calendar?.currentStreak || 0,
+            leetcode?.submission?.streak || 0,
+            gfg?.submission?.streak || 0
+        );
+
+        const totalBadges = (
+            (leetcode?.badges?.length || 0) +
+            (github?.badges?.length || 0) +
+            (gfg?.profile?.badgesCount || 0)
+        );
+
+        return {
+            totalQuestions,
+            totalActiveDays,
+            currentStreak,
+            totalBadges
+        };
+    }, [dashboardData]);
+
+    // Get LeetCode topic data
     const getLeetcodeTopicData = (topicData) => {
         if (!topicData) return [];
         const responseTopicData = [];
@@ -35,6 +132,7 @@ const App = () => {
         return responseTopicData.sort(() => Math.random() - 0.5).filter((_, index) => index < 10);
     }
 
+    // Animation styles
     const animationStyles = `
         @keyframes floatIn {
             0% { opacity: 0; transform: translateY(20px) scale(0.95); }
@@ -72,12 +170,9 @@ const App = () => {
         .animate-scale-in { animation: scaleIn 0.4s ease-out forwards; }
     `;
 
-    // Check if profiles are linked
-    const hasGithub = !!profiles?.githubUsername;
-    const hasLeetcode = !!profiles?.leetCodeUsername;
-
-    return (
-        <div className="flex h-screen bg-gradient-to-br from-blue-50/30 via-white to-purple-50/30 font-sans overflow-hidden relative">
+    // Common layout wrapper
+    const renderLayout = (content) => (
+        <div className="flex h-screen bg-gradient-to-br from-blue-50/30 via-white to-purple-50/30 font-sans text-gray-900 overflow-hidden relative">
             <style>{animationStyles}</style>
 
             {/* Enhanced Background Elements */}
@@ -94,7 +189,6 @@ const App = () => {
             />
 
             <div className="flex-1 flex flex-col overflow-hidden relative">
-                {/* Enhanced Header with Glass Morphism */}
                 <header className="bg-white/70 backdrop-blur-xl shadow-sm border-b border-blue-100/30 z-20 sticky top-0">
                     <div className="flex items-center justify-between p-4 lg:p-6">
                         <div className="flex items-center space-x-4">
@@ -102,7 +196,7 @@ const App = () => {
                                 onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                                 className="p-3 rounded-2xl text-gray-600 hover:text-blue-600 hover:bg-white/80 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all duration-300 transform hover:scale-105 group backdrop-blur-sm"
                             >
-                                <i className="fa-solid fa-bars text-lg group-hover:rotate-90 transition-transform duration-300"></i>
+                                <Layers className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />
                             </button>
                             <div className="flex flex-col">
                                 <h1 className="text-2xl lg:text-3xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent animate-slide-in-right">
@@ -113,177 +207,184 @@ const App = () => {
                                 </p>
                             </div>
                         </div>
-
-                        <div className="flex items-center space-x-3 lg:space-x-6">
-                            {/* Enhanced Date Filter */}
-                            <div className="relative">
-                                <details className="group [&[open]>summary>i]:-rotate-180">
-                                    <summary className="flex items-center gap-2 lg:gap-3 text-sm cursor-pointer list-none p-2.5 lg:p-3 rounded-2xl border border-blue-100/50 hover:border-blue-200 hover:bg-white/80 transition-all duration-300 backdrop-blur-sm bg-white/50">
-                                        <i className="fa-solid fa-calendar-days text-blue-500 text-sm"></i>
-                                        <span className="font-semibold text-gray-700 hidden sm:inline">Last 30 days</span>
-                                        <i className="fa-solid fa-chevron-down transition-transform duration-300 text-xs text-blue-500"></i>
-                                    </summary>
-                                    <div className="absolute right-0 mt-2 w-56 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-blue-100/50 z-30 animate-scale-in overflow-hidden">
-                                        <div className="py-2">
-                                            {['Today', 'Yesterday', 'Last 7 days', 'Last 30 days', 'This month', 'Custom range'].map((item, index) => (
-                                                <a key={item} href="#" className={`flex items-center gap-3 px-4 py-3 text-sm transition-all duration-300 hover:bg-blue-50/80 group/item ${item === 'Last 30 days' ? 'text-blue-600 bg-blue-50/50' : 'text-gray-700'
-                                                    }`}>
-                                                    <i className={`fa-solid ${['fa-sun', 'fa-clock-rotate-left', 'fa-calendar-week', 'fa-calendar-days', 'fa-chart-column', 'fa-sliders'][index]
-                                                        } w-4 text-center group-hover/item:scale-110 transition-transform text-blue-400`}></i>
-                                                    <span className="font-medium">{item}</span>
-                                                </a>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </details>
-                            </div>
-
-                            {/* Enhanced Search */}
-                            <div className="relative hidden sm:block">
-                                <div className="relative">
-                                    <input
-                                        type="text"
-                                        placeholder="Search analytics..."
-                                        className="py-2.5 pl-10 pr-4 text-sm border border-blue-100/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-300 transition-all duration-300 w-48 lg:w-56 bg-white/80 backdrop-blur-sm"
-                                    />
-                                    <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-blue-400"></i>
-                                </div>
-                            </div>
-
-                            {/* Notification Bell */}
-                            <button className="p-2.5 rounded-2xl text-gray-600 hover:text-blue-600 hover:bg-white/80 transition-all duration-300 relative group">
-                                <i className="fa-solid fa-bell text-lg"></i>
-                                <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-                            </button>
-                        </div>
                     </div>
                 </header>
 
-                {/* Enhanced Main Content */}
-                <main className="flex-1 overflow-y-auto p-4 lg:p-6 xl:p-8 custom-scrollbar relative">
-                    {isLoading && (
-                        <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-50 flex items-center justify-center">
-                            <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
-                        </div>
-                    )}
-
-                    {(!hasGithub || !hasLeetcode) && !isLoading && (
-                        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-r-lg shadow-sm flex items-center justify-between animate-fade-in-up">
-                            <div className="flex items-center">
-                                <AlertCircle className="w-6 h-6 text-blue-500 mr-3" />
-                                <div>
-                                    <h3 className="font-bold text-blue-900">Complete your profile</h3>
-                                    <p className="text-sm text-blue-700">
-                                        {!hasGithub && !hasLeetcode ? "Link your GitHub and LeetCode profiles" :
-                                            !hasGithub ? "Link your GitHub profile" : "Link your LeetCode profile"}
-                                        to see full analytics.
-                                    </p>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => navigate('/profile')}
-                                className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors shadow-md"
-                            >
-                                Connect Now
-                            </button>
-                        </div>
-                    )}
-
-                    {/* Stats Grid with Enhanced Layout */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
-                        {[
-                            {
-                                title: "LeetCode Problems",
-                                value: leetcodeData?.problemsCount?.acSubmissionNum?.[0]?.count || 0,
-                                change: "Total Solved",
-                                icon: "fa-code",
-                                color: "blue"
-                            },
-                            {
-                                title: "Acceptance Rate",
-                                value: leetcodeData?.acceptanceRate ? `${(leetcodeData.acceptanceRate * 100).toFixed(1)}%` : "N/A",
-                                change: "LeetCode",
-                                icon: "fa-check-double",
-                                color: "green"
-                            },
-                            {
-                                title: "GitHub Commits",
-                                value: githubData?.lastYearCommitsCount || 0,
-                                change: "Last Year",
-                                icon: "fa-code-commit",
-                                color: "purple"
-                            },
-                            {
-                                title: "GitHub Stars",
-                                value: githubData?.starsCount || 0,
-                                change: "Total Earned",
-                                icon: "fa-star",
-                                color: "yellow"
-                            },
-                            {
-                                title: "Current Streak",
-                                value: githubData?.currentStreak ? `${githubData.currentStreak} Days` : "0 Days",
-                                change: "GitHub Activity",
-                                icon: "fa-fire",
-                                color: "orange"
-                            },
-                            {
-                                title: "Resume Score",
-                                value: resumeData?.score ? `${Math.round(resumeData.score)}/100` : "N/A",
-                                change: "Latest Scan",
-                                icon: "fa-file-lines",
-                                color: "teal"
-                            }
-                        ].map((stat, index) => (
-                            <StatCard
-                                key={stat.title}
-                                {...stat}
-                                index={index}
-                            />
-                        ))}
-                    </div>
-
-                    {/* Charts Grid with Improved Spacing */}
-                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6 mb-6 lg:mb-8">
-                        {/* Main Chart */}
-                        <ActivityChart githubData={githubData} leetcodeData={leetcodeData} />
-
-                        {/* Side Charts */}
-                        <div className="space-y-4 lg:space-y-6">
-                            <LanguageChart githubData={githubData} />
-                            <DifficultyChart leetcodeData={leetcodeData} />
-                            {leetcodeData?.topicWiseProblems && (
-                                <TopicStats topicData={getLeetcodeTopicData(leetcodeData.topicWiseProblems)} />
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Enhanced Repositories Table */}
-                    <RepoTable githubData={githubData} />
+                <main className="flex-1 overflow-y-auto p-4 lg:p-8 custom-scrollbar relative">
+                    {content}
                 </main>
             </div>
+        </div>
+    );
 
+    if (isLoading) {
+        return renderLayout(
+            <div className="flex h-full items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+                    <p className="text-gray-500 font-medium">Loading your coding profile...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return renderLayout(
+            <div className="flex h-full items-center justify-center">
+                <div className="text-center bg-white p-8 rounded-2xl shadow-xl border border-gray-100 max-w-md animate-scale-in">
+                    <div className="bg-red-50 p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                        <AlertCircle className="w-8 h-8 text-red-500" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Failed to load dashboard</h2>
+                    <p className="text-gray-500 mb-6">We couldn&apos;t fetch your profile data. Please check your connection or try again later.</p>
+                    <button onClick={() => window.location.reload()} className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                        Retry
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    return renderLayout(
+        <div className="max-w-7xl mx-auto space-y-6 lg:space-y-8">
+            {/* Top Stats Row - Using existing StatCard component */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+                <StatCard
+                    title="Total Questions"
+                    value={stats?.totalQuestions || 0}
+                    change="Across all platforms"
+                    icon="fa-code"
+                    color="blue"
+                    index={0}
+                />
+                <StatCard
+                    title="Active Days"
+                    value={stats?.totalActiveDays || 0}
+                    change="Consistency is key"
+                    icon="fa-calendar-days"
+                    color="green"
+                    index={1}
+                />
+                <StatCard
+                    title="Current Streak"
+                    value={stats?.currentStreak || 0}
+                    change="Keep it burning"
+                    icon="fa-fire"
+                    color="purple"
+                    index={2}
+                />
+                <StatCard
+                    title="Total Badges"
+                    value={stats?.totalBadges || 0}
+                    change="Achievements"
+                    icon="fa-award"
+                    color="amber"
+                    index={3}
+                />
+            </div>
+
+            {/* Platform Breakdown */}
+            <div>
+                <h2 className="text-xl font-black text-gray-900 mb-4 flex items-center gap-2 animate-fade-in-up">
+                    <Zap className="w-5 h-5 text-yellow-500" /> Platform Breakdown
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 lg:gap-6">
+                    <PlatformCard
+                        platform="LeetCode"
+                        icon={Code}
+                        color="#ffa116"
+                        data={{
+                            solved: dashboardData?.leetcode?.submission?.totalSolved || 0,
+                            ranking: dashboardData?.leetcode?.profile?.ranking || 'N/A',
+                            acceptance: `${dashboardData?.leetcode?.submission?.acceptanceRate || 0}%`,
+                            contestRating: Math.round(dashboardData?.leetcode?.contest?.rating) || 'N/A'
+                        }}
+                    />
+                    <PlatformCard
+                        platform="GitHub"
+                        icon={GitCommit}
+                        color="#181717"
+                        data={{
+                            commits: dashboardData?.github?.commits?.totalCommits || 0,
+                            contributions: dashboardData?.github?.contributions?.total || 0,
+                            stars: dashboardData?.github?.profile?.stars || 0,
+                            prs: dashboardData?.github?.profile?.pullRequests || 0
+                        }}
+                    />
+                    <PlatformCard
+                        platform="GeeksforGeeks"
+                        icon={Target}
+                        color="#2f8d46"
+                        data={{
+                            solved: dashboardData?.gfg?.submission?.totalSolved || 0,
+                            score: dashboardData?.gfg?.profile?.score || 0,
+                            rank: dashboardData?.gfg?.profile?.rank || 'N/A',
+                            streak: `${dashboardData?.gfg?.submission?.streak || 0} Days`
+                        }}
+                    />
+                    <PlatformCard
+                        platform="CodeChef"
+                        icon={Trophy}
+                        color="#5b4638"
+                        data={{
+                            solved: dashboardData?.codechef?.submission?.totalSolved || 0,
+                            rating: dashboardData?.codechef?.profile?.currentRating || 0,
+                            stars: dashboardData?.codechef?.profile?.stars || 'N/A',
+                            highest: dashboardData?.codechef?.profile?.highestRating || 0
+                        }}
+                    />
+                    <PlatformCard
+                        platform="InterviewBit"
+                        icon={Zap}
+                        color="#00897b"
+                        data={{
+                            solved: dashboardData?.interviewbit?.profile?.totalSolved || 0,
+                            score: dashboardData?.interviewbit?.profile?.score || 0,
+                            rank: dashboardData?.interviewbit?.profile?.rank || 'N/A',
+                            streak: `${dashboardData?.interviewbit?.profile?.streak || 0} Days`
+                        }}
+                    />
+                </div>
+            </div>
+
+            {/* Charts Grid */}
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6">
+                {/* Difficulty & Language Charts */}
+                <div className="space-y-4 lg:space-y-6">
+                    <DifficultyChart leetcodeData={dashboardData?.leetcode} />
+                    <LanguageChart githubData={dashboardData?.github} />
+                    {dashboardData?.leetcode?.topicWiseProblems && (
+                        <TopicStats topicData={getLeetcodeTopicData(dashboardData.leetcode.topicWiseProblems)} />
+                    )}
+                </div>
+
+                {/* Repository Table */}
+                <div className="xl:col-span-2">
+                    <RepoTable githubData={dashboardData?.github} />
+                </div>
+            </div>
+
+            {/* Custom Scrollbar Styles */}
             <style>{`
-    .custom-scrollbar::-webkit-scrollbar {
-        width: 6px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-track {
-        background: rgba(59, 130, 246, 0.05);
-        border-radius: 10px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: linear-gradient(to bottom, #3b82f6, #8b5cf6);
-        border-radius: 10px;
-        opacity: 0.6;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(to bottom, #2563eb, #7c3aed);
-        opacity: 0.8;
-    }
-`}</style>
-
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 6px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: rgba(59, 130, 246, 0.05);
+                    border-radius: 10px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: linear-gradient(to bottom, #3b82f6, #8b5cf6);
+                    border-radius: 10px;
+                    opacity: 0.6;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: linear-gradient(to bottom, #2563eb, #7c3aed);
+                    opacity: 0.8;
+                }
+            `}</style>
         </div>
     );
 };
 
-export default App;
+export default HomePage;
