@@ -2,147 +2,227 @@ import ProblemsCard from "../components/ProblemsCard";
 import Sidebar from "../components/Sidebar.jsx"
 import BadgeCollection from "../components/BadgeCollection.jsx";
 import SubmissionHeatmap from "../components/SubmissionHeatmap.jsx";
+import { useEffect, useState } from "react";
+import axiosInstance from "../api/axiosInstance.js";
+import conf from "../config/config.js"
 
 const CodingDashboard = () => {
 
+    const [data, setData] = useState(null);
+
+    const fetchCodingProfilesData = async () => {
+        console.log("started");
+        const res = await axiosInstance.get(`${conf.SERVER_BASE_URL}/profiles/fetch/AshokBhatt`)
+        console.log("ended");
+        setData(res.data);
+        console.log(res.data);
+    }
+
+    /**
+     * Generates a mapping for the last 365 days, filling in submission counts 
+     * from the input data and defaulting to 0 for missing dates.
+     * * @param {string} dataString - A JSON string representing the object {timestamp: submissionCount} (timestamps in seconds).
+     * @returns {Object<string, number>} - A date-ordered object with {date: submissionCount} for the last 365 days.
+     */
+    function getTimeStampToDateMapping(tempTimestampData) {
+        let rawTimestampData;
+        
+        try {
+            rawTimestampData = {};
+
+            // Convert raw data into a Map keyed by YYYY-MM-DD (UTC) for easy lookup
+            for (const timestampStr in tempTimestampData) {
+                const submissions = tempTimestampData[timestampStr];
+                
+                // Convert seconds to milliseconds
+                const milliseconds = parseInt(timestampStr) * 1000;
+                const date = new Date(milliseconds);
+                
+                // Format the date to YYYY-MM-DD (UTC)
+                const dateString = date.toISOString().slice(0, 10);
+                
+                // If the same date appears twice (shouldn't happen with day-start timestamps, 
+                // but good practice): sum the submissions.
+                rawTimestampData[dateString] = (rawTimestampData[dateString] || 0) + submissions;
+            }
+
+        } catch (error) {
+            console.error("Error parsing JSON:", error);
+            return {}; 
+        }
+
+        // 2. Generate the full 365-day range and merge data
+        const completeDateMapping = {};
+        const today = new Date();
+        
+        // Set today to the start of the day in UTC for consistent dating
+        today.setUTCHours(0, 0, 0, 0); 
+
+        for (let i = 0; i < 365; i++) {
+            // Create a date object for the day 'i' days ago
+            const dateToCheck = new Date(today);
+            dateToCheck.setUTCDate(today.getUTCDate() - i); 
+
+            // Format the date to YYYY-MM-DD (This is correct because 'dateToCheck' is already UTC-aligned)
+            const dateString = dateToCheck.toISOString().slice(0, 10);
+
+            // Check if the date exists in the input data
+            const submissions = rawTimestampData[dateString] || 0; // Default to 0 if missing
+
+            // Store in the final, ordered object
+            completeDateMapping[dateString] = submissions;
+        }
+        
+        // Note: In modern JavaScript environments (ES2015+), insertion order is guaranteed 
+        // for string keys, so the map will be ordered from oldest (364 days ago) to newest (today).
+        // If you need the output strictly sorted from NEWEST to OLDEST, 
+        // you would need to convert this object to an array and sort it manually.
+        
+        return completeDateMapping;
+}
+
+    useEffect(()=>{
+        fetchCodingProfilesData();
+    }, []);
+
   const badgesDummyData = [
-                        {
-                            "id": "7848058",
-                            "name": "Submission Badge",
-                            "shortName": "365 Days Badge",
-                            "displayName": "365 Days Badge",
-                            "icon": "https://assets.leetcode.com/static_assets/marketing/lg365.png",
-                            "creationDate": "2025-08-18",
-                            "expired": false,
-                            "hoverText": "365 Days Badge",
-                            "medal": {
-                                "slug": "365-days-badge-all",
-                                "config": {
-                                    "icon": "https://assets.leetcode.com/static_assets/marketing/lg365.png",
-                                    "iconGif": "https://assets.leetcode.com/static_assets/marketing/365_new.gif"
-                                }
-                            }
-                        },
-                        {
-                            "id": "8027338",
-                            "name": "Annual Badge",
-                            "shortName": "200 Days Badge 2025",
-                            "displayName": "200 Days Badge 2025",
-                            "icon": "https://assets.leetcode.com/static_assets/others/lg200.png",
-                            "creationDate": "2025-09-05",
-                            "expired": false,
-                            "hoverText": "200 Days Badge 2025",
-                            "medal": {
-                                "slug": "200-days-badge-2025",
-                                "config": {
-                                    "icon": "https://assets.leetcode.com/static_assets/others/lg200.png",
-                                    "iconGif": "https://assets.leetcode.com/static_assets/others/200.gif"
-                                }
-                            }
-                        },
-                        {
-                            "id": "7070959",
-                            "name": "Annual Badge",
-                            "shortName": "100 Days Badge 2025",
-                            "displayName": "100 Days Badge 2025",
-                            "icon": "https://assets.leetcode.com/static_assets/others/lg25100.png",
-                            "creationDate": "2025-05-16",
-                            "expired": false,
-                            "hoverText": "100 Days Badge 2025",
-                            "medal": {
-                                "slug": "100-days-badge-2025",
-                                "config": {
-                                    "icon": "https://assets.leetcode.com/static_assets/others/lg25100.png",
-                                    "iconGif": "https://assets.leetcode.com/static_assets/others/25100.gif"
-                                }
-                            }
-                        },
-                        {
-                            "id": "6618429",
-                            "name": "Annual Badge",
-                            "shortName": "50 Days Badge 2025",
-                            "displayName": "50 Days Badge 2025",
-                            "icon": "https://assets.leetcode.com/static_assets/others/lg2550.png",
-                            "creationDate": "2025-03-24",
-                            "expired": false,
-                            "hoverText": "50 Days Badge 2025",
-                            "medal": {
-                                "slug": "50-days-badge-2025",
-                                "config": {
-                                    "icon": "https://assets.leetcode.com/static_assets/others/lg2550.png",
-                                    "iconGif": "https://assets.leetcode.com/static_assets/others/2550.gif"
-                                }
-                            }
-                        },
-                        {
-                            "id": "4857916",
-                            "name": "Annual Badge",
-                            "shortName": "100 Days Badge 2024",
-                            "displayName": "100 Days Badge 2024",
-                            "icon": "https://assets.leetcode.com/static_assets/marketing/2024-100-lg.png",
-                            "creationDate": "2024-09-05",
-                            "expired": false,
-                            "hoverText": "100 Days Badge 2024",
-                            "medal": {
-                                "slug": "100-days-badge-2024",
-                                "config": {
-                                    "icon": "https://assets.leetcode.com/static_assets/marketing/2024-100-lg.png",
-                                    "iconGif": "https://assets.leetcode.com/static_assets/marketing/2024-100-new.gif"
-                                }
-                            }
-                        },
-                        {
-                            "id": "3763584",
-                            "name": "Annual Badge",
-                            "shortName": "50 Days Badge 2024",
-                            "displayName": "50 Days Badge 2024",
-                            "icon": "https://assets.leetcode.com/static_assets/marketing/2024-50-lg.png",
-                            "creationDate": "2024-04-20",
-                            "expired": false,
-                            "hoverText": "50 Days Badge 2024",
-                            "medal": {
-                                "slug": "50-days-badge-2024",
-                                "config": {
-                                    "icon": "https://assets.leetcode.com/static_assets/marketing/2024-50-lg.png",
-                                    "iconGif": "https://assets.leetcode.com/static_assets/marketing/2024-50.gif"
-                                }
-                            }
-                        },
-                        {
-                            "id": "2870909",
-                            "name": "Annual Badge",
-                            "shortName": "50 Days Badge 2023",
-                            "displayName": "50 Days Badge 2023",
-                            "icon": "https://assets.leetcode.com/static_assets/marketing/lg50.png",
-                            "creationDate": "2023-12-16",
-                            "expired": false,
-                            "hoverText": "50 Days Badge 2023",
-                            "medal": {
-                                "slug": "50-days-badge-2023",
-                                "config": {
-                                    "icon": "https://assets.leetcode.com/static_assets/marketing/lg50.png",
-                                    "iconGif": "https://assets.leetcode.com/static_assets/marketing/2023-50.gif"
-                                }
-                            }
-                        },
-                        {
-                            "id": "4458914",
-                            "name": "Study Plan V2 Award",
-                            "shortName": "Introduction to Pandas",
-                            "displayName": "Introduction to Pandas",
-                            "icon": "https://assets.leetcode.com/static_assets/others/Introduction_to_Pandas_Badge.png",
-                            "creationDate": "2024-07-22",
-                            "expired": false,
-                            "hoverText": "Introduction to Pandas",
-                            "medal": {
-                                "slug": "introduction-to-pandas",
-                                "config": {
-                                    "icon": "https://assets.leetcode.com/static_assets/others/Introduction_to_Pandas_Badge.png",
-                                    "iconGif": "https://assets.leetcode.com/static_assets/others/Introduction_to_Pandas.gif"
-                                }
-                            }
-                        }
-                    ]
+        {
+            "id": "7848058",
+            "name": "Submission Badge",
+            "shortName": "365 Days Badge",
+            "displayName": "365 Days Badge",
+            "icon": "https://assets.leetcode.com/static_assets/marketing/lg365.png",
+            "creationDate": "2025-08-18",
+            "expired": false,
+            "hoverText": "365 Days Badge",
+            "medal": {
+                "slug": "365-days-badge-all",
+                "config": {
+                    "icon": "https://assets.leetcode.com/static_assets/marketing/lg365.png",
+                    "iconGif": "https://assets.leetcode.com/static_assets/marketing/365_new.gif"
+                }
+            }
+        },
+        {
+            "id": "8027338",
+            "name": "Annual Badge",
+            "shortName": "200 Days Badge 2025",
+            "displayName": "200 Days Badge 2025",
+            "icon": "https://assets.leetcode.com/static_assets/others/lg200.png",
+            "creationDate": "2025-09-05",
+            "expired": false,
+            "hoverText": "200 Days Badge 2025",
+            "medal": {
+                "slug": "200-days-badge-2025",
+                "config": {
+                    "icon": "https://assets.leetcode.com/static_assets/others/lg200.png",
+                    "iconGif": "https://assets.leetcode.com/static_assets/others/200.gif"
+                }
+            }
+        },
+        {
+            "id": "7070959",
+            "name": "Annual Badge",
+            "shortName": "100 Days Badge 2025",
+            "displayName": "100 Days Badge 2025",
+            "icon": "https://assets.leetcode.com/static_assets/others/lg25100.png",
+            "creationDate": "2025-05-16",
+            "expired": false,
+            "hoverText": "100 Days Badge 2025",
+            "medal": {
+                "slug": "100-days-badge-2025",
+                "config": {
+                    "icon": "https://assets.leetcode.com/static_assets/others/lg25100.png",
+                    "iconGif": "https://assets.leetcode.com/static_assets/others/25100.gif"
+                }
+            }
+        },
+        {
+            "id": "6618429",
+            "name": "Annual Badge",
+            "shortName": "50 Days Badge 2025",
+            "displayName": "50 Days Badge 2025",
+            "icon": "https://assets.leetcode.com/static_assets/others/lg2550.png",
+            "creationDate": "2025-03-24",
+            "expired": false,
+            "hoverText": "50 Days Badge 2025",
+            "medal": {
+                "slug": "50-days-badge-2025",
+                "config": {
+                    "icon": "https://assets.leetcode.com/static_assets/others/lg2550.png",
+                    "iconGif": "https://assets.leetcode.com/static_assets/others/2550.gif"
+                }
+            }
+        },
+        {
+            "id": "4857916",
+            "name": "Annual Badge",
+            "shortName": "100 Days Badge 2024",
+            "displayName": "100 Days Badge 2024",
+            "icon": "https://assets.leetcode.com/static_assets/marketing/2024-100-lg.png",
+            "creationDate": "2024-09-05",
+            "expired": false,
+            "hoverText": "100 Days Badge 2024",
+            "medal": {
+                "slug": "100-days-badge-2024",
+                "config": {
+                    "icon": "https://assets.leetcode.com/static_assets/marketing/2024-100-lg.png",
+                    "iconGif": "https://assets.leetcode.com/static_assets/marketing/2024-100-new.gif"
+                }
+            }
+        },
+        {
+            "id": "3763584",
+            "name": "Annual Badge",
+            "shortName": "50 Days Badge 2024",
+            "displayName": "50 Days Badge 2024",
+            "icon": "https://assets.leetcode.com/static_assets/marketing/2024-50-lg.png",
+            "creationDate": "2024-04-20",
+            "expired": false,
+            "hoverText": "50 Days Badge 2024",
+            "medal": {
+                "slug": "50-days-badge-2024",
+                "config": {
+                    "icon": "https://assets.leetcode.com/static_assets/marketing/2024-50-lg.png",
+                    "iconGif": "https://assets.leetcode.com/static_assets/marketing/2024-50.gif"
+                }
+            }
+        },
+        {
+            "id": "2870909",
+            "name": "Annual Badge",
+            "shortName": "50 Days Badge 2023",
+            "displayName": "50 Days Badge 2023",
+            "icon": "https://assets.leetcode.com/static_assets/marketing/lg50.png",
+            "creationDate": "2023-12-16",
+            "expired": false,
+            "hoverText": "50 Days Badge 2023",
+            "medal": {
+                "slug": "50-days-badge-2023",
+                "config": {
+                    "icon": "https://assets.leetcode.com/static_assets/marketing/lg50.png",
+                    "iconGif": "https://assets.leetcode.com/static_assets/marketing/2023-50.gif"
+                }
+            }
+        },
+        {
+            "id": "4458914",
+            "name": "Study Plan V2 Award",
+            "shortName": "Introduction to Pandas",
+            "displayName": "Introduction to Pandas",
+            "icon": "https://assets.leetcode.com/static_assets/others/Introduction_to_Pandas_Badge.png",
+            "creationDate": "2024-07-22",
+            "expired": false,
+            "hoverText": "Introduction to Pandas",
+            "medal": {
+                "slug": "introduction-to-pandas",
+                "config": {
+                    "icon": "https://assets.leetcode.com/static_assets/others/Introduction_to_Pandas_Badge.png",
+                    "iconGif": "https://assets.leetcode.com/static_assets/others/Introduction_to_Pandas.gif"
+                }
+            }
+        }
+    ]
   const dummyHeatmap = {
                     "2025-5-27": 0,
                     "2025-5-28": 0,
@@ -418,7 +498,7 @@ const CodingDashboard = () => {
                       }
                     />
                   </div>
-                  <SubmissionHeatmap calendar={dummyHeatmap} className="col-span-3"/>
+                  {data && <SubmissionHeatmap calendar={getTimeStampToDateMapping(JSON.parse(data.leetcode.submission.submissionCalendar))} className="col-span-3"/>}
               </div>
           </div>
       </main>

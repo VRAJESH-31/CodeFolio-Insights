@@ -74,17 +74,17 @@ const fetchProfilesData = async (req, res) => {
         const profileLinks = profileLinksResponse.data;
 
         const profileData = {
-            gfg : profileLinks.gfgUsername ? {
-                profile : await scrapeSpideyFetching.fetchGfgUserData(profileLinks.gfgUsername),
-                submission : await scrapeSpideyFetching.fetchGfgUserSubmissionData(profileLinks.gfgUsername),
-            } : null,
-            codechef : profileLinks.codechefUsername ? {
-                profile : await scrapeSpideyFetching.fetchCodeChefUserData(profileLinks.codechefUsername),
-                submission : await scrapeSpideyFetching.fetchCodeChefUserSubmissionData(profileLinks.codechefUsername),
-            } : null,
-            interviewbit : profileLinks.interviewbitUsername ? {
-                profile : await scrapeSpideyFetching.fetchInterviewbitUserData(profileLinks.interviewbitUsername),
-            } : null,
+            // gfg : profileLinks.gfgUsername ? {
+            //     profile : await scrapeSpideyFetching.fetchGfgUserData(profileLinks.gfgUsername),
+            //     submission : await scrapeSpideyFetching.fetchGfgUserSubmissionData(profileLinks.gfgUsername),
+            // } : null,
+            // codechef : profileLinks.codechefUsername ? {
+            //     profile : await scrapeSpideyFetching.fetchCodeChefUserData(profileLinks.codechefUsername),
+            //     submission : await scrapeSpideyFetching.fetchCodeChefUserSubmissionData(profileLinks.codechefUsername),
+            // } : null,
+            // interviewbit : profileLinks.interviewbitUsername ? {
+            //     profile : await scrapeSpideyFetching.fetchInterviewbitUserData(profileLinks.interviewbitUsername),
+            // } : null,
             leetcode : profileLinks.leetCodeUsername ? {
                 profile : await leetcodeFetching.getLeetCodeProfileInfo(profileLinks.leetCodeUsername),
                 badges : await leetcodeFetching.getLeetCodeBadges(profileLinks.leetCodeUsername),
@@ -92,14 +92,14 @@ const fetchProfilesData = async (req, res) => {
                 problems : await leetcodeFetching.getLeetCodeProblemsCount(profileLinks.leetCodeUsername),
                 submission : await leetcodeFetching.getLeetCodeUserStreaksAndCalendar(profileLinks.leetCodeUsername),
             } : null,
-            github : profileLinks.githubUsername ? {
-                profile : await githubFetching.getUserProfileData(profileLinks.githubUsername),
-                contributions : await githubFetching.getContributionCount(profileLinks.githubUsername),
-                commits : await githubFetching.getLastYearCommitsCount(profileLinks.githubUsername),
-                calendar : await githubFetching.getContributionCalendar(profileLinks.githubUsername),
-                badges: await githubFetching.getGithubContributionBadges(profileLinks.githubUsername),
-                languageStats : await githubFetching.getUserLanguageStats(profileLinks.githubUsername)
-            } : null
+            // github : profileLinks.githubUsername ? {
+            //     profile : await githubFetching.getUserProfileData(profileLinks.githubUsername),
+            //     contributions : await githubFetching.getContributionCount(profileLinks.githubUsername),
+            //     commits : await githubFetching.getLastYearCommitsCount(profileLinks.githubUsername),
+            //     calendar : await githubFetching.getContributionCalendar(profileLinks.githubUsername),
+            //     badges: await githubFetching.getGithubContributionBadges(profileLinks.githubUsername),
+            //     languageStats : await githubFetching.getUserLanguageStats(profileLinks.githubUsername)
+            // } : null
         }
 
         return res.status(200).json(profileData);
