@@ -5,18 +5,152 @@ import SubmissionHeatmap from "../components/SubmissionHeatmap.jsx";
 import { useEffect, useState } from "react";
 import axiosInstance from "../api/axiosInstance.js";
 import conf from "../config/config.js"
+import useAuthStore from "../../store/useAuthStore.js";
+import {codingPlatformsData as dummyCodingPlatformsData} from "../constants/dummy.js"
 
 const CodingDashboard = () => {
 
     const [data, setData] = useState(null);
+    const user = useAuthStore((state)=>state.user);
 
     const fetchCodingProfilesData = async () => {
         console.log("started");
-        const res = await axiosInstance.get(`${conf.SERVER_BASE_URL}/profiles/fetch/AshokBhatt`)
+        const res = await axiosInstance.get(`${conf.SERVER_BASE_URL}/profiles/fetch/${user.username}`);
         console.log("ended");
         setData(res.data);
         console.log(res.data);
     }
+
+    /**
+     * Polishes a heatmap by ensuring the month and day parts of the date keys are two digits (zero-padded).
+     *
+     * @param {Object<string, number>} heatmap - The input heatmap object with keys in the format YYYY-M-D or YYYY-MM-DD.
+     * @returns {Object<string, number>} A new heatmap object with polished keys in the format YYYY-MM-DD.
+     */
+    const getPolishedCodechefHeatmap = (heatmap) => {
+        // Initialize an empty object for the polished heatmap
+        const polishedHeatmap = {};
+
+        // Iterate over each key (date) in the input heatmap
+        for (const date in heatmap) {
+            if (Object.hasOwnProperty.call(heatmap, date)) {
+                // Split the date string into its components: Year, Month, and Day
+                const parts = date.split('-');
+                
+                // Check if the date string has exactly three parts (Year, Month, Day)
+                if (parts.length === 3) {
+                    const year = parts[0];
+                    const month = parts[1];
+                    const day = parts[2];
+
+                    // Function to add a leading zero if the number part is a single digit
+                    const zeroPad = (numStr) => {
+                        // Convert to number, then back to string to handle '03' -> '3' correctly
+                        const num = parseInt(numStr, 10); 
+                        // Use String.prototype.padStart() for efficient zero padding
+                        return num.toString().padStart(2, '0');
+                    };
+
+                    // Apply zero-padding to the month and day parts
+                    const polishedMonth = zeroPad(month);
+                    const polishedDay = zeroPad(day);
+
+                    // Reconstruct the date string in the desired YYYY-MM-DD format
+                    const polishedDate = `${year}-${polishedMonth}-${polishedDay}`;
+
+                    // Assign the original count to the new, polished date key
+                    polishedHeatmap[polishedDate] = heatmap[date];
+                } else {
+                    // If the date format is unexpected, copy the key/value as is 
+                    // (or you could choose to throw an error/skip it)
+                    polishedHeatmap[date] = heatmap[date]; 
+                }
+            }
+        }
+
+        return polishedHeatmap;
+    };
+
+    const getPolishedGithubHeatmap = (githubData) => {
+        // Helper function to ensure month and day strings are zero-padded (e.g., '3' -> '03').
+        const zeroPad = (numStr) => {
+            const num = parseInt(numStr, 10);
+            return num.toString().padStart(2, '0');
+        };
+
+        const polishedHeatmap = {};
+
+        // 1. Iterate through each week object in the top-level array
+        for (const week of githubData) {
+            // We only care about the contributionDays array inside the week object
+            const days = week.contributionDays;
+
+            if (!days || !Array.isArray(days)) {
+                console.warn("Skipping a week object: 'contributionDays' array not found or invalid.");
+                continue;
+            }
+
+            // 2. Iterate through each day object in the contributionDays array
+            for (const day of days) {
+                const { contributionCount, date } = day;
+
+                if (contributionCount === undefined || !date) {
+                    console.warn("Skipping day object: missing contributionCount or date.");
+                    continue;
+                }
+
+                // 3. Split and polish the date string (e.g., "2025-5-13" -> "2025-05-13")
+                const parts = date.split('-');
+
+                if (parts.length === 3) {
+                    const year = parts[0];
+                    const month = parts[1];
+                    const dayOfMonth = parts[2];
+
+                    // Apply zero-padding
+                    const polishedMonth = zeroPad(month);
+                    const polishedDay = zeroPad(dayOfMonth);
+
+                    // Reconstruct the date string in the desired YYYY-MM-DD format
+                    const polishedDate = `${year}-${polishedMonth}-${polishedDay}`;
+
+                    // 4. Store the data in the result object
+                    polishedHeatmap[polishedDate] = contributionCount;
+                } else {
+                    console.warn(`Skipping date: Unexpected date format '${date}'`);
+                }
+            }
+        }
+
+        return polishedHeatmap;
+    };
+
+    const getCombinedHeatmap = (...heatmaps) => {
+        // Initialize an empty object for the combined heatmap
+        const combinedHeatmap = {};
+
+        // Iterate over each heatmap object provided in the input
+        for (const heatmap of heatmaps) {
+            // Iterate over each key-value pair (date and count) in the current heatmap
+            for (const date in heatmap) {
+                if (Object.hasOwnProperty.call(heatmap, date)) {
+                    const count = heatmap[date];
+
+                    // Check if the date already exists in the combined heatmap
+                    if (combinedHeatmap[date]) {
+                        // If the date exists, add the new count to the existing total (Requirement 3)
+                        combinedHeatmap[date] += count;
+                    } else {
+                        // If the date does not exist, add it to the combined heatmap (Requirement 2)
+                        combinedHeatmap[date] = count;
+                    }
+                }
+            }
+        }
+
+        // Return the final combined heatmap object
+        return combinedHeatmap;
+    };
 
     /**
      * Generates a mapping for the last 365 days, filling in submission counts 
@@ -24,7 +158,7 @@ const CodingDashboard = () => {
      * * @param {string} dataString - A JSON string representing the object {timestamp: submissionCount} (timestamps in seconds).
      * @returns {Object<string, number>} - A date-ordered object with {date: submissionCount} for the last 365 days.
      */
-    function getTimeStampToDateMapping(tempTimestampData) {
+    function getPolishedLeetcodeHeatmap(tempTimestampData) {
         let rawTimestampData;
         
         try {
@@ -79,338 +213,12 @@ const CodingDashboard = () => {
         // you would need to convert this object to an array and sort it manually.
         
         return completeDateMapping;
-}
+    }
 
     useEffect(()=>{
-        fetchCodingProfilesData();
+        // fetchCodingProfilesData();
+        setData(dummyCodingPlatformsData);
     }, []);
-
-  const badgesDummyData = [
-        {
-            "id": "7848058",
-            "name": "Submission Badge",
-            "shortName": "365 Days Badge",
-            "displayName": "365 Days Badge",
-            "icon": "https://assets.leetcode.com/static_assets/marketing/lg365.png",
-            "creationDate": "2025-08-18",
-            "expired": false,
-            "hoverText": "365 Days Badge",
-            "medal": {
-                "slug": "365-days-badge-all",
-                "config": {
-                    "icon": "https://assets.leetcode.com/static_assets/marketing/lg365.png",
-                    "iconGif": "https://assets.leetcode.com/static_assets/marketing/365_new.gif"
-                }
-            }
-        },
-        {
-            "id": "8027338",
-            "name": "Annual Badge",
-            "shortName": "200 Days Badge 2025",
-            "displayName": "200 Days Badge 2025",
-            "icon": "https://assets.leetcode.com/static_assets/others/lg200.png",
-            "creationDate": "2025-09-05",
-            "expired": false,
-            "hoverText": "200 Days Badge 2025",
-            "medal": {
-                "slug": "200-days-badge-2025",
-                "config": {
-                    "icon": "https://assets.leetcode.com/static_assets/others/lg200.png",
-                    "iconGif": "https://assets.leetcode.com/static_assets/others/200.gif"
-                }
-            }
-        },
-        {
-            "id": "7070959",
-            "name": "Annual Badge",
-            "shortName": "100 Days Badge 2025",
-            "displayName": "100 Days Badge 2025",
-            "icon": "https://assets.leetcode.com/static_assets/others/lg25100.png",
-            "creationDate": "2025-05-16",
-            "expired": false,
-            "hoverText": "100 Days Badge 2025",
-            "medal": {
-                "slug": "100-days-badge-2025",
-                "config": {
-                    "icon": "https://assets.leetcode.com/static_assets/others/lg25100.png",
-                    "iconGif": "https://assets.leetcode.com/static_assets/others/25100.gif"
-                }
-            }
-        },
-        {
-            "id": "6618429",
-            "name": "Annual Badge",
-            "shortName": "50 Days Badge 2025",
-            "displayName": "50 Days Badge 2025",
-            "icon": "https://assets.leetcode.com/static_assets/others/lg2550.png",
-            "creationDate": "2025-03-24",
-            "expired": false,
-            "hoverText": "50 Days Badge 2025",
-            "medal": {
-                "slug": "50-days-badge-2025",
-                "config": {
-                    "icon": "https://assets.leetcode.com/static_assets/others/lg2550.png",
-                    "iconGif": "https://assets.leetcode.com/static_assets/others/2550.gif"
-                }
-            }
-        },
-        {
-            "id": "4857916",
-            "name": "Annual Badge",
-            "shortName": "100 Days Badge 2024",
-            "displayName": "100 Days Badge 2024",
-            "icon": "https://assets.leetcode.com/static_assets/marketing/2024-100-lg.png",
-            "creationDate": "2024-09-05",
-            "expired": false,
-            "hoverText": "100 Days Badge 2024",
-            "medal": {
-                "slug": "100-days-badge-2024",
-                "config": {
-                    "icon": "https://assets.leetcode.com/static_assets/marketing/2024-100-lg.png",
-                    "iconGif": "https://assets.leetcode.com/static_assets/marketing/2024-100-new.gif"
-                }
-            }
-        },
-        {
-            "id": "3763584",
-            "name": "Annual Badge",
-            "shortName": "50 Days Badge 2024",
-            "displayName": "50 Days Badge 2024",
-            "icon": "https://assets.leetcode.com/static_assets/marketing/2024-50-lg.png",
-            "creationDate": "2024-04-20",
-            "expired": false,
-            "hoverText": "50 Days Badge 2024",
-            "medal": {
-                "slug": "50-days-badge-2024",
-                "config": {
-                    "icon": "https://assets.leetcode.com/static_assets/marketing/2024-50-lg.png",
-                    "iconGif": "https://assets.leetcode.com/static_assets/marketing/2024-50.gif"
-                }
-            }
-        },
-        {
-            "id": "2870909",
-            "name": "Annual Badge",
-            "shortName": "50 Days Badge 2023",
-            "displayName": "50 Days Badge 2023",
-            "icon": "https://assets.leetcode.com/static_assets/marketing/lg50.png",
-            "creationDate": "2023-12-16",
-            "expired": false,
-            "hoverText": "50 Days Badge 2023",
-            "medal": {
-                "slug": "50-days-badge-2023",
-                "config": {
-                    "icon": "https://assets.leetcode.com/static_assets/marketing/lg50.png",
-                    "iconGif": "https://assets.leetcode.com/static_assets/marketing/2023-50.gif"
-                }
-            }
-        },
-        {
-            "id": "4458914",
-            "name": "Study Plan V2 Award",
-            "shortName": "Introduction to Pandas",
-            "displayName": "Introduction to Pandas",
-            "icon": "https://assets.leetcode.com/static_assets/others/Introduction_to_Pandas_Badge.png",
-            "creationDate": "2024-07-22",
-            "expired": false,
-            "hoverText": "Introduction to Pandas",
-            "medal": {
-                "slug": "introduction-to-pandas",
-                "config": {
-                    "icon": "https://assets.leetcode.com/static_assets/others/Introduction_to_Pandas_Badge.png",
-                    "iconGif": "https://assets.leetcode.com/static_assets/others/Introduction_to_Pandas.gif"
-                }
-            }
-        }
-    ]
-  const dummyHeatmap = {
-                    "2025-5-27": 0,
-                    "2025-5-28": 0,
-                    "2025-5-29": 0,
-                    "2025-5-30": 0,
-                    "2025-5-31": 0,
-                    "2025-6-1": 0,
-                    "2025-6-2": 0,
-                    "2025-6-3": 0,
-                    "2025-6-4": 0,
-                    "2025-6-5": 0,
-                    "2025-6-6": 0,
-                    "2025-6-7": 0,
-                    "2025-6-8": 0,
-                    "2025-6-9": 0,
-                    "2025-6-10": 0,
-                    "2025-6-11": 0,
-                    "2025-6-12": 4,
-                    "2025-6-13": 0,
-                    "2025-6-14": 0,
-                    "2025-6-15": 0,
-                    "2025-6-16": 0,
-                    "2025-6-17": 0,
-                    "2025-6-18": 0,
-                    "2025-6-19": 0,
-                    "2025-6-20": 0,
-                    "2025-6-21": 0,
-                    "2025-6-22": 0,
-                    "2025-6-23": 0,
-                    "2025-6-24": 0,
-                    "2025-6-25": 0,
-                    "2025-6-26": 0,
-                    "2025-6-27": 2,
-                    "2025-6-28": 0,
-                    "2025-6-29": 0,
-                    "2025-6-30": 0,
-                    "2025-7-1": 30,
-                    "2025-7-2": 0,
-                    "2025-7-3": 0,
-                    "2025-7-4": 0,
-                    "2025-7-5": 0,
-                    "2025-7-6": 0,
-                    "2025-7-7": 0,
-                    "2025-7-8": 0,
-                    "2025-7-9": 0,
-                    "2025-7-10": 0,
-                    "2025-7-11": 0,
-                    "2025-7-12": 0,
-                    "2025-7-13": 0,
-                    "2025-7-14": 0,
-                    "2025-7-15": 0,
-                    "2025-7-16": 0,
-                    "2025-7-17": 0,
-                    "2025-7-18": 0,
-                    "2025-7-19": 10,
-                    "2025-7-20": 0,
-                    "2025-7-21": 0,
-                    "2025-7-22": 0,
-                    "2025-7-23": 10,
-                    "2025-7-24": 0,
-                    "2025-7-25": 0,
-                    "2025-7-26": 0,
-                    "2025-7-27": 0,
-                    "2025-7-28": 0,
-                    "2025-7-29": 0,
-                    "2025-7-30": 0,
-                    "2025-7-31": 0,
-                    "2025-8-1": 0,
-                    "2025-8-2": 10,
-                    "2025-8-3": 0,
-                    "2025-8-4": 0,
-                    "2025-8-5": 0,
-                    "2025-8-6": 0,
-                    "2025-8-7": 10,
-                    "2025-8-8": 0,
-                    "2025-8-9": 0,
-                    "2025-8-10": 0,
-                    "2025-8-11": 0,
-                    "2025-8-12": 0,
-                    "2025-8-13": 10,
-                    "2025-8-14": 0,
-                    "2025-8-15": 0,
-                    "2025-8-16": 0,
-                    "2025-8-17": 0,
-                    "2025-8-18": 0,
-                    "2025-8-19": 10,
-                    "2025-8-20": 0,
-                    "2025-8-21": 0,
-                    "2025-8-22": 0,
-                    "2025-8-23": 0,
-                    "2025-8-24": 10,
-                    "2025-8-25": 0,
-                    "2025-8-26": 0,
-                    "2025-8-27": 0,
-                    "2025-8-28": 0,
-                    "2025-8-29": 0,
-                    "2025-8-30": 0,
-                    "2025-8-31": 0,
-                    "2025-9-1": 0,
-                    "2025-9-2": 0,
-                    "2025-9-3": 0,
-                    "2025-9-4": 0,
-                    "2025-9-5": 0,
-                    "2025-9-6": 0,
-                    "2025-9-7": 0,
-                    "2025-9-8": 0,
-                    "2025-9-9": 0,
-                    "2025-9-10": 0,
-                    "2025-9-11": 0,
-                    "2025-9-12": 0,
-                    "2025-9-13": 0,
-                    "2025-9-14": 0,
-                    "2025-9-15": 0,
-                    "2025-9-16": 0,
-                    "2025-9-17": 0,
-                    "2025-9-18": 0,
-                    "2025-9-19": 0,
-                    "2025-9-20": 0,
-                    "2025-9-21": 0,
-                    "2025-9-22": 0,
-                    "2025-9-23": 0,
-                    "2025-9-24": 0,
-                    "2025-9-25": 0,
-                    "2025-9-26": 0,
-                    "2025-9-27": 0,
-                    "2025-9-28": 0,
-                    "2025-9-29": 0,
-                    "2025-9-30": 0,
-                    "2025-10-1": 0,
-                    "2025-10-2": 0,
-                    "2025-10-3": 0,
-                    "2025-10-4": 0,
-                    "2025-10-5": 0,
-                    "2025-10-6": 0,
-                    "2025-10-7": 0,
-                    "2025-10-8": 0,
-                    "2025-10-9": 0,
-                    "2025-10-10": 0,
-                    "2025-10-11": 0,
-                    "2025-10-12": 0,
-                    "2025-10-13": 0,
-                    "2025-10-14": 0,
-                    "2025-10-15": 0,
-                    "2025-10-16": 0,
-                    "2025-10-17": 0,
-                    "2025-10-18": 0,
-                    "2025-10-19": 0,
-                    "2025-10-20": 0,
-                    "2025-10-21": 0,
-                    "2025-10-22": 0,
-                    "2025-10-23": 0,
-                    "2025-10-24": 0,
-                    "2025-10-25": 0,
-                    "2025-10-26": 0,
-                    "2025-10-27": 0,
-                    "2025-10-28": 0,
-                    "2025-10-29": 0,
-                    "2025-10-30": 0,
-                    "2025-10-31": 0,
-                    "2025-11-1": 0,
-                    "2025-11-2": 0,
-                    "2025-11-3": 0,
-                    "2025-11-4": 0,
-                    "2025-11-5": 0,
-                    "2025-11-6": 0,
-                    "2025-11-7": 0,
-                    "2025-11-8": 0,
-                    "2025-11-9": 0,
-                    "2025-11-10": 0,
-                    "2025-11-11": 0,
-                    "2025-11-12": 0,
-                    "2025-11-13": 0,
-                    "2025-11-14": 0,
-                    "2025-11-15": 0,
-                    "2025-11-16": 0,
-                    "2025-11-17": 0,
-                    "2025-11-18": 0,
-                    "2025-11-19": 0,
-                    "2025-11-20": 0,
-                    "2025-11-21": 0,
-                    "2025-11-22": 0,
-                    "2025-11-23": 0,
-                    "2025-11-24": 0,
-                    "2025-11-25": 0,
-                    "2025-11-26": 0,
-                    "2025-11-27": 0,
-                    "2025-11-28": 0
-                }
 
   const animationStyles = `
         @keyframes floatIn {
@@ -472,33 +280,32 @@ const CodingDashboard = () => {
           <div className="space-y-8">
               <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
                 <div className="xl:col-span-2">
-                    <BadgeCollection badges={badgesDummyData}/>
+                    {data && <BadgeCollection badges={data.leetcode.badges.badges}/>}
                   </div>
-                  <div>
+                 {data && <div>
                     <ProblemsCard 
-                      title="Fundamentals"
+                      title="GFG Fundamentals"
                       problemsData={
-                        [{ name: 'GFG', value: 92, color: '#10B981' },
-                        { name: 'HackerRank', value: 69, color: '#FBBF24' }]
+                        [{ name: 'School', value: (data.gfg?.profile?.problemsSolved?.School || 0), color: '#10B981' },
+                        { name: 'Basic', value: (data.gfg?.profile?.problemsSolved?.Basic || 0), color: '#FBBF24' },]
                       }
                     />
                     <ProblemsCard 
                       title="DSA"
                       problemsData={
-                        [{ name: 'Easy', value: 23, color: '#10B981' },
-                        { name: 'Medium', value: 67, color: '#FBBF24' },
-                        { name: 'Hard', value: 156, color: '#FF4524' }]
+                        [{ name: 'Easy', value: (data.leetcode?.problems?.acSubmissionNum[1]?.count || 0) + (data.interviewbit?.profile?.problemsSolved?.Easy || 0) + (data.gfg?.problemsSolved?.Easy || 0), color: '#10B981' },
+                        { name: 'Medium', value: (data.leetcode?.problems?.acSubmissionNum[2]?.count || 0) + (data.interviewbit?.profile?.problemsSolved?.Medium || 0) + (data.gfg?.problemsSolved?.Medium || 0), color: '#FBBF24' },
+                        { name: 'Hard', value: (data.leetcode?.problems?.acSubmissionNum[3]?.count || 0) + (data.interviewbit?.profile?.problemsSolved?.Hard || 0) + (data.gfg?.problemsSolved?.Hard || 0), color: '#FF4524' }]
                       }
                     />
                     <ProblemsCard 
                       title="Competitive Programming"
                       problemsData={
-                        [{ name: 'Codechef', value: 200, color: '#10B981' },
-                        { name: 'Codeforces', value: 300, color: '#FBBF24' }]
+                        [{ name: 'Codechef', value: (data.codechef?.profile?.problemsSolved || 0), color: '#10B981' },]
                       }
                     />
-                  </div>
-                  {data && <SubmissionHeatmap calendar={getTimeStampToDateMapping(JSON.parse(data.leetcode.submission.submissionCalendar))} className="col-span-3"/>}
+                  </div>}   
+                  {data && <SubmissionHeatmap calendar={getCombinedHeatmap(getPolishedLeetcodeHeatmap(JSON.parse(data.leetcode.submission.submissionCalendar)), getPolishedCodechefHeatmap(data.codechef.submission), getPolishedGithubHeatmap(data.github.calendar))} className="col-span-3"/>}
               </div>
           </div>
       </main>
