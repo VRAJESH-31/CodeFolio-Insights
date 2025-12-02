@@ -42,6 +42,19 @@ const leetCodeApiQueries = {
                 attendedContestsCount
                 topPercentage
             }
+            userContestRankingHistory(username: $username) {
+                attended
+                trendDirection
+                problemsSolved
+                totalProblems
+                finishTimeInSeconds
+                rating
+                ranking
+                contest {
+                    title
+                    startTime
+                }
+            }
         }
     `,
 

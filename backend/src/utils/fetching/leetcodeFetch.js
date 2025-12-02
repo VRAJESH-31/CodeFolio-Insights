@@ -21,7 +21,7 @@ const getLeetCodeContestData = async (username) => {
     const query = leetCodeApiQueries.LEETCODE_CONTEST_DATA_QUERY;
     const variables = { username };
     const data = (await leetCodeQuery(query, variables)).data;
-    if (data) return data["userContestRanking"];
+    if (data) return data;
     return data;
 }
 
