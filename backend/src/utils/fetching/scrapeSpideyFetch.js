@@ -6,7 +6,7 @@ const fetchGfgUserData = async (username) => {
 };
 
 const fetchGfgUserSubmissionData = async (username) => {
-    return await scrapeSpideyApiQuery(`/api/v1/gfg/user/submissions?user=${username}&apiKey=${SCRAPE_SPIDEY_API_KEY}`);
+    return await scrapeSpideyApiQuery(`/api/v1/gfg/user/submissions?user=${username}&apiKey=${SCRAPE_SPIDEY_API_KEY}&year=${new Date().getFullYear()}`);
 };
 
 const fetchCodeChefUserData = async (username) => {

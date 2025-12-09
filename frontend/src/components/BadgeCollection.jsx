@@ -1,14 +1,15 @@
 import { Trophy, Medal, Crown, Sparkles } from "lucide-react";
 import BadgeCard from "./BadgeCard";
 
-const BadgeCollection = ({ badges }) => {
+const BadgeCollection = ({ badges, title="Achievements & Badges" }) => {
+
     const scrollStyle = `
         @keyframes scroll {
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); }
         }
         .animate-scroll {
-            animation: scroll 30s linear infinite;
+            animation: scroll 10s linear infinite;
         }
         .animate-scroll:hover {
             animation-play-state: paused;
@@ -20,9 +21,6 @@ const BadgeCollection = ({ badges }) => {
             overflow: hidden;
         }
     `;
-
-    const getTotalBadges = badges.length;
-    const getActiveBadges = badges.filter(badge => !badge.expired).length;
 
     return (
         <div className="bg-white/90 backdrop-blur-sm p-8 rounded-3xl shadow-2xl border-2 border-amber-200/50 hover:border-amber-300/70 transition-all duration-500 animate-float-in group" style={{animationDelay: '100ms'}}>
@@ -39,17 +37,17 @@ const BadgeCollection = ({ badges }) => {
                         <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-yellow-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     </div>
                     <div>
-                        <h3 className="text-2xl font-black text-gray-800">Achievements & Badges</h3>
-                        <p className="text-gray-600 font-medium mt-1">
-                            {getActiveBadges} active badges of {getTotalBadges} total
-                        </p>
+                        <h3 className="text-2xl font-black text-gray-800">{title}</h3>
+                        {/* <p className="text-gray-600 font-medium mt-1">
+                            {getActiveBadges} active badges of {badges.length} total
+                        </p> */}
                     </div>
                 </div>
                 
                 {/* Stats Badge */}
                 <div className="flex items-center gap-2 bg-amber-100 border border-amber-200 text-amber-800 px-4 py-2 rounded-full font-semibold">
                     <Trophy className="w-4 h-4" />
-                    <span>{getTotalBadges} Badges</span>
+                    <span>{badges.length} Badges</span>
                 </div>
             </div>
             
@@ -69,12 +67,12 @@ const BadgeCollection = ({ badges }) => {
                     <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-white via-white/90 to-transparent pointer-events-none rounded-r-2xl"></div>
                     
                     {/* Scroll Indicator */}
-                    <div className="flex justify-center mt-6">
+                    {/* <div className="flex justify-center mt-6">
                         <div className="flex items-center gap-2 text-sm text-gray-500 bg-gray-100 px-4 py-2 rounded-full">
                             <Sparkles className="w-4 h-4 text-yellow-400 animate-pulse" />  
                             <span>Hover to pause scrolling</span>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
             ) : (
                 <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-2xl border-2 border-dashed border-gray-200 group-hover:border-gray-300 transition-all duration-500">
