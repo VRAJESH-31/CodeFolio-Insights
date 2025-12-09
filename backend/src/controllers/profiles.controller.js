@@ -76,6 +76,7 @@ const fetchProfilesData = async (req, res) => {
         const profileData = {
             gfg : profileLinks.gfgUsername ? {
                 profile : await scrapeSpideyFetching.fetchGfgUserData(profileLinks.gfgUsername),
+                // submission: await scrapeSpideyFetching.fetchGfgUserSubmissionData(profileLinks.gfgUsername),
             } : null,
             codechef : profileLinks.codechefUsername ? {
                 profile : await scrapeSpideyFetching.fetchCodeChefUserData(profileLinks.codechefUsername),
@@ -89,7 +90,7 @@ const fetchProfilesData = async (req, res) => {
                 badges : await leetcodeFetching.getLeetCodeBadges(profileLinks.leetCodeUsername),
                 contest : await leetcodeFetching.getLeetCodeContestData(profileLinks.leetCodeUsername),
                 problems : await leetcodeFetching.getLeetCodeProblemsCount(profileLinks.leetCodeUsername),
-                submission : await leetcodeFetching.getLeetCodeUserStreaksAndCalendar(profileLinks.leetCodeUsername),
+                submission : await leetcodeFetching.getLeetCodeUserStreaksAndCalendar(profileLinks.leetCodeUsername, new Date().getFullYear()),
             } : null,
             github : profileLinks.githubUsername ? {
                 profile : await githubFetching.getUserProfileData(profileLinks.githubUsername),

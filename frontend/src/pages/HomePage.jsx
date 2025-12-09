@@ -7,11 +7,9 @@ import { useCodingProfilesData } from "../hooks/useProfiles.js";
 import { useEffect, useState } from "react";
 import ContestGraph from "../components/ContestGraph.jsx";
 import Loader from "../components/Loader.jsx";
-import StatCard from "../components/StatCard.jsx";
 import GithubStats from "../components/GithubStats.jsx";
 import LanguageStats from "../components/LanguageStats.jsx";
 import {GitCommitHorizontal, GitPullRequest, Ban, FolderGit} from "lucide-react"
-import {codingPlatformsData as dummyCodingPlatforms} from "../constants/dummy.js"
 
 const CodingDashboard = () => {
 
@@ -25,49 +23,49 @@ const CodingDashboard = () => {
         refetch();
     }, [])
 
-    const getPolishedCodechefHeatmap = (heatmap) => {
-        // Initialize an empty object for the polished heatmap
-        const polishedHeatmap = {};
+    // const getPolishedCodechefHeatmap = (heatmap) => {
+    //     // Initialize an empty object for the polished heatmap
+    //     const polishedHeatmap = {};
 
-        // Iterate over each key (date) in the input heatmap
-        for (const date in heatmap) {
-            if (Object.hasOwnProperty.call(heatmap, date)) {
-                // Split the date string into its components: Year, Month, and Day
-                const parts = date.split('-');
+    //     // Iterate over each key (date) in the input heatmap
+    //     for (const date in heatmap) {
+    //         if (Object.hasOwnProperty.call(heatmap, date)) {
+    //             // Split the date string into its components: Year, Month, and Day
+    //             const parts = date.split('-');
                 
-                // Check if the date string has exactly three parts (Year, Month, Day)
-                if (parts.length === 3) {
-                    const year = parts[0];
-                    const month = parts[1];
-                    const day = parts[2];
+    //             // Check if the date string has exactly three parts (Year, Month, Day)
+    //             if (parts.length === 3) {
+    //                 const year = parts[0];
+    //                 const month = parts[1];
+    //                 const day = parts[2];
 
-                    // Function to add a leading zero if the number part is a single digit
-                    const zeroPad = (numStr) => {
-                        // Convert to number, then back to string to handle '03' -> '3' correctly
-                        const num = parseInt(numStr, 10); 
-                        // Use String.prototype.padStart() for efficient zero padding
-                        return num.toString().padStart(2, '0');
-                    };
+    //                 // Function to add a leading zero if the number part is a single digit
+    //                 const zeroPad = (numStr) => {
+    //                     // Convert to number, then back to string to handle '03' -> '3' correctly
+    //                     const num = parseInt(numStr, 10); 
+    //                     // Use String.prototype.padStart() for efficient zero padding
+    //                     return num.toString().padStart(2, '0');
+    //                 };
 
-                    // Apply zero-padding to the month and day parts
-                    const polishedMonth = zeroPad(month);
-                    const polishedDay = zeroPad(day);
+    //                 // Apply zero-padding to the month and day parts
+    //                 const polishedMonth = zeroPad(month);
+    //                 const polishedDay = zeroPad(day);
 
-                    // Reconstruct the date string in the desired YYYY-MM-DD format
-                    const polishedDate = `${year}-${polishedMonth}-${polishedDay}`;
+    //                 // Reconstruct the date string in the desired YYYY-MM-DD format
+    //                 const polishedDate = `${year}-${polishedMonth}-${polishedDay}`;
 
-                    // Assign the original count to the new, polished date key
-                    polishedHeatmap[polishedDate] = heatmap[date];
-                } else {
-                    // If the date format is unexpected, copy the key/value as is 
-                    // (or you could choose to throw an error/skip it)
-                    polishedHeatmap[date] = heatmap[date]; 
-                }
-            }
-        }
+    //                 // Assign the original count to the new, polished date key
+    //                 polishedHeatmap[polishedDate] = heatmap[date];
+    //             } else {
+    //                 // If the date format is unexpected, copy the key/value as is 
+    //                 // (or you could choose to throw an error/skip it)
+    //                 polishedHeatmap[date] = heatmap[date]; 
+    //             }
+    //         }
+    //     }
 
-        return polishedHeatmap;
-    };
+    //     return polishedHeatmap;
+    // };
 
     const getPolishedGithubHeatmap = (githubData) => {
         // Helper function to ensure month and day strings are zero-padded (e.g., '3' -> '03').
@@ -179,6 +177,8 @@ const CodingDashboard = () => {
         
         return completeDateMapping;
     }
+
+    // console.log(getPolishedLeetcodeHeatmap(JSON.parse(data?.leetcode?.submission?.submissionCalendar || "{}")));
 
     const getCombinedHeatmap = (...heatmaps) => {
         // Initialize an empty object for the combined heatmap
@@ -327,10 +327,8 @@ const CodingDashboard = () => {
                                             />
                                         </div>
                                         <SubmissionHeatmap 
-                                            calendar={getCombinedHeatmap(
-                                                getPolishedLeetcodeHeatmap(JSON.parse(data?.leetcode?.submission?.submissionCalendar) || {}), 
-                                                getPolishedCodechefHeatmap(data?.codechef?.submission) || {}, 
-                                                // getPolishedGithubHeatmap(data?.github?.calendar) || {}
+                                            calendar={getCombinedHeatmap(data?.leetcode?.submission?.submissionCalendar || {}, 
+                                                data?.codechef?.submission?.[new Date().getFullYear()] || {}, 
                                             )} 
                                             className="col-span-1 lg:col-span-3"
                                         />
@@ -349,10 +347,6 @@ const CodingDashboard = () => {
                                         ]}/>
                                         {console.log(data?.github?.badges)}
                                         <BadgeCollection title="Badges" badges={data?.github?.badges?.map((badge)=>{return {icon: badge.icon, name: badge.name}})}/>
-                                        <SubmissionHeatmap 
-                                            calendar={getPolishedGithubHeatmap(data?.github?.calendar) || {}} 
-                                            className="col-span-1 lg:col-span-3"
-                                        />
                                     </>
                                 }
                             </>

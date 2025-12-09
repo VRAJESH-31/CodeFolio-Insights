@@ -22,10 +22,10 @@ const leetCodeApiQueries = {
     `,
 
     LEETCODE_USER_STREAKS_CALENDAR_QUERY: `
-        query userCalendar($username: String!) {
+        query userCalendar($username: String!, $year: Int) {
             matchedUser(username: $username) {
                 username
-                userCalendar {
+                userCalendar(year: $year) {
                     streak
                     totalActiveDays
                     submissionCalendar
