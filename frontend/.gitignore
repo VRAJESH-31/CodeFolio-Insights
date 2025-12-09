@@ -13,6 +13,7 @@ dist-ssr
 *.local
 
 *.env
+*/constants/dummy.js
 
 # Editor directories and files
 .vscode/*

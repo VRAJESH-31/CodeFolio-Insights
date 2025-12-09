@@ -128,6 +128,10 @@ const getLastYearCommitsCount = async (username) => {
     return lastYearCommitsData["data"]["user"]["contributionsCollection"]["contributionCalendar"]["totalContributions"];
 }   
 
+const getGithubStars = async (username) => {
+    
+}
+
 const getLanguageUsageStats = (uniqueLanguages, userReposLanguageStat) => {
 
     let languageUsage = {};
