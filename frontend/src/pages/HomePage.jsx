@@ -1,390 +1,367 @@
-import React, { useMemo, useState, useEffect } from 'react';
-import Sidebar from '../components/Sidebar';
-import useDashboard from '../hooks/useDashboard';
-import StatCard from '../components/StatCard';
-import TopicStats from '../components/TopicStats';
-import RepoTable from '../components/RepoTable';
-import DifficultyChart from '../components/DifficultyChart';
-import LanguageChart from '../components/LanguageChart';
-import { Loader2, AlertCircle, Code, Calendar, Flame, Award, GitCommit, Layers, ExternalLink, Trophy, Target, Zap } from 'lucide-react';
-import { getRandomHexColor } from '../utils/helper';
 
-// --- Utility Components ---
+import ProblemsCard from "../components/ProblemsCard";
+import Sidebar from "../components/Sidebar.jsx"
+import BadgeCollection from "../components/BadgeCollection.jsx";
+import SubmissionHeatmap from "../components/SubmissionHeatmap.jsx";
+import useAuthStore from "../../store/useAuthStore.js";
+import { useCodingProfilesData } from "../hooks/useProfiles.js";
+import { useEffect, useState } from "react";
+import ContestGraph from "../components/ContestGraph.jsx";
+import Loader from "../components/Loader.jsx";
+import GithubStats from "../components/GithubStats.jsx";
+import LanguageStats from "../components/LanguageStats.jsx";
+import {GitCommitHorizontal, GitPullRequest, Ban, FolderGit} from "lucide-react"
 
-const PlatformCard = ({ platform, data, icon, color, link }) => {
-    if (!data) return null;
-    const Icon = icon;
+const CodingDashboard = () => {
 
-    return (
-        <div className="bg-white/90 backdrop-blur-sm border border-gray-200 rounded-2xl p-6 flex flex-col h-full hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group animate-float-in">
-            <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                    <div className="p-3 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 group-hover:scale-110 transition-transform duration-300 shadow-md">
-                        <Icon className="w-6 h-6" style={{ color }} />
-                    </div>
-                    <h3 className="text-gray-900 font-black text-lg capitalize">{platform}</h3>
-                </div>
-                {link && (
-                    <a href={link} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-blue-600 transition-colors">
-                        <ExternalLink className="w-4 h-4" />
-                    </a>
-                )}
-            </div>
+    const user = useAuthStore((state)=>state.user);
+    const { data, isLoading, refetch } = useCodingProfilesData(user?.name);
+    const dashboardOptions = ["Problem Solving", "Github"];
+    const [dashboardOptionIndex, setDashboardOptionIndex] = useState(0);
 
-            <div className="space-y-4 flex-1">
-                {Object.entries(data).map(([key, value]) => (
-                    <div key={key} className="flex justify-between items-center text-sm border-b border-gray-100 pb-3 last:border-0 last:pb-0 hover:bg-gray-50/50 px-2 py-1 rounded transition-colors">
-                        <span className="text-gray-600 font-semibold capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
-                        <span className="text-gray-900 font-black font-mono">{value}</span>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-};
+    useEffect(()=>{
+        if (!user?.name) return;
+        refetch();
+    }, [])
 
-// --- Main Component ---
+    // const getPolishedCodechefHeatmap = (heatmap) => {
+    //     // Initialize an empty object for the polished heatmap
+    //     const polishedHeatmap = {};
 
-const HomePage = () => {
-    const [activeMenu, setActiveMenu] = useState('Dashboard');
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-    const { dashboardData, isLoading, error } = useDashboard();
+    //     // Iterate over each key (date) in the input heatmap
+    //     for (const date in heatmap) {
+    //         if (Object.hasOwnProperty.call(heatmap, date)) {
+    //             // Split the date string into its components: Year, Month, and Day
+    //             const parts = date.split('-');
+                
+    //             // Check if the date string has exactly three parts (Year, Month, Day)
+    //             if (parts.length === 3) {
+    //                 const year = parts[0];
+    //                 const month = parts[1];
+    //                 const day = parts[2];
 
-    // Debug: Log data when it changes
-    useEffect(() => {
-        if (dashboardData) {
-            console.log('=== DASHBOARD DATA ===');
-            console.log('Full Data:', dashboardData);
-            console.log('LeetCode:', dashboardData.leetcode);
-            console.log('  - Profile:', dashboardData.leetcode?.profile);
-            console.log('  - Submission:', dashboardData.leetcode?.submission);
-            console.log('  - Contest:', dashboardData.leetcode?.contest);
-            console.log('  - Badges:', dashboardData.leetcode?.badges);
-            console.log('  - Problems:', dashboardData.leetcode?.problems);
-            console.log('  - ProblemsCount:', dashboardData.leetcode?.problemsCount);
-            console.log('  - TopicWiseProblems:', dashboardData.leetcode?.topicWiseProblems);
-            console.log('GitHub:', dashboardData.github);
-            console.log('  - Profile:', dashboardData.github?.profile);
-            console.log('  - Commits:', dashboardData.github?.commits);
-            console.log('  - Contributions:', dashboardData.github?.contributions);
-            console.log('  - Calendar:', dashboardData.github?.calendar);
-            console.log('  - Badges:', dashboardData.github?.badges);
-            console.log('  - LanguageStats:', dashboardData.github?.languageStats);
-            console.log('  - LanguageUsageInBytes:', dashboardData.github?.languageUsageInBytes);
-            console.log('  - UserReposStat:', dashboardData.github?.userReposStat);
-            console.log('GFG:', dashboardData.gfg);
-            console.log('CodeChef:', dashboardData.codechef);
-            console.log('InterviewBit:', dashboardData.interviewbit);
-        }
-    }, [dashboardData]);
+    //                 // Function to add a leading zero if the number part is a single digit
+    //                 const zeroPad = (numStr) => {
+    //                     // Convert to number, then back to string to handle '03' -> '3' correctly
+    //                     const num = parseInt(numStr, 10); 
+    //                     // Use String.prototype.padStart() for efficient zero padding
+    //                     return num.toString().padStart(2, '0');
+    //                 };
 
-    // --- Client-Side Aggregation ---
-    const stats = useMemo(() => {
-        if (!dashboardData) return null;
+    //                 // Apply zero-padding to the month and day parts
+    //                 const polishedMonth = zeroPad(month);
+    //                 const polishedDay = zeroPad(day);
 
-        const { leetcode, github, gfg, codechef, interviewbit } = dashboardData;
+    //                 // Reconstruct the date string in the desired YYYY-MM-DD format
+    //                 const polishedDate = `${year}-${polishedMonth}-${polishedDay}`;
 
-        const totalQuestions = (
-            (leetcode?.submission?.totalSolved || 0) +
-            (gfg?.submission?.totalSolved || 0) +
-            (codechef?.submission?.totalSolved || 0) +
-            (interviewbit?.profile?.totalSolved || 0)
-        );
+    //                 // Assign the original count to the new, polished date key
+    //                 polishedHeatmap[polishedDate] = heatmap[date];
+    //             } else {
+    //                 // If the date format is unexpected, copy the key/value as is 
+    //                 // (or you could choose to throw an error/skip it)
+    //                 polishedHeatmap[date] = heatmap[date]; 
+    //             }
+    //         }
+    //     }
 
-        const githubActiveDays = github?.calendar?.totalActiveDays || 0;
-        const totalActiveDays = Math.max(githubActiveDays, 0);
+    //     return polishedHeatmap;
+    // };
 
-        const currentStreak = Math.max(
-            github?.calendar?.currentStreak || 0,
-            leetcode?.submission?.streak || 0,
-            gfg?.submission?.streak || 0
-        );
-
-        const totalBadges = (
-            (leetcode?.badges?.length || 0) +
-            (github?.badges?.length || 0) +
-            (gfg?.profile?.badgesCount || 0)
-        );
-
-        return {
-            totalQuestions,
-            totalActiveDays,
-            currentStreak,
-            totalBadges
+    const getPolishedGithubHeatmap = (githubData) => {
+        // Helper function to ensure month and day strings are zero-padded (e.g., '3' -> '03').
+        const zeroPad = (numStr) => {
+            const num = parseInt(numStr, 10);
+            return num.toString().padStart(2, '0');
         };
-    }, [dashboardData]);
 
-    // Get LeetCode topic data
-    const getLeetcodeTopicData = (topicData) => {
-        if (!topicData) return [];
-        const responseTopicData = [];
-        const topicDataArray = Object.entries(topicData).map((topicLevelData) => topicLevelData[1]);
-        for (let i = 0; i < topicDataArray.length; i++) {
-            for (let j = 0; j < topicDataArray[i].length; j++) {
-                responseTopicData.push({
-                    name: topicDataArray[i][j].tagName,
-                    value: topicDataArray[i][j].problemsSolved,
-                    mastery: Math.min(100, topicDataArray[i][j].problemsSolved * 2),
-                    color: getRandomHexColor(),
-                })
+        const polishedHeatmap = {};
+
+        // 1. Iterate through each week object in the top-level array
+        for (const week of githubData) {
+            // We only care about the contributionDays array inside the week object
+            const days = week.contributionDays;
+
+            if (!days || !Array.isArray(days)) {
+                console.warn("Skipping a week object: 'contributionDays' array not found or invalid.");
+                continue;
+            }
+
+            // 2. Iterate through each day object in the contributionDays array
+            for (const day of days) {
+                const { contributionCount, date } = day;
+
+                if (contributionCount === undefined || !date) {
+                    console.warn("Skipping day object: missing contributionCount or date.");
+                    continue;
+                }
+
+                // 3. Split and polish the date string (e.g., "2025-5-13" -> "2025-05-13")
+                const parts = date.split('-');
+
+                if (parts.length === 3) {
+                    const year = parts[0];
+                    const month = parts[1];
+                    const dayOfMonth = parts[2];
+
+                    // Apply zero-padding
+                    const polishedMonth = zeroPad(month);
+                    const polishedDay = zeroPad(dayOfMonth);
+
+                    // Reconstruct the date string in the desired YYYY-MM-DD format
+                    const polishedDate = `${year}-${polishedMonth}-${polishedDay}`;
+
+                    // 4. Store the data in the result object
+                    polishedHeatmap[polishedDate] = contributionCount;
+                } else {
+                    console.warn(`Skipping date: Unexpected date format '${date}'`);
+                }
             }
         }
-        return responseTopicData.sort(() => Math.random() - 0.5).filter((_, index) => index < 10);
+
+        return polishedHeatmap;
+    };
+
+    const getPolishedLeetcodeHeatmap = (tempTimestampData) => {
+        let rawTimestampData;
+        
+        try {
+            rawTimestampData = {};
+
+            // Convert raw data into a Map keyed by YYYY-MM-DD (UTC) for easy lookup
+            for (const timestampStr in tempTimestampData) {
+                const submissions = tempTimestampData[timestampStr];
+                
+                // Convert seconds to milliseconds
+                const milliseconds = parseInt(timestampStr) * 1000;
+                const date = new Date(milliseconds);
+                
+                // Format the date to YYYY-MM-DD (UTC)
+                const dateString = date.toISOString().slice(0, 10);
+                
+                // If the same date appears twice (shouldn't happen with day-start timestamps, 
+                // but good practice): sum the submissions.
+                rawTimestampData[dateString] = (rawTimestampData[dateString] || 0) + submissions;
+            }
+
+        } catch (error) {
+            console.error("Error parsing JSON:", error);
+            return {}; 
+        }
+
+        // 2. Generate the full 365-day range and merge data
+        const completeDateMapping = {};
+        const today = new Date();
+        
+        // Set today to the start of the day in UTC for consistent dating
+        today.setUTCHours(0, 0, 0, 0); 
+
+        for (let i = 0; i < 365; i++) {
+            // Create a date object for the day 'i' days ago
+            const dateToCheck = new Date(today);
+            dateToCheck.setUTCDate(today.getUTCDate() - i); 
+
+            // Format the date to YYYY-MM-DD (This is correct because 'dateToCheck' is already UTC-aligned)
+            const dateString = dateToCheck.toISOString().slice(0, 10);
+
+            // Check if the date exists in the input data
+            const submissions = rawTimestampData[dateString] || 0; // Default to 0 if missing
+
+            // Store in the final, ordered object
+            completeDateMapping[dateString] = submissions;
+        }
+        
+        // Note: In modern JavaScript environments (ES2015+), insertion order is guaranteed 
+        // for string keys, so the map will be ordered from oldest (364 days ago) to newest (today).
+        // If you need the output strictly sorted from NEWEST to OLDEST, 
+        // you would need to convert this object to an array and sort it manually.
+        
+        return completeDateMapping;
     }
 
-    // Animation styles
+    // console.log(getPolishedLeetcodeHeatmap(JSON.parse(data?.leetcode?.submission?.submissionCalendar || "{}")));
+
+    const getCombinedHeatmap = (...heatmaps) => {
+        // Initialize an empty object for the combined heatmap
+        const combinedHeatmap = {};
+
+        // Iterate over each heatmap object provided in the input
+        for (const heatmap of heatmaps) {
+            // Iterate over each key-value pair (date and count) in the current heatmap
+            for (const date in heatmap) {
+                if (Object.hasOwnProperty.call(heatmap, date)) {
+                    const count = heatmap[date];
+
+                    // Check if the date already exists in the combined heatmap
+                    if (combinedHeatmap[date]) {
+                        // If the date exists, add the new count to the existing total (Requirement 3)
+                        combinedHeatmap[date] += count;
+                    } else {
+                        // If the date does not exist, add it to the combined heatmap (Requirement 2)
+                        combinedHeatmap[date] = count;
+                    }
+                }
+            }
+        }
+
+        // Return the final combined heatmap object
+        return combinedHeatmap;
+    };
+
     const animationStyles = `
         @keyframes floatIn {
-            0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+            0% { opacity: 0; transform: translateY(30px) scale(0.9); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
-        @keyframes slideInRight {
-            from { opacity: 0; transform: translateX(-20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
         @keyframes glowPulse {
-            0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.1); }
-            50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.2); }
+            0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.2); }
+            50% { box-shadow: 0 0 40px rgba(59, 130, 246, 0.4); }
+        }
+        @keyframes scoreProgress {
+            0% { stroke-dashoffset: 283; }
         }
         @keyframes shimmer {
             0% { background-position: -200px 0; }
             100% { background-position: 200px 0; }
         }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes scaleIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
         }
         .animate-float-in { animation: floatIn 0.6s ease-out forwards; }
-        .animate-slide-in-right { animation: slideInRight 0.5s ease-out forwards; }
         .animate-glow-pulse { animation: glowPulse 3s ease-in-out infinite; }
+        .animate-score-progress { animation: scoreProgress 2s ease-out forwards; }
         .animate-shimmer {
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
             background-size: 200px 100%;
-            animation: shimmer 2s infinite;
+            animation: shimmer 3s infinite;
         }
-        .animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
-        .animate-scale-in { animation: scaleIn 0.4s ease-out forwards; }
+        .animate-bounce-in { animation: bounceIn 1s ease-out forwards; }
     `;
 
-    // Common layout wrapper
-    const renderLayout = (content) => (
-        <div className="flex h-screen bg-gradient-to-br from-blue-50/30 via-white to-purple-50/30 font-sans text-gray-900 overflow-hidden relative">
+    return (
+        <div className="flex h-screen bg-gradient-to-br from-green-50/30 via-white to-blue-50/30 font-sans">
             <style>{animationStyles}</style>
 
-            {/* Enhanced Background Elements */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute -top-40 -right-32 w-80 h-80 bg-blue-200/20 rounded-full blur-3xl"></div>
-                <div className="absolute -bottom-40 -left-32 w-80 h-80 bg-purple-200/20 rounded-full blur-3xl"></div>
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-blue-100/10 to-purple-100/10 rounded-full blur-3xl"></div>
-            </div>
-
+            {/* Conditional Loader rendered on top of everything else */}
+            {isLoading && <Loader />} 
+            
             <Sidebar
-                isSidebarCollapsed={isSidebarCollapsed}
-                activeMenu={activeMenu}
-                setActiveMenu={setActiveMenu}
+                isSidebarCollapsed={false}
+                activeMenu="Dashboard"
+                setActiveMenu={() => {}}
             />
 
-            <div className="flex-1 flex flex-col overflow-hidden relative">
-                <header className="bg-white/70 backdrop-blur-xl shadow-sm border-b border-blue-100/30 z-20 sticky top-0">
-                    <div className="flex items-center justify-between p-4 lg:p-6">
-                        <div className="flex items-center space-x-4">
-                            <button
-                                onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                                className="p-3 rounded-2xl text-gray-600 hover:text-blue-600 hover:bg-white/80 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all duration-300 transform hover:scale-105 group backdrop-blur-sm"
-                            >
-                                <Layers className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />
-                            </button>
-                            <div className="flex flex-col">
-                                <h1 className="text-2xl lg:text-3xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent animate-slide-in-right">
-                                    CodeFolio Insights
-                                </h1>
-                                <p className="text-sm text-gray-500 mt-1 animate-slide-in-right" style={{ animationDelay: '0.1s' }}>
-                                    Your comprehensive development analytics
-                                </p>
+            {/* Main Content */}
+            <main className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8">
+                {/* Header Section */}
+                <div className="text-center space-y-4 animate-float-in">
+                    <h1 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 bg-clip-text text-transparent leading-tight">
+                        Coding Progress Dashboard
+                    </h1>
+                    <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                        Aggregated stats from multiple competitive platforms.
+                    </p>
+                </div>
+
+                <div className="space-y-8">
+                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                        {/* CONDITIONALLY RENDER DATA-DEPENDENT COMPONENTS 
+                           We still check 'data' because even if loading stops, 
+                           'data' might be null on an error.
+                        */}
+                        {data ? (
+                            <>
+                                <div className="flex gap-10 mb-5 xl:col-span-3">
+                                    {dashboardOptions.map((option, index)=>(
+                                        <div onClick={()=>setDashboardOptionIndex(index)} className={`text-xl rounded-full py-1 px-5 ${index==dashboardOptionIndex ? 'text-blue-600 bg-blue-100 font-bold' : 'bg-gray-100 text-black'}`}>
+                                            {option}
+                                        </div>
+                                    ))}
+                                </div>
+                                {
+                                    (dashboardOptionIndex==0) && <>
+                                        <div className="xl:col-span-2">
+                                            <BadgeCollection badges={[
+                                                ...(data?.leetcode?.badges?.badges?.map((badge)=>{return {icon: badge.icon, name: badge.displayName, subTitle: null, subTitleIcon: null}}) || []),
+                                                // ...(data?.github?.badges?.map((badge)=>{return {icon: badge.icon, name: badge.name, subTitle: null, subTitleIcon: null}}) || []),
+                                                ...(data?.codechef?.profile?.badges?.map((badge)=>{return {icon: badge.badgeImage, name: badge.badgeTitle, subTitle: null, subTitleIcon: null}}) || []),
+                                                ...(data?.interviewbit?.profile?.badges?.map((badge)=>{return {icon: badge.image, name: badge.title, subTitle: null, subTitleIcon: null}}) || []),
+                                            ]}/>
+
+                                            <ContestGraph contestData={
+                                                data?.leetcode?.contest?.userContestRankingHistory
+                                                ?.filter((contest)=>contest.attended===true)
+                                                .map((contest)=>{
+                                                    return {
+                                                        title: contest.contest.title, 
+                                                        rating: contest.rating, 
+                                                        ranking: contest.ranking, 
+                                                        date: new Date(contest.contest.startTime * 1000).toISOString().split('T')[0]
+                                                    }
+                                                }) || []
+                                            }/>
+                                        </div>
+                                        <div className="flex flex-col gap-2">
+                                            <ProblemsCard
+                                                title="GFG Fundamentals"
+                                                problemsData={
+                                                    [{ name: 'School', value: (data.gfg?.profile?.problemsSolved?.School || 0), color: '#10B981' },
+                                                    { name: 'Basic', value: (data.gfg?.profile?.problemsSolved?.Basic || 0), color: '#FBBF24' },]
+                                                }
+                                            />
+                                            <ProblemsCard
+                                                title="DSA"
+                                                problemsData={
+                                                    [{ name: 'Easy', value: (data.leetcode?.problems?.acSubmissionNum[1]?.count || 0) + (data.interviewbit?.profile?.problemsSolved?.Easy || 0) + (data.gfg?.profile?.problemsSolved?.Easy || 0), color: '#10B981' },
+                                                    { name: 'Medium', value: (data.leetcode?.problems?.acSubmissionNum[2]?.count || 0) + (data.interviewbit?.profile?.problemsSolved?.Medium || 0) + (data.gfg?.profile?.problemsSolved?.Medium || 0), color: '#FBBF24' },
+                                                    { name: 'Hard', value: (data.leetcode?.problems?.acSubmissionNum[3]?.count || 0) + (data.interviewbit?.profile?.problemsSolved?.Hard || 0) + (data.gfg?.profile?.problemsSolved?.Hard || 0), color: '#FF4524' }]
+                                                }
+                                            />
+                                            <ProblemsCard
+                                                title="Competitive Programming"
+                                                problemsData={
+                                                    [{ name: 'Codechef', value: (data?.codechef?.profile?.problemsSolved || 0), color: '#10B981' },]
+                                                }
+                                            />
+                                        </div>
+                                        <SubmissionHeatmap 
+                                            calendar={getCombinedHeatmap(data?.leetcode?.submission?.submissionCalendar || {}, 
+                                                data?.codechef?.submission?.[new Date().getFullYear()] || {}, 
+                                            )} 
+                                            className="col-span-1 lg:col-span-3"
+                                        />
+                                    </>
+                                }
+
+                                {
+                                    (dashboardOptionIndex==1) && <>
+                                        <h2 className="text-3xl mb-5 xl:col-span-3">Github</h2>
+                                        <LanguageStats languageStats={data?.github?.languageStats}/>
+                                        <GithubStats statsArray={[
+                                            {icon: <FolderGit className="text-yellow-500"/>, name: "Repos", value: data?.github?.profile?.public_repos},
+                                            {icon: <GitCommitHorizontal className="text-orange-500"/>, name: "Commits", value: data?.github?.commits || 0},
+                                            {icon: <GitPullRequest className="text-green-500"/>, name: "PRs", value: data?.github?.contributions?.pullRequestContributions?.totalCount || 0},
+                                            {icon: <Ban className="text-red-500"/>, name: "issues", value: data?.github?.contributions?.issueContributions?.totalCount || 0},
+                                        ]}/>
+                                        {console.log(data?.github?.badges)}
+                                        <BadgeCollection title="Badges" badges={data?.github?.badges?.map((badge)=>{return {icon: badge.icon, name: badge.name}})}/>
+                                    </>
+                                }
+                            </>
+                        ) : (
+                            // Display a placeholder message if loading is done but data is missing (error state)
+                            !isLoading && <div className="col-span-3 text-center py-10 text-gray-500">
+                                Could not load coding profiles data. Please try refreshing.
                             </div>
-                        </div>
+                        )}
                     </div>
-                </header>
-
-                <main className="flex-1 overflow-y-auto p-4 lg:p-8 custom-scrollbar relative">
-                    {content}
-                </main>
-            </div>
-        </div>
-    );
-
-    if (isLoading) {
-        return renderLayout(
-            <div className="flex h-full items-center justify-center">
-                <div className="flex flex-col items-center gap-4">
-                    <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
-                    <p className="text-gray-500 font-medium">Loading your coding profile...</p>
                 </div>
-            </div>
-        );
-    }
-
-    if (error) {
-        return renderLayout(
-            <div className="flex h-full items-center justify-center">
-                <div className="text-center bg-white p-8 rounded-2xl shadow-xl border border-gray-100 max-w-md animate-scale-in">
-                    <div className="bg-red-50 p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                        <AlertCircle className="w-8 h-8 text-red-500" />
-                    </div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Failed to load dashboard</h2>
-                    <p className="text-gray-500 mb-6">We couldn&apos;t fetch your profile data. Please check your connection or try again later.</p>
-                    <button onClick={() => window.location.reload()} className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
-                        Retry
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
-    return renderLayout(
-        <div className="max-w-7xl mx-auto space-y-6 lg:space-y-8">
-            {/* Top Stats Row - Using existing StatCard component */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-                <StatCard
-                    title="Total Questions"
-                    value={stats?.totalQuestions || 0}
-                    change="Across all platforms"
-                    icon="fa-code"
-                    color="blue"
-                    index={0}
-                />
-                <StatCard
-                    title="Active Days"
-                    value={stats?.totalActiveDays || 0}
-                    change="Consistency is key"
-                    icon="fa-calendar-days"
-                    color="green"
-                    index={1}
-                />
-                <StatCard
-                    title="Current Streak"
-                    value={stats?.currentStreak || 0}
-                    change="Keep it burning"
-                    icon="fa-fire"
-                    color="purple"
-                    index={2}
-                />
-                <StatCard
-                    title="Total Badges"
-                    value={stats?.totalBadges || 0}
-                    change="Achievements"
-                    icon="fa-award"
-                    color="amber"
-                    index={3}
-                />
-            </div>
-
-            {/* Platform Breakdown */}
-            <div>
-                <h2 className="text-xl font-black text-gray-900 mb-4 flex items-center gap-2 animate-fade-in-up">
-                    <Zap className="w-5 h-5 text-yellow-500" /> Platform Breakdown
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 lg:gap-6">
-                    <PlatformCard
-                        platform="LeetCode"
-                        icon={Code}
-                        color="#ffa116"
-                        data={{
-                            solved: dashboardData?.leetcode?.submission?.totalSolved || 0,
-                            ranking: dashboardData?.leetcode?.profile?.ranking || 'N/A',
-                            acceptance: `${dashboardData?.leetcode?.submission?.acceptanceRate || 0}%`,
-                            contestRating: Math.round(dashboardData?.leetcode?.contest?.rating) || 'N/A'
-                        }}
-                    />
-                    <PlatformCard
-                        platform="GitHub"
-                        icon={GitCommit}
-                        color="#181717"
-                        data={{
-                            commits: dashboardData?.github?.commits?.totalCommits || 0,
-                            contributions: dashboardData?.github?.contributions?.total || 0,
-                            stars: dashboardData?.github?.profile?.stars || 0,
-                            prs: dashboardData?.github?.profile?.pullRequests || 0
-                        }}
-                    />
-                    <PlatformCard
-                        platform="GeeksforGeeks"
-                        icon={Target}
-                        color="#2f8d46"
-                        data={{
-                            solved: dashboardData?.gfg?.submission?.totalSolved || 0,
-                            score: dashboardData?.gfg?.profile?.score || 0,
-                            rank: dashboardData?.gfg?.profile?.rank || 'N/A',
-                            streak: `${dashboardData?.gfg?.submission?.streak || 0} Days`
-                        }}
-                    />
-                    <PlatformCard
-                        platform="CodeChef"
-                        icon={Trophy}
-                        color="#5b4638"
-                        data={{
-                            solved: dashboardData?.codechef?.submission?.totalSolved || 0,
-                            rating: dashboardData?.codechef?.profile?.currentRating || 0,
-                            stars: dashboardData?.codechef?.profile?.stars || 'N/A',
-                            highest: dashboardData?.codechef?.profile?.highestRating || 0
-                        }}
-                    />
-                    <PlatformCard
-                        platform="InterviewBit"
-                        icon={Zap}
-                        color="#00897b"
-                        data={{
-                            solved: dashboardData?.interviewbit?.profile?.totalSolved || 0,
-                            score: dashboardData?.interviewbit?.profile?.score || 0,
-                            rank: dashboardData?.interviewbit?.profile?.rank || 'N/A',
-                            streak: `${dashboardData?.interviewbit?.profile?.streak || 0} Days`
-                        }}
-                    />
-                </div>
-            </div>
-
-            {/* Charts Grid */}
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6">
-                {/* Difficulty & Language Charts */}
-                <div className="space-y-4 lg:space-y-6">
-                    <DifficultyChart leetcodeData={dashboardData?.leetcode} />
-                    <LanguageChart githubData={dashboardData?.github} />
-                    {dashboardData?.leetcode?.topicWiseProblems && (
-                        <TopicStats topicData={getLeetcodeTopicData(dashboardData.leetcode.topicWiseProblems)} />
-                    )}
-                </div>
-
-                {/* Repository Table */}
-                <div className="xl:col-span-2">
-                    <RepoTable githubData={dashboardData?.github} />
-                </div>
-            </div>
-
-            {/* Custom Scrollbar Styles */}
-            <style>{`
-                .custom-scrollbar::-webkit-scrollbar {
-                    width: 6px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-track {
-                    background: rgba(59, 130, 246, 0.05);
-                    border-radius: 10px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: linear-gradient(to bottom, #3b82f6, #8b5cf6);
-                    border-radius: 10px;
-                    opacity: 0.6;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                    background: linear-gradient(to bottom, #2563eb, #7c3aed);
-                    opacity: 0.8;
-                }
-            `}</style>
+            </main>
         </div>
     );
 };
 
-export default HomePage;
+export default CodingDashboard;

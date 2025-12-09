@@ -39,12 +39,15 @@ const getContestPerformanceScore = (contestData) => {
 
     if (!contestData) return 0;
 
+    const contestGiven = contestData.userContestRanking?.attendedContestsCount || 0;
+    const contestTopPercentage = contestData.userContestRanking?.topPercentage || 100;
+
     // Logarithmic Scaling for Contest Count (ln)
     // Formula: 40 * ln(C+1) -> Needs ~22 attended contests to hit 100
-    const contestCountScore = Math.min(100, 40 * Math.log(contestData["attendedContestsCount"] + 1));
+    const contestCountScore = Math.min(100, 40 * Math.log(contestGiven + 1));
     
     // Contest Rating is relative to elite performance, so linear is appropriate.
-    const contestRatingScore = 100 - Math.floor(contestData["topPercentage"]);
+    const contestRatingScore = 100 - Math.floor(contestTopPercentage);
     
     const score = contestCountScore * 0.2 + contestRatingScore * 0.8
 
