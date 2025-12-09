@@ -2,21 +2,32 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/useAuthStore';
 
+// Assuming the parent component passes a handler for 'isSidebarCollapsed' 
+// via the 'setActiveMenu' prop, or simply expects a mutation on 'isSidebarCollapsed'.
+// A cleaner approach would be to rename the prop to 'setIsSidebarCollapsed' 
+// if it's indeed a setter function, but we'll adapt to the current structure.
+
 const Sidebar = ({ isSidebarCollapsed, activeMenu, setActiveMenu }) => {
     const [hoveredItem, setHoveredItem] = useState(null);
     const [mounted, setMounted] = useState(false);
-    const location = useLocation();
     const navigate = useNavigate();
     const user = useAuthStore((state)=>state.user);
     const logout = useAuthStore((state)=>state.logout);
-    // Add local toggle handler if not provided by parent
-    const [localCollapsed, setLocalCollapsed] = useState(isSidebarCollapsed);
+    
+    // Determine if the provided 'setActiveMenu' is actually a setter function
+    // for the sidebar's collapsed state (which is a common pattern for 
+    // controlling state from a parent component).
+    const isParentControllingCollapse = typeof setActiveMenu === 'function' && setActiveMenu.length === 1;
+
     const handleToggleCollapse = () => {
-        if (typeof setActiveMenu === 'function' && setActiveMenu.name === 'setIsSidebarCollapsed') {
+        // If a setter for the collapse state is provided by the parent (via setActiveMenu), use it.
+        if (isParentControllingCollapse) {
             setActiveMenu(!isSidebarCollapsed);
-        } else {
-            setLocalCollapsed((prev) => !prev);
         }
+        // If no dedicated collapse setter is provided, you might decide to do nothing, 
+        // or ensure the parent passes the necessary function. 
+        // For this scenario, we assume the parent is responsible for toggling 
+        // the state exposed as `isSidebarCollapsed`.
     };
 
     useEffect(() => {
@@ -35,7 +46,7 @@ const Sidebar = ({ isSidebarCollapsed, activeMenu, setActiveMenu }) => {
         { name: 'Resume Analysis', icon: 'fa-solid fa-file-lines', path: '/resume-analyse' },
     ];
 
-    // Enhanced animations CSS
+    // Enhanced animations CSS (kept exactly as provided)
     const animationStyles = `
         @keyframes slideInRight {
             from { transform: translateX(-10px); opacity: 0; }
@@ -68,12 +79,27 @@ const Sidebar = ({ isSidebarCollapsed, activeMenu, setActiveMenu }) => {
         }
     `;
 
+    // Function to handle link clicks, ensuring the correct menu item is set as active
+    const handleLinkClick = (itemName) => {
+        if (typeof setActiveMenu === 'function') {
+            // Check if setActiveMenu is for setting the active menu name
+            if (!isParentControllingCollapse) {
+                setActiveMenu(itemName);
+            } else {
+                // If setActiveMenu is being used to toggle collapse, we should avoid 
+                // passing the item name here or rename the prop in the parent component.
+                // For now, we only call it if it's explicitly for menu name setting.
+            }
+        }
+    };
+
+
     return (
         <>
             <style>{animationStyles}</style>
             <aside 
                 className={`hidden md:flex flex-col bg-gradient-to-b from-white to-blue-50/30 border-r border-blue-100/50 shadow-2xl transition-all duration-700 ease-out backdrop-blur-sm ${
-                    isSidebarCollapsed ? 'w-24' : 'w-80'
+                    isSidebarCollapsed ? 'w-24' : 'w-60'
                 } ${mounted ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}
                 style={{
                     background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%)',
@@ -81,13 +107,11 @@ const Sidebar = ({ isSidebarCollapsed, activeMenu, setActiveMenu }) => {
                 }}
             >
                 {/* Enhanced Header */}
-                <div className={`flex items-center justify-center h-20 border-b border-blue-100/50 transition-all duration-500 ${
-                    isSidebarCollapsed ? 'px-4' : 'px-6'
+                <div className={`relative flex items-center justify-between h-20 border-b border-blue-100/50 transition-all duration-500 ${
+                    isSidebarCollapsed ? 'px-4' : 'pr-3 pl-6' // Adjust padding based on collapsed state
                 }`}>
                     <div className="flex items-center space-x-3 overflow-hidden transition-all duration-500">
-                        <div className="relative">
-                            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl blur-md opacity-30 animate-glow-pulse"></div>
-                        </div>
+                        {/* Only show branding when expanded */}
                         {!isSidebarCollapsed && (
                             <div className="animate-slide-in-right">
                                 <span className="text-2xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">
@@ -96,16 +120,24 @@ const Sidebar = ({ isSidebarCollapsed, activeMenu, setActiveMenu }) => {
                                 <div className="h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mt-1 animate-shimmer"></div>
                             </div>
                         )}
-                        {/* Toggle Collapse Button - always visible */}
-                        <button
-                            onClick={handleToggleCollapse}
-                            className="ml-2 p-2 rounded-full bg-blue-100 hover:bg-blue-200 transition-all duration-300"
-                            title={isSidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
-                            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-                        >
-                            <i className={`fa-solid ${isSidebarCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'} text-blue-600`}></i>
-                        </button>
+                        {/* Always visible logo/icon when collapsed */}
+                        {isSidebarCollapsed && (
+                             <div className="relative">
+                                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl blur-md opacity-30 animate-glow-pulse"></div>
+                                 <i className="fa-solid fa-terminal text-2xl text-blue-600 relative z-10 p-1"></i>
+                             </div>
+                        )}
                     </div>
+                    
+                    {/* Toggle Collapse Button - Always positioned at the end of the header */}
+                    <button
+                        onClick={handleToggleCollapse}
+                        className="p-2 rounded-full bg-blue-100 hover:bg-blue-200 transition-all duration-300 flex items-center justify-center flex-shrink-0"
+                        title={isSidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+                    >
+                        {/* Toggle between chevron-right and chevron-left icons */}
+                        <i className={`fa-solid ${isSidebarCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'} text-blue-600`}></i>
+                    </button>
                 </div>
 
                 {/* Enhanced Navigation */}
@@ -119,14 +151,14 @@ const Sidebar = ({ isSidebarCollapsed, activeMenu, setActiveMenu }) => {
                             >
                                 <Link
                                     to={item.path}
-                                    onClick={() => setActiveMenu(item.name)}
+                                    onClick={() => handleLinkClick(item.name)} // Use the new handler
                                     onMouseEnter={() => setHoveredItem(item.name)}
                                     onMouseLeave={() => setHoveredItem(null)}
                                     className={`group flex items-center p-4 rounded-2xl transition-all duration-500 ease-out relative overflow-hidden ${
                                         activeMenu === item.name
                                             ? 'bg-gradient-to-r from-blue-500/10 to-purple-500/10 shadow-lg shadow-blue-500/20 border border-blue-200/50'
                                             : 'hover:bg-white/80 hover:shadow-lg hover:border hover:border-blue-100/50'
-                                    } ${mounted ? 'animate-slide-in-up' : ''}`}
+                                        } ${mounted ? 'animate-slide-in-up' : ''}`}
                                 >
                                     {/* Active indicator with enhanced animation */}
                                     {activeMenu === item.name && (
@@ -146,17 +178,17 @@ const Sidebar = ({ isSidebarCollapsed, activeMenu, setActiveMenu }) => {
                                         activeMenu === item.name 
                                             ? 'transform scale-110 rotate-12' 
                                             : 'group-hover:scale-110 group-hover:rotate-6'
-                                    }`}>
+                                        }`}>
                                         <div className={`p-2 rounded-xl transition-all duration-500 ${
                                             activeMenu === item.name
                                                 ? 'bg-gradient-to-r from-blue-500 to-purple-600 shadow-lg'
                                                 : 'bg-white/80 shadow-sm group-hover:bg-blue-500/10'
-                                        }`}>
+                                            }`}>
                                             <i className={`${item.icon} w-5 text-center text-lg transition-all duration-500 ${
                                                 activeMenu === item.name 
                                                     ? 'text-white' 
                                                     : 'text-gray-600 group-hover:text-blue-600'
-                                            }`}></i>
+                                                }`}></i>
                                         </div>
                                     </div>
 
@@ -179,8 +211,8 @@ const Sidebar = ({ isSidebarCollapsed, activeMenu, setActiveMenu }) => {
                                         </div>
                                     )}
 
-                                    {/* Enhanced Analyze button */}
-                                    {!isSidebarCollapsed && activeMenu === item.name && !['Dashboard', 'Settings'].includes(item.name) && (
+                                    {/* Enhanced Analyze button (only visible when expanded and active) */}
+                                    {!isSidebarCollapsed && activeMenu === item.name && !['Dashboard', 'Resume Analysis'].includes(item.name) && (
                                         <button className="absolute right-4 top-1/2 -translate-y-1/2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs font-bold py-2 px-4 rounded-full hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-110 animate-float z-10 group/btn">
                                             <span className="flex items-center space-x-2">
                                                 <i className="fa-solid fa-chart-line text-xs group-hover/btn:scale-110 transition-transform"></i>
@@ -192,22 +224,6 @@ const Sidebar = ({ isSidebarCollapsed, activeMenu, setActiveMenu }) => {
                             </li>
                         ))}
                     </ul>
-
-                    {/* Enhanced Info Card */}
-                    {!isSidebarCollapsed && (
-                        <div className="px-3 pt-6 mt-8 border-t border-blue-100/50 animate-slide-in-up">
-                            <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200/50 rounded-2xl p-4 shadow-lg backdrop-blur-sm">
-                                <div className="flex items-start space-x-3">
-                                    <div className="p-2 bg-blue-500/10 rounded-lg">
-                                        <i className="fa-solid fa-lightbulb text-blue-600 text-sm"></i>
-                                    </div>
-                                    <p className="text-xs text-blue-700/80 font-medium leading-relaxed">
-                                        Click on a category to get an AI-powered analysis of your profile with detailed insights and recommendations.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </nav>
 
                 {/* Enhanced User Profile Section */}

@@ -1,6 +1,6 @@
 // src/pages/LinkManager.jsx
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../api/axiosInstance';
 import useAuthStore from '../../store/useAuthStore.js';
 import {
     Plus,
@@ -23,24 +23,24 @@ import {
     Star,
     TrendingUp
 } from 'lucide-react';
-import conf from '../config/config.js';
 
-const API_BASE_URL = `${conf.SERVER_BASE_URL}/profiles`;
+
+// API_BASE_URL is handled by axiosInstance
 
 // Mapping between frontend 'platform' value and backend 'profile object key'
 // This mapping is crucial for talking to the fixed backend schema.
 const PLATFORM_TO_BACKEND_KEY = {
     'leetcode': 'leetCodeUsername',
-    'interviewbit' : 'interviewbitUsername', // Added/Confirmed for InterviewBit
+    'interviewbit': 'interviewbitUsername', // Added/Confirmed for InterviewBit
     'github': 'githubUsername',
-    'linkedin': 'linkedinUsername', 
+    'linkedin': 'linkedinUsername',
     'gfg': 'gfgUsername',
     'hackerrank': 'hackerRankUsername',
     'codechef': 'codechefUsername',
     'codeforces': 'codeForcesUsername',
     'twitter': 'twitterUsername',
-    'portfolio': 'portfolioWebsiteLink', 
-    'resume': 'resumeLink', 
+    'portfolio': 'portfolioWebsiteLink',
+    'resume': 'resumeLink',
 };
 
 // Converts the backend's fixed object structure to the frontend's dynamic links array.
@@ -56,7 +56,7 @@ const transformBackendToFrontend = (backendData, platforms) => {
             const platformConfig = platforms.find(p => p.value === key);
             links.push({
                 // Unique ID required for frontend list management
-                id: `${key}_${Date.now()}_${Math.random()}`, 
+                id: `${key}_${Date.now()}_${Math.random()}`,
                 platform: key,
                 username: username,
                 url: getDefaultUrl(key, username),
@@ -73,15 +73,15 @@ const transformBackendToFrontend = (backendData, platforms) => {
 const transformFrontendToBackend = (linksArray) => {
     const backendData = {};
     const seenPlatforms = new Set();
-    
+
     // Enforces the constraint: only the first link found for a platform
     // will be saved, as the backend schema only supports one per platform.
     linksArray.forEach(link => {
         const backendKey = PLATFORM_TO_BACKEND_KEY[link.platform];
-        
+
         if (backendKey && !seenPlatforms.has(link.platform)) {
             // Use 'username' field, which contains the username or the full URL for resume/portfolio
-            backendData[backendKey] = link.username; 
+            backendData[backendKey] = link.username;
             seenPlatforms.add(link.platform);
         }
     });
@@ -116,7 +116,7 @@ const LinkPage = () => {
     });
     const [copiedId, setCopiedId] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const userId = useAuthStore((state)=>state?.user?._id);
+    const userId = useAuthStore((state) => state?.user?._id);
 
     const platforms = [
         { value: 'leetcode', label: 'LeetCode', icon: Code, color: 'from-orange-500 to-orange-600', bgColor: 'bg-orange-500/10', placeholder: 'leetcode_username' },
@@ -135,31 +135,31 @@ const LinkPage = () => {
     const fetchLinks = async () => {
         try {
             // GET request to retrieve the profile object using the backend route
-            const response = await axios.get(`${API_BASE_URL}/${userId}`);
+            const response = await axiosInstance.get(`/profiles/${userId}`);
             const rawLinks = transformBackendToFrontend(response.data, platforms);
             setLinks(rawLinks);
         } catch (error) {
             console.error('Failed to fetch profile links:', error);
-            setLinks([]); 
+            setLinks([]);
         } finally {
             setIsLoading(false);
         }
     };
-    
+
     // This function handles the PATCH request to update the backend
     const updateLinksOnServer = async (newLinks) => {
         // Optimistically update the state
-        setLinks(newLinks); 
-        
+        setLinks(newLinks);
+
         try {
             // Transform the array into the fixed object structure required by the backend
-            const backendData = transformFrontendToBackend(newLinks); 
-            
+            const backendData = transformFrontendToBackend(newLinks);
+
             // PATCH request to update the fixed fields using the backend route
-            await axios.patch(`${API_BASE_URL}/`, backendData, {withCredentials: true, requiresAuth: true});
+            await axiosInstance.patch('/profiles/', backendData, { requiresAuth: true });
         } catch (error) {
             console.error('Failed to update profile links on server:', error);
-            fetchLinks(); 
+            fetchLinks();
         }
     };
 
@@ -199,10 +199,10 @@ const LinkPage = () => {
         let updatedLinks;
         // Format the new/updated link with platform details (color, label, url, etc.)
         // This is necessary to correctly populate the 'url' field and platform data on the frontend
-        const formattedLinkData = transformBackendToFrontend(transformFrontendToBackend([linkData]), platforms)[0]; 
+        const formattedLinkData = transformBackendToFrontend(transformFrontendToBackend([linkData]), platforms)[0];
 
         if (editingId) {
-            updatedLinks = links.map(link => 
+            updatedLinks = links.map(link =>
                 // When editing, we replace the link with the matching ID
                 link.id === editingId ? formattedLinkData : link
             );
@@ -272,12 +272,12 @@ const LinkPage = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6 font-sans relative overflow-hidden">
             <style>{animationStyles}</style>
-            
+
             {/* Animated Background Elements (Unchanged) */}
             <div className="absolute top-10 left-10 w-20 h-20 bg-blue-200/30 rounded-full blur-xl animate-float"></div>
-            <div className="absolute bottom-20 right-20 w-32 h-32 bg-purple-200/30 rounded-full blur-2xl animate-float" style={{animationDelay: '1s'}}></div>
-            <div className="absolute top-1/3 right-1/4 w-16 h-16 bg-green-200/20 rounded-full blur-lg animate-float" style={{animationDelay: '2s'}}></div>
-            
+            <div className="absolute bottom-20 right-20 w-32 h-32 bg-purple-200/30 rounded-full blur-2xl animate-float" style={{ animationDelay: '1s' }}></div>
+            <div className="absolute top-1/3 right-1/4 w-16 h-16 bg-green-200/20 rounded-full blur-lg animate-float" style={{ animationDelay: '2s' }}></div>
+
             <div className="max-w-7xl mx-auto relative z-10">
                 {/* Enhanced Header (Unchanged) */}
                 <div className="text-center mb-12 animate-slide-in">
@@ -296,7 +296,7 @@ const LinkPage = () => {
 
                 {/* Stats Cards (Simplified to remove Public/Private) */}
                 {links.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-slide-in" style={{animationDelay: '0.1s'}}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-slide-in" style={{ animationDelay: '0.1s' }}>
                         {/* Total Links */}
                         <div className="bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-lg border border-white/60">
                             <div className="flex items-center gap-3">
@@ -326,10 +326,10 @@ const LinkPage = () => {
                         </div>
                     </div>
                 )}
-                
+
                 {/* Enhanced Add Button (Unchanged) */}
                 {!isAdding && !editingId && (
-                    <div className="text-center mb-8 animate-slide-in" style={{animationDelay: '0.2s'}}>
+                    <div className="text-center mb-8 animate-slide-in" style={{ animationDelay: '0.2s' }}>
                         <button
                             onClick={handleAdd}
                             className="group inline-flex items-center gap-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 animate-pulse-glow"
@@ -354,7 +354,7 @@ const LinkPage = () => {
                                 {editingId ? 'Edit Platform' : 'Add New Platform'}
                             </h2>
                         </div>
-                        
+
                         {/* Simplified grid layout as two form fields were removed */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Platform Selection */}
@@ -365,7 +365,7 @@ const LinkPage = () => {
                                 </label>
                                 <select
                                     value={formData.platform}
-                                    onChange={(e) => setFormData({...formData, platform: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, platform: e.target.value })}
                                     className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 bg-white/80 hover:border-gray-300"
                                 >
                                     <option value="">Choose a platform...</option>
@@ -386,7 +386,7 @@ const LinkPage = () => {
                                 <input
                                     type="text"
                                     value={formData.username}
-                                    onChange={(e) => setFormData({...formData, username: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                                     placeholder={platforms.find(p => p.value === formData.platform)?.placeholder || 'Enter username or URL'}
                                     className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 bg-white/80 hover:border-gray-300"
                                 />
@@ -435,16 +435,16 @@ const LinkPage = () => {
                         {links.map((link, index) => {
                             const platformConfig = platforms.find(p => p.value === link.platform);
                             const IconComponent = platformConfig?.icon || Globe;
-                            
+
                             return (
-                                <div 
+                                <div
                                     key={link.id}
                                     className="group bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/60 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 relative overflow-hidden animate-slide-in"
-                                    style={{animationDelay: `${(index % 6) * 0.1}s`}}
+                                    style={{ animationDelay: `${(index % 6) * 0.1}s` }}
                                 >
                                     {/* Shimmer effect on hover */}
                                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                                    
+
                                     {/* Platform Header (Simplified) */}
                                     <div className="flex items-center justify-between mb-4 relative z-10">
                                         <div className="flex items-center gap-3">

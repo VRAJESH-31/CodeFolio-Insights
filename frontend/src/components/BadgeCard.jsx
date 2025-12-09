@@ -28,7 +28,7 @@ const BadgeCard = ({ badge }) => {
     };
 
     return (
-        <div className={`flex-shrink-0 w-56 p-5 rounded-2xl border-2 hover:border-opacity-60 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl ${getBadgeGradient(badge.displayName)} group`}>
+        <div className={`flex-shrink-0 w-56 p-5 rounded-2xl border-2 hover:border-opacity-60 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl ${getBadgeGradient(badge.name)} group`}>
             <div className="text-center space-y-4">
                 {/* Badge Icon/Image */}
                 <div className="flex justify-center relative">
@@ -37,22 +37,22 @@ const BadgeCard = ({ badge }) => {
                         <div className="relative">
                             <img 
                                 src={badge.icon} 
-                                alt={badge.displayName}
+                                alt={badge.name}
                                 className="w-16 h-16 object-contain rounded-xl transform group-hover:scale-110 transition-transform duration-300 z-10 relative"
                                 onError={(e) => {
                                     e.target.style.display = 'none';
                                     e.target.nextSibling.style.display = 'flex';
                                 }}
                             />
-                            <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${getBadgeColor(badge.displayName)} flex items-center justify-center absolute inset-0 z-0`}
+                            <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${getBadgeColor(badge.name)} flex items-center justify-center absolute inset-0 z-0`}
                                 style={{ display: 'none' }}
                             >
-                                {getBadgeIcon(badge.displayName)}
+                                {getBadgeIcon(badge.name)}
                             </div>
                         </div>
                     ) : (
-                        <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${getBadgeColor(badge.displayName)} flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 transform group-hover:scale-110`}>
-                            {getBadgeIcon(badge.displayName)}
+                        <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${getBadgeColor(badge.name)} flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 transform group-hover:scale-110`}>
+                            {getBadgeIcon(badge.name)}
                         </div>
                     )}
                 </div>
@@ -61,26 +61,15 @@ const BadgeCard = ({ badge }) => {
                 <div className="space-y-3">
                     <div className="space-y-2">
                         <h4 className="font-bold text-gray-800 text-base leading-tight line-clamp-2 group-hover:text-gray-900 transition-colors duration-300">
-                            {badge.displayName}
+                            {badge.name}
                         </h4>
-                        <div className="flex items-center justify-center gap-2 text-sm text-gray-500 group-hover:text-gray-600 transition-colors duration-300">
-                            <Calendar className="w-4 h-4" />
+                        {badge.subTitle && <div className="flex items-center justify-center gap-2 text-sm text-gray-500 group-hover:text-gray-600 transition-colors duration-300">
+                            {badge.subTitleIcon}
                             <span className="font-medium">
-                                {new Date(badge.creationDate).toLocaleDateString('en-US', { 
-                                    month: 'short', 
-                                    year: 'numeric' 
-                                })}
+                                {badge.subTitle}
                             </span>
-                        </div>
+                        </div>}
                     </div>
-                    
-                    {/* Status Badge */}
-                    {!badge.expired && (
-                        <div className="inline-flex items-center gap-2 bg-green-100 border border-green-200 text-green-700 px-3 py-1.5 rounded-full text-xs font-semibold group-hover:bg-green-200 group-hover:border-green-300 transition-all duration-300">
-                            <Shield className="w-3 h-3" />
-                            Active
-                        </div>
-                    )}
                 </div>
             </div>
         </div>

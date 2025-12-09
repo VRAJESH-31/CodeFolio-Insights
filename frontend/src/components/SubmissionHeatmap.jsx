@@ -128,8 +128,6 @@ const SubmissionHeatmap = ({ calendar, className }) => {
 
   // Placeholder stats for the header
   const totalSubmissions = processedCalendar.reduce((sum, day) => sum + day.count, 0);
-  const maxStreak = '59'; 
-  const currentStreak = '2';
 
   // Heatmap constants
   const cellWidth = 20; 
@@ -141,15 +139,15 @@ const SubmissionHeatmap = ({ calendar, className }) => {
       <div className="flex justify-between items-center mb-6 border-b pb-4 border-gray-200">
         <div className="flex space-x-4 text-sm font-medium">
           <span className="text-gray-900">Submissions <span className="text-green-600">{totalSubmissions}</span></span>
-          <span className="text-gray-900">Max.Streak <span className="text-green-600">{maxStreak}</span></span>
-          <span className="text-gray-900">Current.Streak <span className="text-green-600">{currentStreak}</span></span>
+          {/* <span className="text-gray-900">Max.Streak <span className="text-green-600">{maxStreak}</span></span>
+          <span className="text-gray-900">Current.Streak <span className="text-green-600">{currentStreak}</span></span> */}
         </div>
-        <div className="flex items-center space-x-2">
-          {/* Dropdown for year/period selection */}
+        {/* <div className="flex items-center space-x-2">
+          Dropdown for year/period selection
           <select className="bg-gray-100 text-gray-700 rounded px-3 py-1 text-sm border border-gray-300 appearance-none pr-8">
             <option>Current</option>
           </select>
-          {/* Navigation Arrows */}
+          Navigation Arrows
           <div className="flex space-x-1">
             <button className="bg-gray-100 p-1 rounded text-gray-500 hover:bg-gray-200 transition">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
@@ -162,11 +160,11 @@ const SubmissionHeatmap = ({ calendar, className }) => {
                 </svg>
             </button>
           </div>
-        </div>
+        </div> */}
       </div>
       
       {/* Heatmap Grid */}
-      <div className="flex overflow-x-auto pb-2 scrollbar-hide">
+      <div className="flex overflow-x-auto pb-2 scrollbar-hide ">
         
         {/* Day labels (Y-axis: Mon, Wed, Fri, Sun) */}
         <div className="flex flex-col justify-between text-xs text-gray-500 mr-2 py-1 h-full">

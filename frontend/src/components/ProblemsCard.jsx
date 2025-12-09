@@ -22,7 +22,7 @@ const ProblemsCard = ({title="", problemsData=[]}) => {
     <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 font-sans text-gray-800 w-full max-w-sm mx-auto">
       
       {/* Header */}
-      <div className="flex items-center mb-6">
+      <div className="flex items-center justify-center mb-6">
         <h3 className="text-xl font-semibold text-gray-900 mr-2">{title}</h3>
       </div>
       
@@ -58,7 +58,7 @@ const ProblemsCard = ({title="", problemsData=[]}) => {
           {problemsData.map((item) => (
             <div 
               key={item.name} 
-              className="flex justify-between items-center bg-gray-100 p-3 rounded-lg shadow-sm"
+              className="flex justify-between items-center bg-gray-100 px-3 py-1 rounded-lg shadow-sm"
             >
               <span className="font-medium" style={{ color: item.color }}>
                 {item.name}

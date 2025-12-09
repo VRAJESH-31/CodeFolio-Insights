@@ -116,6 +116,7 @@ const LeetCode = () => {
     }, [])
 
     const { data, isLoading, isError, error, refetch, isFetching } = useLeetcodeAnalysis(userId.trim());
+    console.log(data)
 
     const handleAnalyze = () => {
         if (!userId.trim()) return;
@@ -243,7 +244,7 @@ const LeetCode = () => {
                                 { icon: CheckCircle, title: "Total Solved", value: data.problemsCount.acSubmissionNum[0].count, color: "green" },
                                 { icon: Target, title: "Acceptance Rate", value: (data.acceptanceRate*100).toFixed(2), color: "blue" },
                                 { icon: Zap, title: "Current Streak", value: data.submissionCalendar.streak, color: "yellow" },
-                                { icon: Award, title: "Contest Rating", value: Math.round(data?.contestData?.rating ?? 0), color: "purple" },
+                                { icon: Award, title: "Contest Rating", value: Math.round(data?.contestData?.userContestRanking?.rating ?? 0), color: "purple" },
                             ].map((stat, index) => (
                                 <div key={stat.title} className="animate-float-in" style={{animationDelay: `${400 + index * 100}ms`}}>
                                     <StatCard {...stat} delay={index * 100} />
@@ -254,7 +255,7 @@ const LeetCode = () => {
                         {/* Contest Stats and Badges */}
                         <div className="space-y-6 md:space-y-8">
                             <div className="animate-float-in" style={{animationDelay: '800ms'}}>
-                                <LeetCodeContestStats contestData={data.contestData} />
+                                <LeetCodeContestStats contestData={data.contestData?.userContestRanking} />
                             </div>
                             <div className="animate-float-in" style={{animationDelay: '900ms'}}>
                                 <BadgeCollection badges={data.badges.badges} />

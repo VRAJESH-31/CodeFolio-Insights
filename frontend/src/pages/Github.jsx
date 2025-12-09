@@ -166,10 +166,8 @@ const GitHub = () => {
 
             <Sidebar
                 isSidebarCollapsed={false}
-                activeMenu="GitHub"
-                setActiveMenu={() => { }}
-                user={{ name: 'John Doe', jobTitle: 'Developer' }}
-                handleLogout={() => alert('Logged out')}
+                activeMenu="Github"
+                setActiveMenu={() => {}}
             />
 
             {/* Main Content */}
