@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../api/axiosInstance.js";
 import conf from "../config/config.js"
 import useAuthStore from "../../store/useAuthStore.js";
-import {codingPlatformsData as dummyCodingPlatformsData} from "../constants/dummy.js"
+
 
 const CodingDashboard = () => {
 
