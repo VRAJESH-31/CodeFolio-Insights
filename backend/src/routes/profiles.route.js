@@ -1,12 +1,14 @@
-import express from "express"
-import { getProfiles, updateProfiles, fetchProfilesData } from "../controllers/profiles.controller.js";
+import { Router } from "express";
+import { getProfiles, updateProfiles, refreshProfileData, getProfileCache } from "../controllers/profiles.controller.js";
 import { optionalAuth, protectRoute } from "../middlewares/auth.middleware.js";
 import { getAnalytics } from "../middlewares/analytics.middleware.js";
 
-const router = express.Router();
+const router = Router();
 
-router.get("/:userId", optionalAuth, getAnalytics, getProfiles);
-router.patch("/", protectRoute,  getAnalytics, updateProfiles);
-router.get("/fetch/:username", optionalAuth, getAnalytics, fetchProfilesData);
+
+router.route("/:userId").get(optionalAuth, getAnalytics, getProfiles);
+router.route("/").patch(protectRoute, getAnalytics, updateProfiles); // Corrected to match previous logic (PATCH /)
+router.route("/fetch/:userId").get(optionalAuth, getAnalytics, refreshProfileData);
+router.route("/cache/:userId").get(optionalAuth, getAnalytics, getProfileCache);
 
 export default router;

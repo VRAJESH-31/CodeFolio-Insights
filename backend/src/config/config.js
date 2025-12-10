@@ -17,7 +17,7 @@ const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const CORS_ORIGIN = process.env.CORS_ORIGIN;
-const REDIS_URI = process.env.REDIS_URI;
+const REDIS_URL = process.env.REDIS_URL;
 
 export {
     PORT,
@@ -36,5 +36,5 @@ export {
     ADMIN_EMAIL,
     ADMIN_PASSWORD,
     CORS_ORIGIN,
-    REDIS_URI,
+    REDIS_URL,
 }
