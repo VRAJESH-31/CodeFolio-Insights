@@ -11,12 +11,13 @@ import GitHub from './pages/Github.jsx';
 import LinkPage from './pages/LinkPage.jsx';
 import GFG from './pages/GFG.jsx';
 import useAuthStore from '../store/useAuthStore.js';
+import ProtectedRoute from './components/ProtectedRoute.jsx';
 
 const App = () => {
 
-    const checkAuth = useAuthStore((state)=>state.checkAuth);
+    const checkAuth = useAuthStore((state) => state.checkAuth);
 
-    useEffect(()=>{
+    useEffect(() => {
         checkAuth();
     }, []);
 
@@ -25,13 +26,13 @@ const App = () => {
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
-            <Route path="/home" element={<HomePage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/resume-analyse" element={<ResumeAnalyse isSidebarCollapsed={false} />} />
-            <Route path="/leetcode" element={<LeetCode isSidebarCollapsed={false} />} />
-            <Route path="/Github" element={<GitHub isSidebarCollapsed={false} />} />
-            <Route path="/link" element={<LinkPage />} />
-            <Route path="/gfg" element={<GFG isSidebarCollapsed={false} />} />
+            <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+            <Route path="/resume-analyse" element={<ProtectedRoute><ResumeAnalyse isSidebarCollapsed={false} /></ProtectedRoute>} />
+            <Route path="/leetcode" element={<ProtectedRoute><LeetCode isSidebarCollapsed={false} /></ProtectedRoute>} />
+            <Route path="/Github" element={<ProtectedRoute><GitHub isSidebarCollapsed={false} /></ProtectedRoute>} />
+            <Route path="/link" element={<ProtectedRoute><LinkPage /></ProtectedRoute>} />
+            <Route path="/gfg" element={<ProtectedRoute><GFG isSidebarCollapsed={false} /></ProtectedRoute>} />
         </Routes>
     )
 }

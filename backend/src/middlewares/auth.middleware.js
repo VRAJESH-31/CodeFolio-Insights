@@ -48,7 +48,7 @@ export const protectRoute = async (req, res, next) => {
 
 export const optionalAuth = async (req, res, next) => {
     try {
-        const token = req.header("Authorization")?.replace("Bearer ", "");
+        const token = req.cookies.token || req.header("Authorization")?.replace("Bearer ", "");
 
         if (!token){
             req.user = null;
