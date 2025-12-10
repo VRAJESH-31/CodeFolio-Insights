@@ -1,52 +1,33 @@
-import { useQuery } from '@tanstack/react-query';
-import axiosInstance from '../api/axiosInstance';
-import useAuthStore from '../../store/useAuthStore';
+import { useQuery } from "@tanstack/react-query";
+import axiosInstance from "../api/axiosInstance.js";
+import { useCheckAuth } from "./useUsers";
+
+const fetchProfilesData = async (username) => {
+    try {
+        const response = await axiosInstance.get(`/profiles/fetch/${username}`);
+        return response.data;
+    } catch (error) {
+        const errorMessage = error.response?.data?.message || error.message || 'An unknown API error occurred.';
+        throw new Error(errorMessage);
+    }
+};
 
 const useDashboard = () => {
-    const { user } = useAuthStore();
+    const { data: authData, isLoading: isAuthLoading } = useCheckAuth();
+    const username = authData?.user?.name;
 
-    const { data: profiles, isLoading: isLoadingProfiles } = useQuery({
-        queryKey: ['profiles', user?._id],
-        queryFn: async () => {
-            const res = await axiosInstance.get(`/profiles/${user._id}`);
-            return res.data;
-        },
-        enabled: !!user?._id,
-    });
-
-    const { data: githubData, isLoading: isLoadingGithub } = useQuery({
-        queryKey: ['github', profiles?.githubUsername],
-        queryFn: async () => {
-            const res = await axiosInstance.get(`/analyze/github?username=${profiles.githubUsername}`);
-            return res.data;
-        },
-        enabled: !!profiles?.githubUsername,
-    });
-
-    const { data: leetcodeData, isLoading: isLoadingLeetcode } = useQuery({
-        queryKey: ['leetcode', profiles?.leetCodeUsername],
-        queryFn: async () => {
-            const res = await axiosInstance.get(`/analyze/leetcode?username=${profiles.leetCodeUsername}`);
-            return res.data;
-        },
-        enabled: !!profiles?.leetCodeUsername,
-    });
-
-    const { data: resumeData, isLoading: isLoadingResume } = useQuery({
-        queryKey: ['resumeScore', user?._id],
-        queryFn: async () => {
-            const res = await axiosInstance.get('/score/score-history?platform=Generic Resume&last=1', { requiresAuth: true });
-            return res.data;
-        },
-        enabled: !!user?._id,
+    const { data: dashboardData, isLoading: isDashboardLoading, error } = useQuery({
+        queryKey: ["profilesData", username],
+        queryFn: () => fetchProfilesData(username),
+        enabled: !!username,
+        retry: 1,
+        refetchOnWindowFocus: false,
     });
 
     return {
-        profiles,
-        githubData,
-        leetcodeData,
-        resumeData: resumeData?.[0],
-        isLoading: isLoadingProfiles || isLoadingGithub || isLoadingLeetcode || isLoadingResume,
+        dashboardData,
+        isLoading: isAuthLoading || isDashboardLoading,
+        error,
     };
 };
 

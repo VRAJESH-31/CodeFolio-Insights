@@ -65,8 +65,8 @@ const LeetCode = () => {
     const user = useAuthStore((state)=>state.user);
 
     const getLeetcodeSubmissionData = (submissionData) => {
-        return Object.entries(submissionData).sort((x,y)=>x[0]-y[0]).map((dailyData)=>{
-            const date = ((new Date(dailyData[0]*1000).toString()).split(" ").slice(1,4)).join(" ");
+        return Object.entries(submissionData).sort((x,y)=> new Date(x[0]) - new Date(y[0])).map((dailyData)=>{
+            const date = dailyData[0];
             const submissions = dailyData[1];
 
             return {
@@ -274,7 +274,7 @@ const LeetCode = () => {
                                 </div>
                                 <div className="w-full h-64 sm:h-72 md:h-80">
                                     <ResponsiveContainer>
-                                        <LineChart data={getLeetcodeSubmissionData(JSON.parse(data?.submissionCalendar?.submissionCalendar))} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+                                        <LineChart data={getLeetcodeSubmissionData(data?.submissionCalendar?.submissionCalendar)} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
                                             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                                             <XAxis dataKey="name" stroke="#6b7280" fontSize={12} />
                                             <YAxis stroke="#6b7280" fontSize={12} />
