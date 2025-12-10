@@ -4,25 +4,55 @@ import Sidebar from "../components/Sidebar.jsx"
 import BadgeCollection from "../components/BadgeCollection.jsx";
 import SubmissionHeatmap from "../components/SubmissionHeatmap.jsx";
 import useAuthStore from "../../store/useAuthStore.js";
-import { useCodingProfilesData } from "../hooks/useProfiles.js";
+import { useProfileCache, useProfileRefresh } from "../hooks/useProfiles.js";
 import { useEffect, useState } from "react";
 import ContestGraph from "../components/ContestGraph.jsx";
 import Loader from "../components/Loader.jsx";
 import GithubStats from "../components/GithubStats.jsx";
 import LanguageStats from "../components/LanguageStats.jsx";
-import {GitCommitHorizontal, GitPullRequest, Ban, FolderGit} from "lucide-react"
+import { GitCommitHorizontal, GitPullRequest, Ban, FolderGit } from "lucide-react"
 
 const CodingDashboard = () => {
 
-    const user = useAuthStore((state)=>state.user);
-    const { data, isLoading, refetch } = useCodingProfilesData(user?.name);
+    const user = useAuthStore((state) => state.user);
+    const { data: cacheData, isLoading: isLoadingCache, refetch: refetchCache } = useProfileCache(user?._id);
+    const { data: refreshData, isLoading: isRefreshing, refetch: triggerRefresh } = useProfileRefresh(user?._id);
+
+    // Prefer refreshData if available (latest), else cacheData
+    const data = refreshData || cacheData;
+    const isLoading = isLoadingCache; // Only "loading" initially if cache is loading. Refresh happens in background.
+
     const dashboardOptions = ["Problem Solving", "Github"];
     const [dashboardOptionIndex, setDashboardOptionIndex] = useState(0);
 
-    useEffect(()=>{
-        if (!user?.name) return;
-        refetch();
-    }, [])
+    // Stale Check Logic
+    useEffect(() => {
+        if (!user?._id) return;
+
+        // If we have cacheData, check if it's stale.
+        // If cacheData is null (first time ever), we also need to refresh.
+        // BUT, wait for isLoadingCache to finish so we know if it's truly null or just loading.
+        if (!isLoadingCache) {
+            if (!cacheData) {
+                // No cache exists -> Fetch fresh
+                console.log("No cache found. Triggering refresh.");
+                triggerRefresh();
+            } else {
+                // Cache exists -> Check timestamp
+                const lastUpdated = cacheData.lastUpdated;
+                const oneHour = 60 * 60 * 1000;
+                const now = Date.now();
+
+                // If lastUpdated is missing (legacy) or older than 1 hour, refresh.
+                if (!lastUpdated || (now - new Date(lastUpdated).getTime() > oneHour)) {
+                    console.log("Cache is stale or missing timestamp. Triggering refresh.");
+                    triggerRefresh();
+                } else {
+                    console.log("Cache is fresh. Using cached data.");
+                }
+            }
+        }
+    }, [user, cacheData, isLoadingCache]);
 
     // const getPolishedCodechefHeatmap = (heatmap) => {
     //     // Initialize an empty object for the polished heatmap
@@ -33,7 +63,7 @@ const CodingDashboard = () => {
     //         if (Object.hasOwnProperty.call(heatmap, date)) {
     //             // Split the date string into its components: Year, Month, and Day
     //             const parts = date.split('-');
-                
+
     //             // Check if the date string has exactly three parts (Year, Month, Day)
     //             if (parts.length === 3) {
     //                 const year = parts[0];
@@ -124,21 +154,21 @@ const CodingDashboard = () => {
 
     const getPolishedLeetcodeHeatmap = (tempTimestampData) => {
         let rawTimestampData;
-        
+
         try {
             rawTimestampData = {};
 
             // Convert raw data into a Map keyed by YYYY-MM-DD (UTC) for easy lookup
             for (const timestampStr in tempTimestampData) {
                 const submissions = tempTimestampData[timestampStr];
-                
+
                 // Convert seconds to milliseconds
                 const milliseconds = parseInt(timestampStr) * 1000;
                 const date = new Date(milliseconds);
-                
+
                 // Format the date to YYYY-MM-DD (UTC)
                 const dateString = date.toISOString().slice(0, 10);
-                
+
                 // If the same date appears twice (shouldn't happen with day-start timestamps, 
                 // but good practice): sum the submissions.
                 rawTimestampData[dateString] = (rawTimestampData[dateString] || 0) + submissions;
@@ -146,20 +176,20 @@ const CodingDashboard = () => {
 
         } catch (error) {
             console.error("Error parsing JSON:", error);
-            return {}; 
+            return {};
         }
 
         // 2. Generate the full 365-day range and merge data
         const completeDateMapping = {};
         const today = new Date();
-        
+
         // Set today to the start of the day in UTC for consistent dating
-        today.setUTCHours(0, 0, 0, 0); 
+        today.setUTCHours(0, 0, 0, 0);
 
         for (let i = 0; i < 365; i++) {
             // Create a date object for the day 'i' days ago
             const dateToCheck = new Date(today);
-            dateToCheck.setUTCDate(today.getUTCDate() - i); 
+            dateToCheck.setUTCDate(today.getUTCDate() - i);
 
             // Format the date to YYYY-MM-DD (This is correct because 'dateToCheck' is already UTC-aligned)
             const dateString = dateToCheck.toISOString().slice(0, 10);
@@ -170,12 +200,12 @@ const CodingDashboard = () => {
             // Store in the final, ordered object
             completeDateMapping[dateString] = submissions;
         }
-        
+
         // Note: In modern JavaScript environments (ES2015+), insertion order is guaranteed 
         // for string keys, so the map will be ordered from oldest (364 days ago) to newest (today).
         // If you need the output strictly sorted from NEWEST to OLDEST, 
         // you would need to convert this object to an array and sort it manually.
-        
+
         return completeDateMapping;
     }
 
@@ -241,21 +271,17 @@ const CodingDashboard = () => {
         .animate-bounce-in { animation: bounceIn 1s ease-out forwards; }
     `;
 
-    // Check if profiles are linked
-    const hasGithub = !!profiles?.githubUsername;
-    const hasLeetcode = !!profiles?.leetCodeUsername;
-
     return (
         <div className="flex h-screen bg-gradient-to-br from-green-50/30 via-white to-blue-50/30 font-sans">
             <style>{animationStyles}</style>
 
             {/* Conditional Loader rendered on top of everything else */}
-            {isLoading && <Loader />} 
-            
+            {isLoading && <Loader />}
+
             <Sidebar
                 isSidebarCollapsed={false}
                 activeMenu="Dashboard"
-                setActiveMenu={() => {}}
+                setActiveMenu={() => { }}
             />
 
             {/* Main Content */}
@@ -279,34 +305,34 @@ const CodingDashboard = () => {
                         {data ? (
                             <>
                                 <div className="flex gap-10 mb-5 xl:col-span-3">
-                                    {dashboardOptions.map((option, index)=>(
-                                        <div onClick={()=>setDashboardOptionIndex(index)} className={`text-xl rounded-full py-1 px-5 ${index==dashboardOptionIndex ? 'text-blue-600 bg-blue-100 font-bold' : 'bg-gray-100 text-black'}`}>
+                                    {dashboardOptions.map((option, index) => (
+                                        <div onClick={() => setDashboardOptionIndex(index)} className={`text-xl rounded-full py-1 px-5 ${index == dashboardOptionIndex ? 'text-blue-600 bg-blue-100 font-bold' : 'bg-gray-100 text-black'}`}>
                                             {option}
                                         </div>
                                     ))}
                                 </div>
                                 {
-                                    (dashboardOptionIndex==0) && <>
+                                    (dashboardOptionIndex == 0) && <>
                                         <div className="xl:col-span-2">
                                             <BadgeCollection badges={[
-                                                ...(data?.leetcode?.badges?.badges?.map((badge)=>{return {icon: badge.icon, name: badge.displayName, subTitle: null, subTitleIcon: null}}) || []),
+                                                ...(data?.leetcode?.badges?.badges?.map((badge) => { return { icon: badge.icon, name: badge.displayName, subTitle: null, subTitleIcon: null } }) || []),
                                                 // ...(data?.github?.badges?.map((badge)=>{return {icon: badge.icon, name: badge.name, subTitle: null, subTitleIcon: null}}) || []),
-                                                ...(data?.codechef?.profile?.badges?.map((badge)=>{return {icon: badge.badgeImage, name: badge.badgeTitle, subTitle: null, subTitleIcon: null}}) || []),
-                                                ...(data?.interviewbit?.profile?.badges?.map((badge)=>{return {icon: badge.image, name: badge.title, subTitle: null, subTitleIcon: null}}) || []),
-                                            ]}/>
+                                                ...(data?.codechef?.profile?.badges?.map((badge) => { return { icon: badge.badgeImage, name: badge.badgeTitle, subTitle: null, subTitleIcon: null } }) || []),
+                                                ...(data?.interviewbit?.profile?.badges?.map((badge) => { return { icon: badge.image, name: badge.title, subTitle: null, subTitleIcon: null } }) || []),
+                                            ]} />
 
                                             <ContestGraph contestData={
                                                 data?.leetcode?.contest?.userContestRankingHistory
-                                                ?.filter((contest)=>contest.attended===true)
-                                                .map((contest)=>{
-                                                    return {
-                                                        title: contest.contest.title, 
-                                                        rating: contest.rating, 
-                                                        ranking: contest.ranking, 
-                                                        date: new Date(contest.contest.startTime * 1000).toISOString().split('T')[0]
-                                                    }
-                                                }) || []
-                                            }/>
+                                                    ?.filter((contest) => contest.attended === true)
+                                                    .map((contest) => {
+                                                        return {
+                                                            title: contest.contest.title,
+                                                            rating: contest.rating,
+                                                            ranking: contest.ranking,
+                                                            date: new Date(contest.contest.startTime * 1000).toISOString().split('T')[0]
+                                                        }
+                                                    }) || []
+                                            } />
                                         </div>
                                         <div className="flex flex-col gap-2">
                                             <ProblemsCard
@@ -331,27 +357,27 @@ const CodingDashboard = () => {
                                                 }
                                             />
                                         </div>
-                                        <SubmissionHeatmap 
-                                            calendar={getCombinedHeatmap(data?.leetcode?.submission?.submissionCalendar || {}, 
-                                                data?.codechef?.submission?.[new Date().getFullYear()] || {}, 
-                                            )} 
+                                        <SubmissionHeatmap
+                                            calendar={getCombinedHeatmap(data?.leetcode?.submission?.submissionCalendar || {},
+                                                data?.codechef?.submission?.[new Date().getFullYear()] || {},
+                                            )}
                                             className="col-span-1 lg:col-span-3"
                                         />
                                     </>
                                 }
 
                                 {
-                                    (dashboardOptionIndex==1) && <>
+                                    (dashboardOptionIndex == 1) && <>
                                         <h2 className="text-3xl mb-5 xl:col-span-3">Github</h2>
-                                        <LanguageStats languageStats={data?.github?.languageStats}/>
+                                        <LanguageStats languageStats={data?.github?.languageStats} />
                                         <GithubStats statsArray={[
-                                            {icon: <FolderGit className="text-yellow-500"/>, name: "Repos", value: data?.github?.profile?.public_repos},
-                                            {icon: <GitCommitHorizontal className="text-orange-500"/>, name: "Commits", value: data?.github?.commits || 0},
-                                            {icon: <GitPullRequest className="text-green-500"/>, name: "PRs", value: data?.github?.contributions?.pullRequestContributions?.totalCount || 0},
-                                            {icon: <Ban className="text-red-500"/>, name: "issues", value: data?.github?.contributions?.issueContributions?.totalCount || 0},
-                                        ]}/>
+                                            { icon: <FolderGit className="text-yellow-500" />, name: "Repos", value: data?.github?.profile?.public_repos },
+                                            { icon: <GitCommitHorizontal className="text-orange-500" />, name: "Commits", value: data?.github?.commits || 0 },
+                                            { icon: <GitPullRequest className="text-green-500" />, name: "PRs", value: data?.github?.contributions?.pullRequestContributions?.totalCount || 0 },
+                                            { icon: <Ban className="text-red-500" />, name: "issues", value: data?.github?.contributions?.issueContributions?.totalCount || 0 },
+                                        ]} />
                                         {console.log(data?.github?.badges)}
-                                        <BadgeCollection title="Badges" badges={data?.github?.badges?.map((badge)=>{return {icon: badge.icon, name: badge.name}})}/>
+                                        <BadgeCollection title="Badges" badges={data?.github?.badges?.map((badge) => { return { icon: badge.icon, name: badge.name } })} />
                                     </>
                                 }
                             </>
