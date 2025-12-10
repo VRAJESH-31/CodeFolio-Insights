@@ -99,7 +99,7 @@ const Sidebar = ({ isSidebarCollapsed, activeMenu, setActiveMenu }) => {
             <style>{animationStyles}</style>
             <aside 
                 className={`hidden md:flex flex-col bg-gradient-to-b from-white to-blue-50/30 border-r border-blue-100/50 shadow-2xl transition-all duration-700 ease-out backdrop-blur-sm ${
-                    isSidebarCollapsed ? 'w-24' : 'w-60'
+                    isSidebarCollapsed ? 'w-24' : 'w-80'
                 } ${mounted ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}
                 style={{
                     background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%)',

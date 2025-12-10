@@ -144,7 +144,7 @@ const analyzeLeetCode = async (req, res) => {
         let score = 0;
 
         const problemsCount = await leetCodeFetching.getLeetCodeProblemsCount(username);
-        const submissionCalendar = await leetCodeFetching.getLeetCodeUserStreaksAndCalendar(username);
+        const submissionCalendar = await leetCodeFetching.getLeetCodeUserStreaksAndCalendar(username, new Date().getFullYear());
         const contestData = await leetCodeFetching.getLeetCodeContestData(username);
         const profileInfo = await leetCodeFetching.getLeetCodeProfileInfo(username);
         const badges = await leetCodeFetching.getLeetCodeBadges(username);
