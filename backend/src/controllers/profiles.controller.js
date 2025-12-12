@@ -124,13 +124,6 @@ const refreshProfileData = async (req, res) => {
         const platforms = ['gfg', 'codechef', 'interviewbit', 'leetcode', 'github'];
 
         platforms.forEach(platform => {
-            // 1. If fresh data is explicitly null (meaning user has no username in DB for this),
-            // then we should set mergedData field to null (overwriting any old cache).
-            // However, our fetch logic above sets freshData[platform] to null if username is missing.
-            // BUT it also sets it to null if fetch fails completely for some cases (depending on implementation).
-            // Let's ensure we distinguish "not configured" vs "fetch failed".
-            // We can check profileLinks keys. 
-
             let usernameKey = "";
             if (platform === 'gfg') usernameKey = 'gfgUsername';
             if (platform === 'codechef') usernameKey = 'codechefUsername';
@@ -139,36 +132,26 @@ const refreshProfileData = async (req, res) => {
             if (platform === 'github') usernameKey = 'githubUsername';
 
             if (!profileLinks[usernameKey]) {
-                // User removed their username, so remove from cache
                 mergedData[platform] = null;
             } else {
-                // User HAS a username.
-
-                // If freshData[platform] is NOT null, we merge.
                 if (freshData[platform]) {
                     if (!mergedData[platform]) {
-                        // No previous cache for this platform, just take fresh
                         mergedData[platform] = freshData[platform];
                     } else {
-                        // We have previous cache AND fresh data. Deep merge subfields.
-                        // freshData[platform] is an object (e.g. { profile: ..., badges: ... })
                         const freshPlatformData = freshData[platform];
                         const cachedPlatformData = mergedData[platform];
 
                         const mergedPlatformData = { ...cachedPlatformData };
 
                         Object.keys(freshPlatformData).forEach(key => {
-                            // If fresh subfield is NOT null, update it.
                             if (freshPlatformData[key] !== null && freshPlatformData[key] !== undefined) {
                                 mergedPlatformData[key] = freshPlatformData[key];
                             }
-                            // If fresh subfield IS null (fetch failed), keep cachedPlatformData[key] (if exists).
                         });
 
                         mergedData[platform] = mergedPlatformData;
                     }
                 }
-                // If freshData[platform] IS null (e.g. total fetch failure), keep existing mergedData[platform] as is.
             }
         });
 
