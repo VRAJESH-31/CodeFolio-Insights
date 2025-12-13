@@ -15,6 +15,14 @@ const ProfileSchema = new Schema({
         type: String,
         default: "",
     },
+    portfolioWebsiteLink: {
+        type: String,
+        default: "",
+    },
+    resumeLink: {
+        type: String,
+        default: "",
+    },
     githubUsername : {
         type: String,
         default: "",
@@ -35,11 +43,15 @@ const ProfileSchema = new Schema({
         type: String,
         default: "",
     },
-    portfolioWebsiteLink: {
+    hackerrankUsername: {
         type: String,
         default: "",
     },
-    resumeLink: {
+    codeforcesUsername: {
+        type: String,
+        default: "",
+    },
+    code360Username: {
         type: String,
         default: "",
     }
