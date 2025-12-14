@@ -391,7 +391,7 @@ const CodingDashboard = () => {
                                                 />
                                             </div>
 
-                                            <BadgeCollection badges={getBadges(data)} />
+                                            <BadgeCollection title="badges" defaultBadgesCount={2} badges={getBadges(data)} />
 
                                             <TopicAnalysis
                                                 title="DSA Topic Analysis"
@@ -445,7 +445,7 @@ const CodingDashboard = () => {
                                             { icon: <GitPullRequest className="text-green-500" />, name: "PRs", value: data?.github?.contributions?.pullRequestContributions?.totalCount || 0 },
                                             { icon: <Ban className="text-red-500" />, name: "issues", value: data?.github?.contributions?.issueContributions?.totalCount || 0 },
                                         ]} />
-                                        <BadgeCollection title="Badges" badges={data?.github?.badges?.map((badge) => { return { icon: badge.icon, name: badge.name } })} />
+                                        <BadgeCollection title="Badges" badges={data?.github?.badges?.map((badge) => { return { icon: badge.icon, name: badge.name } })} defaultBadgesCount={2} />
                                     </>
                                 }
                             </>
