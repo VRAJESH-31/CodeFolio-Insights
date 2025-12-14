@@ -1,4 +1,4 @@
-const Loader = () => {
+const Loader = ({ text = "Loading ...", showLoading = false }) => {
     return (
         // Positioned top right, high z-index, small shadow for visibility
         <div className="fixed top-6 right-6 z-50 flex items-center p-3 bg-white rounded-lg shadow-2xl border border-blue-100 animate-float-in-subtle">

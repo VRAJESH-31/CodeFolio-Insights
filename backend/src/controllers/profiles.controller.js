@@ -4,6 +4,7 @@ import * as leetcodeFetching from '../utils/fetching/leetcodeFetch.js';
 import * as scrapeSpideyFetching from '../utils/fetching/scrapeSpideyFetch.js';
 import * as githubFetching from '../utils/fetching/githubFetch.js';
 import redisClient from '../config/redis.js';
+import handleError from '../utils/handleError.js';
 
 
 const getProfiles = async (req, res) => {
@@ -27,9 +28,7 @@ const getProfiles = async (req, res) => {
         return res.status(200).json(profiles);
 
     } catch (error) {
-        console.log("Error occurred while fetching user profile links: ", error.message);
-        console.log(error.stack);
-        return res.status(500).json({ "message": "Couldn't retrieve user profile links" });
+        return handleError(res, error, "Couldn't retrieve user profile links");
     }
 };
 
@@ -53,9 +52,7 @@ const updateProfiles = async (req, res) => {
         if (!updatedProfile) return res.status(404).json({ message: "Could not update user profile links." });
         return res.status(200).json(updatedProfile);
     } catch (error) {
-        console.log("Error occurred while updating user profile links: ", error.message);
-        console.log(error.stack);
-        return res.status(500).json({ "message": "Couldn't update user profile links" });
+        return handleError(res, error, "Couldn't update user profile links");
     }
 };
 
@@ -70,9 +67,7 @@ const getProfileCache = async (req, res) => {
         return res.status(200).json(null);
 
     } catch (error) {
-        console.log("Error occurred while fetching user profile cache: ", error.message);
-        console.log(error.stack);
-        return res.status(500).json({ "message": "Couldn't fetch user profile cache" });
+        return handleError(res, error, "Couldn't fetch user profile cache");
     }
 }
 
@@ -172,9 +167,7 @@ const refreshProfileData = async (req, res) => {
         return res.status(200).json(mergedData);
 
     } catch (error) {
-        console.log("Error occurred while fetching user profiles data:", error.message);
-        console.log(error.stack);
-        return res.status(500).json({ "message": "Couldn't fetch user profiles data." });
+        return handleError(res, error, "Couldn't fetch user profiles data.");
     }
 }
 

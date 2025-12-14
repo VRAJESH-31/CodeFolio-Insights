@@ -1,15 +1,16 @@
 import apiLogs from "../models/apiLogs.model.js";
+import handleError from '../utils/handleError.js';
 
 const getAnalytics = async (req, res, next) => {
     try {
         const userId = req.user?._id || null;
         const startTime = Date.now();
 
-        res.on("finish", async ()=>{
+        res.on("finish", async () => {
             const duration = Date.now() - startTime;
 
             await apiLogs.create({
-                userId : userId,
+                userId: userId,
                 endpoint: req.originalUrl,
                 statusCode: res.statusCode,
                 responseTime: duration,
@@ -18,9 +19,7 @@ const getAnalytics = async (req, res, next) => {
 
         next();
     } catch (error) {
-        console.log("Error in analytics middleware:", error.message);
-        console.log(error.stack);
-        return res.status(500).json({message: "Internal Server Error!"});
+        return handleError(res, error, "Internal Server Error!");
     }
 }
 

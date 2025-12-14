@@ -341,8 +341,22 @@ const CodingDashboard = () => {
         <div className="flex h-screen bg-gradient-to-br from-green-50/30 via-white to-blue-50/30 font-sans">
             <style>{animationStyles}</style>
 
-            {/* Conditional Loader rendered on top of everything else */}
-            {isLoading && <Loader />}
+            {/* Loader Logic:
+                1. Initial Cache Load (Blocking) -> Centered Spinner
+                2. Background Refresh (Non-blocking) -> Top Right Toast Loader
+            */}
+            {isLoadingCache && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm">
+                    <div className="relative flex items-center justify-center">
+                        <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {isRefreshing && <Loader text="Loading the latest coding stats..." showLoading={true} />}
 
             <Sidebar
                 isSidebarCollapsed={false}
