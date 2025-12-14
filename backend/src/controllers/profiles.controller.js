@@ -112,6 +112,7 @@ const refreshProfileData = async (req, res) => {
                 contest: await leetcodeFetching.getLeetCodeContestData(profileLinks.leetCodeUsername),
                 problems: await leetcodeFetching.getLeetCodeProblemsCount(profileLinks.leetCodeUsername),
                 submission: await leetcodeFetching.fetchLeetcodeUserMultiYearSubmissionData(profileLinks.leetCodeUsername),
+                topicStats: await leetcodeFetching.getLeetCodeTopicWiseProblems(profileLinks.leetCodeUsername),
             } : null,
             github: profileLinks.githubUsername ? {
                 profile: await githubFetching.getUserProfileData(profileLinks.githubUsername),
@@ -122,8 +123,6 @@ const refreshProfileData = async (req, res) => {
                 languageStats: await githubFetching.getUserLanguageStats(profileLinks.githubUsername)
             } : null
         };
-
-        console.log("fresh data: ", Object.entries(freshData));
 
         const cachedJson = await redisClient.get(`profileData:${userId}`);
         const existingData = cachedJson ? JSON.parse(cachedJson) : {};

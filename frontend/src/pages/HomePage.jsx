@@ -1,22 +1,28 @@
-
 import ProblemsCard from "../components/ProblemsCard";
 import Sidebar from "../components/Sidebar.jsx"
 import BadgeCollection from "../components/BadgeCollection.jsx";
 import SubmissionHeatmap from "../components/SubmissionHeatmap.jsx";
 import useAuthStore from "../../store/useAuthStore.js";
 import { useProfileCache, useProfileRefresh } from "../hooks/useProfiles.js";
-import { useEffect, useState } from "react";
-import ContestGraph from "../components/ContestGraph.jsx";
+import { useEffect, useState, useMemo } from "react";
 import Loader from "../components/Loader.jsx";
 import GithubStats from "../components/GithubStats.jsx";
 import LanguageStats from "../components/LanguageStats.jsx";
+import StatCard from "../components/StatCard.jsx";
 import { GitCommitHorizontal, GitPullRequest, Ban, FolderGit } from "lucide-react"
+import { v4 as uuid } from 'uuid';
+import TopicAnalysis from "../components/TopicAnalysis.jsx";
+import Contest from "../components/Contest.jsx";
+import ContestAchievements from "../components/ContestAchievements.jsx";
 
 const CodingDashboard = () => {
 
     const user = useAuthStore((state) => state.user);
     const { data: cacheData, isLoading: isLoadingCache, refetch: refetchCache } = useProfileCache(user?._id);
     const { data: refreshData, isLoading: isRefreshing, refetch: triggerRefresh } = useProfileRefresh(user?._id);
+
+    if (refreshData) console.log("refreshData: ", refreshData);
+    if (cacheData) console.log("cacheData: ", cacheData);
 
     // Prefer refreshData if available (latest), else cacheData
     const data = refreshData || cacheData;
@@ -53,50 +59,6 @@ const CodingDashboard = () => {
             }
         }
     }, [user, cacheData, isLoadingCache]);
-
-    // const getPolishedCodechefHeatmap = (heatmap) => {
-    //     // Initialize an empty object for the polished heatmap
-    //     const polishedHeatmap = {};
-
-    //     // Iterate over each key (date) in the input heatmap
-    //     for (const date in heatmap) {
-    //         if (Object.hasOwnProperty.call(heatmap, date)) {
-    //             // Split the date string into its components: Year, Month, and Day
-    //             const parts = date.split('-');
-
-    //             // Check if the date string has exactly three parts (Year, Month, Day)
-    //             if (parts.length === 3) {
-    //                 const year = parts[0];
-    //                 const month = parts[1];
-    //                 const day = parts[2];
-
-    //                 // Function to add a leading zero if the number part is a single digit
-    //                 const zeroPad = (numStr) => {
-    //                     // Convert to number, then back to string to handle '03' -> '3' correctly
-    //                     const num = parseInt(numStr, 10); 
-    //                     // Use String.prototype.padStart() for efficient zero padding
-    //                     return num.toString().padStart(2, '0');
-    //                 };
-
-    //                 // Apply zero-padding to the month and day parts
-    //                 const polishedMonth = zeroPad(month);
-    //                 const polishedDay = zeroPad(day);
-
-    //                 // Reconstruct the date string in the desired YYYY-MM-DD format
-    //                 const polishedDate = `${year}-${polishedMonth}-${polishedDay}`;
-
-    //                 // Assign the original count to the new, polished date key
-    //                 polishedHeatmap[polishedDate] = heatmap[date];
-    //             } else {
-    //                 // If the date format is unexpected, copy the key/value as is 
-    //                 // (or you could choose to throw an error/skip it)
-    //                 polishedHeatmap[date] = heatmap[date]; 
-    //             }
-    //         }
-    //     }
-
-    //     return polishedHeatmap;
-    // };
 
     const getPolishedGithubHeatmap = (githubData) => {
         // Helper function to ensure month and day strings are zero-padded (e.g., '3' -> '03').
@@ -141,8 +103,11 @@ const CodingDashboard = () => {
                     // Reconstruct the date string in the desired YYYY-MM-DD format
                     const polishedDate = `${year}-${polishedMonth}-${polishedDay}`;
 
-                    // 4. Store the data in the result object
-                    polishedHeatmap[polishedDate] = contributionCount;
+                    // 4. Store the data in the result object, nested by year
+                    if (!polishedHeatmap[year]) {
+                        polishedHeatmap[year] = {};
+                    }
+                    polishedHeatmap[year][polishedDate] = contributionCount;
                 } else {
                     console.warn(`Skipping date: Unexpected date format '${date}'`);
                 }
@@ -152,91 +117,192 @@ const CodingDashboard = () => {
         return polishedHeatmap;
     };
 
-    const getPolishedLeetcodeHeatmap = (tempTimestampData) => {
-        let rawTimestampData;
-
-        try {
-            rawTimestampData = {};
-
-            // Convert raw data into a Map keyed by YYYY-MM-DD (UTC) for easy lookup
-            for (const timestampStr in tempTimestampData) {
-                const submissions = tempTimestampData[timestampStr];
-
-                // Convert seconds to milliseconds
-                const milliseconds = parseInt(timestampStr) * 1000;
-                const date = new Date(milliseconds);
-
-                // Format the date to YYYY-MM-DD (UTC)
-                const dateString = date.toISOString().slice(0, 10);
-
-                // If the same date appears twice (shouldn't happen with day-start timestamps, 
-                // but good practice): sum the submissions.
-                rawTimestampData[dateString] = (rawTimestampData[dateString] || 0) + submissions;
-            }
-
-        } catch (error) {
-            console.error("Error parsing JSON:", error);
-            return {};
-        }
-
-        // 2. Generate the full 365-day range and merge data
-        const completeDateMapping = {};
-        const today = new Date();
-
-        // Set today to the start of the day in UTC for consistent dating
-        today.setUTCHours(0, 0, 0, 0);
-
-        for (let i = 0; i < 365; i++) {
-            // Create a date object for the day 'i' days ago
-            const dateToCheck = new Date(today);
-            dateToCheck.setUTCDate(today.getUTCDate() - i);
-
-            // Format the date to YYYY-MM-DD (This is correct because 'dateToCheck' is already UTC-aligned)
-            const dateString = dateToCheck.toISOString().slice(0, 10);
-
-            // Check if the date exists in the input data
-            const submissions = rawTimestampData[dateString] || 0; // Default to 0 if missing
-
-            // Store in the final, ordered object
-            completeDateMapping[dateString] = submissions;
-        }
-
-        // Note: In modern JavaScript environments (ES2015+), insertion order is guaranteed 
-        // for string keys, so the map will be ordered from oldest (364 days ago) to newest (today).
-        // If you need the output strictly sorted from NEWEST to OLDEST, 
-        // you would need to convert this object to an array and sort it manually.
-
-        return completeDateMapping;
-    }
-
-    // console.log(getPolishedLeetcodeHeatmap(JSON.parse(data?.leetcode?.submission?.submissionCalendar || "{}")));
-
     const getCombinedHeatmap = (...heatmaps) => {
-        // Initialize an empty object for the combined heatmap
         const combinedHeatmap = {};
 
-        // Iterate over each heatmap object provided in the input
         for (const heatmap of heatmaps) {
-            // Iterate over each key-value pair (date and count) in the current heatmap
-            for (const date in heatmap) {
-                if (Object.hasOwnProperty.call(heatmap, date)) {
-                    const count = heatmap[date];
+            if (!heatmap) continue;
 
-                    // Check if the date already exists in the combined heatmap
-                    if (combinedHeatmap[date]) {
-                        // If the date exists, add the new count to the existing total (Requirement 3)
-                        combinedHeatmap[date] += count;
-                    } else {
-                        // If the date does not exist, add it to the combined heatmap (Requirement 2)
-                        combinedHeatmap[date] = count;
+            // Iterate over each year in the current heatmap
+            for (const year in heatmap) {
+                if (Object.hasOwnProperty.call(heatmap, year)) {
+                    // Ensure the year object exists in the combined heatmap
+                    if (!combinedHeatmap[year]) {
+                        combinedHeatmap[year] = {};
+                    }
+
+                    // Iterate over each date in the current year
+                    const yearData = heatmap[year];
+                    for (const date in yearData) {
+                        if (Object.hasOwnProperty.call(yearData, date)) {
+                            const count = yearData[date];
+
+                            // Add the count to the existing total for that date
+                            if (combinedHeatmap[year][date]) {
+                                combinedHeatmap[year][date] += count;
+                            } else {
+                                combinedHeatmap[year][date] = count;
+                            }
+                        }
                     }
                 }
             }
         }
 
-        // Return the final combined heatmap object
         return combinedHeatmap;
     };
+
+    const getBadges = (data) => {
+        return [
+            // Leetcode badges
+            ...(data?.leetcode?.badges?.badges?.map((badge) => { return { icon: badge.icon, name: badge.displayName, subTitle: null, subTitleIcon: null } }) || []),
+
+            // Github badges
+            ...(data?.github?.badges?.map((badge) => { return { icon: badge.icon, name: badge.name, subTitle: null, subTitleIcon: null } }) || []),
+
+            // Codechef badges
+            ...(data?.codechef?.profile?.badges?.map((badge) => { return { icon: badge.badgeImage, name: badge.badgeTitle, subTitle: null, subTitleIcon: null } }) || []),
+
+            // Interviewbit badges
+            ...(data?.interviewbit?.profile?.badges?.map((badge) => { return { icon: badge.image, name: badge.title, subTitle: null, subTitleIcon: null } }) || []),
+
+            // Code360 Achiever badges
+            ...(data?.code360?.profile?.dsa_domain_data?.badges_hash?.achiever?.gp?.map((badge) => { return { icon: "/Images/Code360 Badges/Guided Path/achiever.svg", name: badge, subTitle: "Achiever", subTitleIcon: null } }) || []),
+            ...(data?.code360?.profile?.dsa_domain_data?.badges_hash?.achiever?.ptm?.map((badge) => { return { icon: "/Images/Code360 Badges/Practice/achiever.svg", name: badge, subTitle: "Achiever", subTitleIcon: null } }) || []),
+            ...(data?.code360?.profile?.dsa_domain_data?.badges_hash?.achiever?.sgp?.map((badge) => { return { icon: "/Images/Code360 Badges/Special Guided Path/achiever.svg", name: badge, subTitle: "Achiever", subTitleIcon: null } }) || []),
+
+            // Code360 specialist badges
+            ...(data?.code360?.profile?.dsa_domain_data?.badges_hash?.specialist?.gp?.map((badge) => { return { icon: "/Images/Code360 Badges/Guided Path/specialist.svg", name: badge, subTitle: "Specialist", subTitleIcon: null } }) || []),
+            ...(data?.code360?.profile?.dsa_domain_data?.badges_hash?.specialist?.ptm?.map((badge) => { return { icon: "/Images/Code360 Badges/Practice/specialist.svg", name: badge, subTitle: "Specialist", subTitleIcon: null } }) || []),
+            ...(data?.code360?.profile?.dsa_domain_data?.badges_hash?.specialist?.sgp?.map((badge) => { return { icon: "/Images/Code360 Badges/Special Guided Path/specialist.svg", name: badge, subTitle: "Specialist", subTitleIcon: null } }) || []),
+
+            // Code360 master badges
+            ...(data?.code360?.profile?.dsa_domain_data?.badges_hash?.master?.gp?.map((badge) => { return { icon: "/Images/Code360 Badges/Guided Path/master.svg", name: badge, subTitle: "Master", subTitleIcon: null } }) || []),
+            ...(data?.code360?.profile?.dsa_domain_data?.badges_hash?.master?.ptm?.map((badge) => { return { icon: "/Images/Code360 Badges/Practice/master.svg", name: badge, subTitle: "Master", subTitleIcon: null } }) || []),
+            ...(data?.code360?.profile?.dsa_domain_data?.badges_hash?.master?.sgp?.map((badge) => { return { icon: "/Images/Code360 Badges/Special Guided Path/master.svg", name: badge, subTitle: "Master", subTitleIcon: null } }) || []),
+
+            // Hackerrank Badges
+            // ...(data?.hackerrank?.profile?.badges?.map((badge) => { return { icon: `https://hackerrank.com${badge.url}`, name: badge.badge_name, subTitle: null, subTitleIcon: null } }) || []),
+
+        ]
+    }
+
+    const getTotalProblems = (data) => {
+        return (data?.gfg?.profile?.totalProblemsSolved || 0)
+            + (data?.leetcode?.problems?.acSubmissionNum?.find(item => item.difficulty === 'All')?.count || 0)
+            + (data?.codechef?.profile?.problemsSolved || 0)
+            + (data?.interviewbit?.profile?.problems?.total_problems_solved || 0)
+            + (data?.code360?.profile?.dsa_domain_data?.problem_count_data?.total_count || 0)
+            + (data?.hackerrank?.profile?.badges?.reduce((total, badge) => total + badge.solved, 0) || 0)
+    }
+
+    const getTotalActiveDays = (heatmap) => {
+        let activeDays = 0;
+        if (!heatmap) return 0;
+
+        for (const year in heatmap) {
+            if (Object.hasOwnProperty.call(heatmap, year)) {
+                const yearData = heatmap[year];
+                for (const date in yearData) {
+                    if (Object.hasOwnProperty.call(yearData, date)) {
+                        if (yearData[date] > 0) {
+                            activeDays++;
+                        }
+                    }
+                }
+            }
+        }
+        return activeDays.toLocaleString();
+    };
+
+    const getTopicAnalysis = (data) => {
+
+        let topicStats = {};
+
+        // Topics from leetcode
+        const advanced = data?.leetcode?.topicStats?.advanced || [];
+        const intermediate = data?.leetcode?.topicStats?.intermediate || [];
+        const fundamental = data?.leetcode?.topicStats?.fundamental || [];
+
+        const allTopics = [...advanced, ...intermediate, ...fundamental];
+
+        for (let i = 0; i < allTopics.length; i++) {
+            const topic = allTopics[i];
+            topicStats[topic.tagName] = topic?.problemsSolved || 0;
+        }
+
+        // Topics from interviewbit
+        const interviewbitTopics = data?.interviewbit?.profile?.problems?.topic_problems_solved || [];
+
+        for (let i = 0; i < interviewbitTopics.length; i++) {
+            const topic = interviewbitTopics[i];
+            topicStats[topic.title] = topic?.solved_problems_count || 0;
+        }
+
+        return topicStats;
+    }
+
+    const getContestCount = (data) => {
+        return (data?.leetcode?.contest?.userContestRankingHistory?.filter((contest) => contest.attended === true)?.length || 0)
+            + (data?.code360?.profile?.contests?.user_rating_data?.length || 0);
+    }
+
+    const getContestData = (data) => {
+        return {
+            "LeetCode": data?.leetcode?.contest?.userContestRankingHistory
+                ?.filter((contest) => contest.attended === true)
+                ?.map((contest) => {
+                    return {
+                        title: contest.contest.title,
+                        rating: contest.rating,
+                        ranking: contest.ranking,
+                        date: new Date(contest.contest.startTime * 1000).toISOString().split('T')[0]
+                    }
+                }) || [],
+            "Code360": data?.code360?.profile?.contests?.user_rating_data?.map((contest) => {
+                return {
+                    title: contest.name,
+                    rating: contest.rating,
+                    ranking: contest.rank,
+                    date: new Date(contest.date * 1000).toISOString().split('T')[0]
+                }
+            }) || []
+        }
+    }
+
+    const getDsaProblemsData = (data) => {
+        return [
+            { name: 'Easy', value: (data.leetcode?.problems?.acSubmissionNum[1]?.count || 0) + (data.interviewbit?.profile?.problems?.difficulty_problems_solved?.filter(difficulty => difficulty.difficulty_level === 'easy')?.[0]?.solved_problems_count || 0) + (data.gfg?.profile?.problemsSolved?.Easy || 0) + (data.code360?.profile?.dsa_domain_data?.problem_count_data?.difficulty_data?.[0]?.count || 0), color: '#10B981' },
+            { name: 'Medium', value: (data.leetcode?.problems?.acSubmissionNum[2]?.count || 0) + (data.interviewbit?.profile?.problems?.difficulty_problems_solved?.filter(difficulty => difficulty.difficulty_level === 'medium')?.[0]?.solved_problems_count || 0) + (data.gfg?.profile?.problemsSolved?.Medium || 0) + (data.code360?.profile?.dsa_domain_data?.problem_count_data?.difficulty_data?.[1]?.count || 0), color: '#FBBF24' },
+            { name: 'Hard', value: (data.leetcode?.problems?.acSubmissionNum[3]?.count || 0) + (data.interviewbit?.profile?.problems?.difficulty_problems_solved?.filter(difficulty => difficulty.difficulty_level === 'hard')?.[0]?.solved_problems_count || 0) + (data.gfg?.profile?.problemsSolved?.Hard || 0) + (data.code360?.profile?.dsa_domain_data?.problem_count_data?.difficulty_data?.[2]?.count || 0), color: '#FF4524' }]
+    }
+
+    const getContestAchievements = (data) => {
+        return [
+            {
+                platform: 'LeetCode',
+                currentRating: Math.round(data?.leetcode?.contest?.userContestRanking?.rating) || 0,
+                maxRating: Math.round(data?.leetcode?.contest?.userContestRankingHistory?.reduce((max, contest) => Math.max(max, contest.rating), 0)) || 0,
+                achievementBadge: data?.leetcode?.contest?.userContestRanking?.badge?.icon ? <img src={`https://leetcode.com/${data?.leetcode?.contest?.userContestRanking?.badge?.icon}`} className="w-30 h-30" /> : <img src="/Images/Leetcode Badges/knight.png" className="opacity-25 grayscale w-30 h-30" />,
+                position: data?.leetcode?.contest?.userContestRanking?.badge?.name,
+            },
+            {
+                platform: 'Code360',
+                currentRating: Math.round(data?.code360?.profile?.contests?.current_user_rating) || 0,
+                maxRating: Math.round(data?.code360?.profile?.contests?.user_rating_data?.reduce((max, contest) => Math.max(max, contest.rating), 0)) || 0,
+                achievementBadge: data?.code360?.profile?.contests?.rating_group?.icon ? <img src={`${data?.code360?.profile?.contests?.rating_group?.icon}`} className="w-30 h-30" /> : <img src="/Images/Default/badge.png" className="opacity-25 grayscale w-40 h-40" />,
+                position: data?.code360?.profile?.contests?.rating_group?.group,
+            }
+        ]
+    }
+
+    const combinedHeatmapData = useMemo(() => getCombinedHeatmap(
+        data?.leetcode?.submission,
+        data?.gfg?.submission,
+        data?.codechef?.submission,
+        data?.interviewbit?.submission,
+        data?.code360?.submission
+    ), [data]);
 
     const animationStyles = `
         @keyframes floatIn {
@@ -297,78 +363,81 @@ const CodingDashboard = () => {
                 </div>
 
                 <div className="space-y-8">
-                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                         {/* CONDITIONALLY RENDER DATA-DEPENDENT COMPONENTS 
                            We still check 'data' because even if loading stops, 
                            'data' might be null on an error.
                         */}
                         {data ? (
                             <>
-                                <div className="flex gap-10 mb-5 xl:col-span-3">
+                                <div className="flex gap-10 mb-5 xl:col-span-2">
                                     {dashboardOptions.map((option, index) => (
-                                        <div onClick={() => setDashboardOptionIndex(index)} className={`text-xl rounded-full py-1 px-5 ${index == dashboardOptionIndex ? 'text-blue-600 bg-blue-100 font-bold' : 'bg-gray-100 text-black'}`}>
+                                        <div onClick={() => setDashboardOptionIndex(index)} className={`text-xl rounded-full py-1 px-5 ${index == dashboardOptionIndex ? 'text-blue-600 bg-blue-100 font-bold' : 'bg-gray-100 text-black'}`} key={uuid()}>
                                             {option}
                                         </div>
                                     ))}
                                 </div>
                                 {
                                     (dashboardOptionIndex == 0) && <>
-                                        <div className="xl:col-span-2">
-                                            <BadgeCollection badges={[
-                                                ...(data?.leetcode?.badges?.badges?.map((badge) => { return { icon: badge.icon, name: badge.displayName, subTitle: null, subTitleIcon: null } }) || []),
-                                                // ...(data?.github?.badges?.map((badge)=>{return {icon: badge.icon, name: badge.name, subTitle: null, subTitleIcon: null}}) || []),
-                                                ...(data?.codechef?.profile?.badges?.map((badge) => { return { icon: badge.badgeImage, name: badge.badgeTitle, subTitle: null, subTitleIcon: null } }) || []),
-                                                ...(data?.interviewbit?.profile?.badges?.map((badge) => { return { icon: badge.image, name: badge.title, subTitle: null, subTitleIcon: null } }) || []),
-                                            ]} />
+                                        <div className="xl:col-span-1">
+                                            <div className="grid grid-cols-2 gap-4 mb-6">
+                                                <StatCard
+                                                    title="Total Problems"
+                                                    value={getTotalProblems(data)}
+                                                />
+                                                <StatCard
+                                                    title="Active Days"
+                                                    value={getTotalActiveDays(combinedHeatmapData)}
+                                                />
+                                            </div>
 
-                                            <ContestGraph contestData={
-                                                data?.leetcode?.contest?.userContestRankingHistory
-                                                    ?.filter((contest) => contest.attended === true)
-                                                    .map((contest) => {
-                                                        return {
-                                                            title: contest.contest.title,
-                                                            rating: contest.rating,
-                                                            ranking: contest.ranking,
-                                                            date: new Date(contest.contest.startTime * 1000).toISOString().split('T')[0]
-                                                        }
-                                                    }) || []
-                                            } />
+                                            <BadgeCollection badges={getBadges(data)} />
+
+                                            <TopicAnalysis
+                                                title="DSA Topic Analysis"
+                                                data={getTopicAnalysis(data)}
+                                            />
+
+                                            {getContestCount(data) > 0 && <Contest
+                                                data={getContestData(data)}
+                                            />}
                                         </div>
                                         <div className="flex flex-col gap-2">
                                             <ProblemsCard
-                                                title="GFG Fundamentals"
+                                                title="Fundamentals"
                                                 problemsData={
-                                                    [{ name: 'School', value: (data.gfg?.profile?.problemsSolved?.School || 0), color: '#10B981' },
-                                                    { name: 'Basic', value: (data.gfg?.profile?.problemsSolved?.Basic || 0), color: '#FBBF24' },]
+                                                    [{ name: 'GeeksForGeeks', value: (data.gfg?.profile?.problemsSolved?.School || 0) + (data.gfg?.profile?.problemsSolved?.Basic || 0), color: '#10B981' },
+                                                    { name: 'HackerRank', value: data?.hackerrank?.profile?.badges?.reduce((total, badge) => total + badge.solved, 0) || 0, color: '#FBBF24' },]
                                                 }
                                             />
+
                                             <ProblemsCard
                                                 title="DSA"
-                                                problemsData={
-                                                    [{ name: 'Easy', value: (data.leetcode?.problems?.acSubmissionNum[1]?.count || 0) + (data.interviewbit?.profile?.problemsSolved?.Easy || 0) + (data.gfg?.profile?.problemsSolved?.Easy || 0), color: '#10B981' },
-                                                    { name: 'Medium', value: (data.leetcode?.problems?.acSubmissionNum[2]?.count || 0) + (data.interviewbit?.profile?.problemsSolved?.Medium || 0) + (data.gfg?.profile?.problemsSolved?.Medium || 0), color: '#FBBF24' },
-                                                    { name: 'Hard', value: (data.leetcode?.problems?.acSubmissionNum[3]?.count || 0) + (data.interviewbit?.profile?.problemsSolved?.Hard || 0) + (data.gfg?.profile?.problemsSolved?.Hard || 0), color: '#FF4524' }]
-                                                }
+                                                problemsData={getDsaProblemsData(data)}
                                             />
+
                                             <ProblemsCard
                                                 title="Competitive Programming"
                                                 problemsData={
                                                     [{ name: 'Codechef', value: (data?.codechef?.profile?.problemsSolved || 0), color: '#10B981' },]
                                                 }
                                             />
+
+                                            {getContestCount(data) > 0 && <ContestAchievements
+                                                achievements={getContestAchievements(data)}
+                                            />}
                                         </div>
+
                                         <SubmissionHeatmap
-                                            calendar={getCombinedHeatmap(data?.leetcode?.submission?.submissionCalendar || {},
-                                                data?.codechef?.submission?.[new Date().getFullYear()] || {},
-                                            )}
-                                            className="col-span-1 lg:col-span-3"
+                                            calendar={combinedHeatmapData}
+                                            className="col-span-1 lg:col-span-2"
                                         />
                                     </>
                                 }
 
                                 {
                                     (dashboardOptionIndex == 1) && <>
-                                        <h2 className="text-3xl mb-5 xl:col-span-3">Github</h2>
+                                        <h2 className="text-3xl mb-5 xl:col-span-2">Github</h2>
                                         <LanguageStats languageStats={data?.github?.languageStats} />
                                         <GithubStats statsArray={[
                                             { icon: <FolderGit className="text-yellow-500" />, name: "Repos", value: data?.github?.profile?.public_repos },
@@ -376,14 +445,13 @@ const CodingDashboard = () => {
                                             { icon: <GitPullRequest className="text-green-500" />, name: "PRs", value: data?.github?.contributions?.pullRequestContributions?.totalCount || 0 },
                                             { icon: <Ban className="text-red-500" />, name: "issues", value: data?.github?.contributions?.issueContributions?.totalCount || 0 },
                                         ]} />
-                                        {console.log(data?.github?.badges)}
                                         <BadgeCollection title="Badges" badges={data?.github?.badges?.map((badge) => { return { icon: badge.icon, name: badge.name } })} />
                                     </>
                                 }
                             </>
                         ) : (
                             // Display a placeholder message if loading is done but data is missing (error state)
-                            !isLoading && <div className="col-span-3 text-center py-10 text-gray-500">
+                            !isLoading && <div className="col-span-2 text-center py-10 text-gray-500">
                                 Could not load coding profiles data. Please try refreshing.
                             </div>
                         )}
