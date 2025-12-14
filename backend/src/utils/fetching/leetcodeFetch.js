@@ -60,6 +60,15 @@ const getLeetCodeProblemsCount = async (username) => {
     return null;
 }
 
+const getLeetCodeUserStreaksAndCalendar = async (username, year) => {
+    const query = leetCodeApiQueries.LEETCODE_USER_STREAKS_CALENDAR_QUERY;
+    const variables = { username, year };
+    const data = (await leetCodeQuery(query, variables)).data;
+    data["matchedUser"]["userCalendar"]["submissionCalendar"] = getNormalizedLeetCodeHeatmap(JSON.parse(data["matchedUser"]["userCalendar"]["submissionCalendar"]), year);
+    if (data) return data["matchedUser"]["userCalendar"];
+    return data;
+}
+
 const fetchLeetcodeUserMultiYearSubmissionData = async (username) => {
     const startYear = 2015;
     const currentYear = new Date().getFullYear();
@@ -124,6 +133,7 @@ const getLeetCodeTopicWiseProblems = async (username) => {
 
 export {
     getLeetCodeProblemsCount,
+    getLeetCodeUserStreaksAndCalendar,
     fetchLeetcodeUserMultiYearSubmissionData,
     getLeetCodeContestData,
     getLeetCodeProfileInfo,

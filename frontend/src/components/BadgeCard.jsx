@@ -35,8 +35,8 @@ const BadgeCard = ({ badge }) => {
                     <div className="absolute inset-0 bg-gradient-to-br from-white to-transparent rounded-full blur-sm opacity-0 group-hover:opacity-50 transition-opacity duration-300" />
                     {badge.icon ? (
                         <div className="relative">
-                            <img 
-                                src={badge.icon} 
+                            <img
+                                src={badge.icon}
                                 alt={badge.name}
                                 className="w-16 h-16 object-contain rounded-xl transform group-hover:scale-110 transition-transform duration-300 z-10 relative"
                                 onError={(e) => {
@@ -56,7 +56,7 @@ const BadgeCard = ({ badge }) => {
                         </div>
                     )}
                 </div>
-                
+
                 {/* Badge Content */}
                 <div className="space-y-3">
                     <div className="space-y-2">

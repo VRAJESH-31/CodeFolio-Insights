@@ -1,7 +1,7 @@
 import { Trophy, Medal, Crown, Sparkles } from "lucide-react";
 import BadgeCard from "./BadgeCard";
 
-const BadgeCollection = ({ badges, title="Achievements & Badges" }) => {
+const BadgeCollection = ({ badges, title = "Achievements & Badges" }) => {
 
     const scrollStyle = `
         @keyframes scroll {
@@ -23,7 +23,7 @@ const BadgeCollection = ({ badges, title="Achievements & Badges" }) => {
     `;
 
     return (
-        <div className="bg-white/90 backdrop-blur-sm p-8 rounded-3xl shadow-2xl border-2 border-amber-200/50 hover:border-amber-300/70 transition-all duration-500 animate-float-in group" style={{animationDelay: '100ms'}}>
+        <div className="bg-white/90 backdrop-blur-sm p-8 rounded-3xl shadow-2xl border-2 border-amber-200/50 hover:border-amber-300/70 transition-all duration-500 animate-float-in group" style={{ animationDelay: '100ms' }}>
 
             <style>{scrollStyle}</style>
 
@@ -43,14 +43,14 @@ const BadgeCollection = ({ badges, title="Achievements & Badges" }) => {
                         </p> */}
                     </div>
                 </div>
-                
+
                 {/* Stats Badge */}
                 <div className="flex items-center gap-2 bg-amber-100 border border-amber-200 text-amber-800 px-4 py-2 rounded-full font-semibold">
                     <Trophy className="w-4 h-4" />
                     <span>{badges.length} Badges</span>
                 </div>
             </div>
-            
+
             {badges.length > 0 ? (
                 <div className="relative">
                     <div className="overflow-hidden rounded-2xl">
@@ -61,11 +61,11 @@ const BadgeCollection = ({ badges, title="Achievements & Badges" }) => {
                             ))}
                         </div>
                     </div>
-                    
+
                     {/* Enhanced Gradient Overlays */}
                     <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-white via-white/90 to-transparent pointer-events-none rounded-l-2xl"></div>
                     <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-white via-white/90 to-transparent pointer-events-none rounded-r-2xl"></div>
-                    
+
                     {/* Scroll Indicator */}
                     {/* <div className="flex justify-center mt-6">
                         <div className="flex items-center gap-2 text-sm text-gray-500 bg-gray-100 px-4 py-2 rounded-full">
@@ -86,8 +86,8 @@ const BadgeCollection = ({ badges, title="Achievements & Badges" }) => {
                     </p>
                     <div className="mt-6 flex justify-center gap-3">
                         <div className="w-2 h-2 bg-amber-400 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-amber-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                        <div className="w-2 h-2 bg-amber-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                        <div className="w-2 h-2 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                        <div className="w-2 h-2 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                     </div>
                 </div>
             )}
