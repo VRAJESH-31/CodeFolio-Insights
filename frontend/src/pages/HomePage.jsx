@@ -1,5 +1,4 @@
 import ProblemsCard from "../components/ProblemsCard";
-import Sidebar from "../components/Sidebar.jsx"
 import BadgeCollection from "../components/BadgeCollection.jsx";
 import SubmissionHeatmap from "../components/SubmissionHeatmap.jsx";
 import useAuthStore from "../../store/useAuthStore.js";
@@ -338,17 +337,11 @@ const CodingDashboard = () => {
     `;
 
     return (
-        <div className="flex h-screen bg-gradient-to-br from-green-50/30 via-white to-blue-50/30 font-sans">
+        <>
             <style>{animationStyles}</style>
 
             {/* Conditional Loader rendered on top of everything else */}
             {isLoading && <Loader />}
-
-            <Sidebar
-                isSidebarCollapsed={false}
-                activeMenu="Dashboard"
-                setActiveMenu={() => { }}
-            />
 
             {/* Main Content */}
             <main className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8">
@@ -458,7 +451,7 @@ const CodingDashboard = () => {
                     </div>
                 </div>
             </main>
-        </div>
+        </>
     );
 };
 

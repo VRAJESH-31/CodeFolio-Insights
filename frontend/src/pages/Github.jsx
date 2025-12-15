@@ -1,6 +1,5 @@
 // src/pages/GitHub.jsx
 import React, { useState, useEffect } from 'react';
-import Sidebar from '../components/Sidebar';
 import {
     Search,
     GitBranch,
@@ -38,7 +37,7 @@ import {
     BarChart,
     Bar,
 } from 'recharts';
-import { useGithubAnalysis } from "../hooks/useAnalyzer.js"; 
+import { useGithubAnalysis } from "../hooks/useAnalyzer.js";
 import axios from 'axios';
 import useAuthStore from '../../store/useAuthStore.js';
 import conf from '../config/config.js';
@@ -47,7 +46,7 @@ import conf from '../config/config.js';
 const GitHub = () => {
     const [username, setUsername] = useState("");
     const [mounted, setMounted] = useState(false);
-    const user = useAuthStore((state)=>state.user);
+    const user = useAuthStore((state) => state.user);
 
     const {
         data: analysis,
@@ -122,7 +121,7 @@ const GitHub = () => {
         }
     }
 
-    useEffect(()=>{
+    useEffect(() => {
         getGithubUrl();
     }, [])
 
@@ -161,14 +160,8 @@ const GitHub = () => {
     `;
 
     return (
-        <div className="flex h-screen bg-gradient-to-br from-green-50/30 via-white to-blue-50/30 font-sans">
+        <>
             <style>{animationStyles}</style>
-
-            <Sidebar
-                isSidebarCollapsed={false}
-                activeMenu="Github"
-                setActiveMenu={() => {}}
-            />
 
             {/* Main Content */}
             <main className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8">
@@ -529,7 +522,7 @@ const GitHub = () => {
                     </div>
                 )}
             </main>
-        </div>
+        </>
     );
 };
 
