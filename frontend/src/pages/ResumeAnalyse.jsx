@@ -8,7 +8,6 @@ import {
     Shield,
     AlertTriangle // Assuming ErrorContainer needs this or it's needed for loading
 } from 'lucide-react';
-import Sidebar from '../components/Sidebar';
 import ErrorContainer from '../components/ErrorContainer'; // Reusable component
 import ResumeUploadSection from '../components/ResumeUploadSection'; // New/refactored component
 import ResumeAnalysisDisplay from '../components/ResumeAnalysisDisplay'; // New component
@@ -22,7 +21,7 @@ const ResumeAnalysis = () => {
     const [resumeFile, setResumeFile] = useState(null);
     const [fileName, setFileName] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [analysis, setAnalysis] = useState(null); 
+    const [analysis, setAnalysis] = useState(null);
     const [error, setError] = useState('');
     const [mounted, setMounted] = useState(false); // Retaining existing state
 
@@ -45,7 +44,7 @@ const ResumeAnalysis = () => {
             }
         }
     };
-    
+
     const handleAnalyze = async () => {
         if (!resumeFile) {
             setError('Please upload a resume file first.');
@@ -112,9 +111,9 @@ const ResumeAnalysis = () => {
     } else if (error) {
         // 2. Error State (Reuses ErrorContainer)
         content = (
-            <ErrorContainer 
-                error={error} 
-                onRetry={handleAnalyze} 
+            <ErrorContainer
+                error={error}
+                onRetry={handleAnalyze}
                 isLoading={isLoading}
                 errorAdditionalHelp={[
                     "Check your internet connection.",
@@ -126,15 +125,15 @@ const ResumeAnalysis = () => {
     } else if (analysis) {
         // 3. Analysis View (Uses the new ResumeAnalysisDisplay)
         content = (
-            <ResumeAnalysisDisplay 
-                resumeAnalysis={analysis} 
-                onUploadAgain={handleUploadAgain} 
+            <ResumeAnalysisDisplay
+                resumeAnalysis={analysis}
+                onUploadAgain={handleUploadAgain}
             />
         );
     } else {
         // 4. Initial Upload Form (Uses the new/refactored ResumeUploadSection)
         content = (
-            <ResumeUploadSection 
+            <ResumeUploadSection
                 jobDescription={jobDescription}
                 setJobDescription={setJobDescription}
                 experience={experience}
@@ -148,16 +147,9 @@ const ResumeAnalysis = () => {
     }
 
     return (
-        <div className="h-screen bg-gray-50 flex">
-            <Sidebar
-                isSidebarCollapsed={false}
-                activeMenu="Resume Analysis"
-                setActiveMenu={() => {}}
-            />
-            <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto">
-                {content}
-            </main>
-        </div>
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto">
+            {content}
+        </main>
     );
 };
 

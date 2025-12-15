@@ -1,4 +1,4 @@
-import React, { useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Search,
     CheckCircle,
@@ -25,10 +25,9 @@ import {
     CloudDownload,
     AlertTriangle,
     RefreshCw,
-    BarChart3, 
+    BarChart3,
     UserX,
 } from 'lucide-react';
-import Sidebar from '../components/Sidebar';
 import {
     ResponsiveContainer,
     LineChart,
@@ -62,10 +61,10 @@ import conf from '../config/config.js';
 
 const LeetCode = () => {
     const [userId, setUserId] = useState('');
-    const user = useAuthStore((state)=>state.user);
+    const user = useAuthStore((state) => state.user);
 
     const getLeetcodeSubmissionData = (submissionData) => {
-        return Object.entries(submissionData).sort((x,y)=> new Date(x[0]) - new Date(y[0])).map((dailyData)=>{
+        return Object.entries(submissionData).sort((x, y) => new Date(x[0]) - new Date(y[0])).map((dailyData) => {
             const date = dailyData[0];
             const submissions = dailyData[1];
 
@@ -78,26 +77,26 @@ const LeetCode = () => {
 
     const getLeetcodeDifficultyData = (difficultyData) => {
         return [
-            {name: 'Easy', value: difficultyData[1].count, color: '#34D399'},
-            {name: 'Medium', value: difficultyData[2].count, color: '#F59E0B'},
-            {name: 'Hard', value: difficultyData[3].count, color: '#EF4444'}
+            { name: 'Easy', value: difficultyData[1].count, color: '#34D399' },
+            { name: 'Medium', value: difficultyData[2].count, color: '#F59E0B' },
+            { name: 'Hard', value: difficultyData[3].count, color: '#EF4444' }
         ]
     }
 
     const getLeetcodeTopicData = (topicData) => {
         const responseTopicData = [];
-        const topicDataArray = Object.entries(topicData).map((topicLevelData)=>topicLevelData[1]);
-        for (let i=0; i<topicDataArray.length; i++){
-            for (let j=0; j<topicDataArray[i].length; j++){
+        const topicDataArray = Object.entries(topicData).map((topicLevelData) => topicLevelData[1]);
+        for (let i = 0; i < topicDataArray.length; i++) {
+            for (let j = 0; j < topicDataArray[i].length; j++) {
                 responseTopicData.push({
                     name: topicDataArray[i][j].tagName,
-                    value: topicDataArray[i][j].problemsSolved, 
-                    mastery: Math.min(100, topicDataArray[i][j].problemsSolved*2),
+                    value: topicDataArray[i][j].problemsSolved,
+                    mastery: Math.min(100, topicDataArray[i][j].problemsSolved * 2),
                     color: getRandomHexColor(),
                 })
             }
         }
-        return responseTopicData.sort((x,y)=>Math.random()-0.5).filter((_, index)=>index<10);
+        return responseTopicData.sort((x, y) => Math.random() - 0.5).filter((_, index) => index < 10);
     }
 
     const getLeetcodeURL = async () => {
@@ -111,7 +110,7 @@ const LeetCode = () => {
         }
     }
 
-    useEffect(()=>{
+    useEffect(() => {
         getLeetcodeURL();
     }, [])
 
@@ -143,14 +142,8 @@ const LeetCode = () => {
     `;
 
     return (
-        <div className="flex h-screen bg-gradient-to-br from-blue-50/30 via-white to-purple-50/30 font-sans">
+        <>
             <style>{animationStyles}</style>
-            
-            <Sidebar
-                isSidebarCollapsed={false}
-                activeMenu="LeetCode"
-                setActiveMenu={() => {}}
-            />
 
             {/* Main Content */}
             <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-6 md:space-y-8">
@@ -165,7 +158,7 @@ const LeetCode = () => {
                 </div>
 
                 {/* Input Section */}
-                <div className="bg-white/90 backdrop-blur-sm p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl shadow-xl border border-gray-200/80 animate-float-in hover:shadow-2xl transition-all duration-300" style={{animationDelay: '100ms'}}>
+                <div className="bg-white/90 backdrop-blur-sm p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl shadow-xl border border-gray-200/80 animate-float-in hover:shadow-2xl transition-all duration-300" style={{ animationDelay: '100ms' }}>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
                         <div className="p-2 sm:p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl sm:rounded-2xl shadow-lg w-fit">
                             <Rocket className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 text-white" />
@@ -175,7 +168,7 @@ const LeetCode = () => {
                             <p className="text-sm sm:text-base text-gray-500 font-medium">Enter your LeetCode username to get started</p>
                         </div>
                     </div>
-                    
+
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch">
                         <div className="flex-1 relative">
                             <input
@@ -190,9 +183,8 @@ const LeetCode = () => {
                         <button
                             onClick={handleAnalyze}
                             disabled={isFetching}
-                            className={`flex items-center justify-center gap-2 sm:gap-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold px-4 sm:px-6 md:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed min-w-[120px] sm:min-w-[160px] ${
-                                isLoading ? 'cursor-wait' : 'hover:from-blue-600 hover:to-purple-700'
-                            }`}
+                            className={`flex items-center justify-center gap-2 sm:gap-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold px-4 sm:px-6 md:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed min-w-[120px] sm:min-w-[160px] ${isLoading ? 'cursor-wait' : 'hover:from-blue-600 hover:to-purple-700'
+                                }`}
                         >
                             {isFetching ? (
                                 <>
@@ -217,24 +209,24 @@ const LeetCode = () => {
                             {/* Score Circle */}
                             <div className="lg:col-span-1">
                                 <div className="bg-white/90 backdrop-blur-sm p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-xl border border-gray-200/80 animate-float-in h-full">
-                                    <ScoreMeter score={data.score}/>
+                                    <ScoreMeter score={data.score} />
                                 </div>
                             </div>
 
                             {/* Meme and Review */}
-                            <div className="lg:col-span-2 bg-white/90 backdrop-blur-sm p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl shadow-xl border border-gray-200/80 animate-float-in" style={{animationDelay: '200ms'}}>
+                            <div className="lg:col-span-2 bg-white/90 backdrop-blur-sm p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl shadow-xl border border-gray-200/80 animate-float-in" style={{ animationDelay: '200ms' }}>
                                 <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
                                     <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg">
                                         <MessageSquareQuote className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-white" />
                                     </div>
                                     <h3 className="text-xl sm:text-2xl font-black text-gray-800">AI Performance Review</h3>
                                 </div>
-                                <MemeContainer score={data.score}/>
+                                <MemeContainer score={data.score} />
                             </div>
 
                             {/* Analysis */}
-                            <div className="lg:col-span-3 animate-float-in" style={{animationDelay: '300ms'}}>
-                                <AnalysisContainer profileAnalysis={data.profileAnalysis}/>
+                            <div className="lg:col-span-3 animate-float-in" style={{ animationDelay: '300ms' }}>
+                                <AnalysisContainer profileAnalysis={data.profileAnalysis} />
                             </div>
                         </div>
 
@@ -242,11 +234,11 @@ const LeetCode = () => {
                         <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
                             {[
                                 { icon: CheckCircle, title: "Total Solved", value: data.problemsCount.acSubmissionNum[0].count, color: "green" },
-                                { icon: Target, title: "Acceptance Rate", value: (data.acceptanceRate*100).toFixed(2), color: "blue" },
+                                { icon: Target, title: "Acceptance Rate", value: (data.acceptanceRate * 100).toFixed(2), color: "blue" },
                                 { icon: Zap, title: "Current Streak", value: data.submissionCalendar.streak, color: "yellow" },
                                 { icon: Award, title: "Contest Rating", value: Math.round(data?.contestData?.userContestRanking?.rating ?? 0), color: "purple" },
                             ].map((stat, index) => (
-                                <div key={stat.title} className="animate-float-in" style={{animationDelay: `${400 + index * 100}ms`}}>
+                                <div key={stat.title} className="animate-float-in" style={{ animationDelay: `${400 + index * 100}ms` }}>
                                     <StatCard {...stat} delay={index * 100} />
                                 </div>
                             ))}
@@ -254,10 +246,10 @@ const LeetCode = () => {
 
                         {/* Contest Stats and Badges */}
                         <div className="space-y-6 md:space-y-8">
-                            <div className="animate-float-in" style={{animationDelay: '800ms'}}>
+                            <div className="animate-float-in" style={{ animationDelay: '800ms' }}>
                                 <LeetCodeContestStats contestData={data.contestData?.userContestRanking} />
                             </div>
-                            <div className="animate-float-in" style={{animationDelay: '900ms'}}>
+                            <div className="animate-float-in" style={{ animationDelay: '900ms' }}>
                                 <BadgeCollection badges={data.badges.badges} />
                             </div>
                         </div>
@@ -265,7 +257,7 @@ const LeetCode = () => {
                         {/* Charts Grid */}
                         <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
                             {/* Submission Activity */}
-                            <div className="xl:col-span-2 bg-white/90 backdrop-blur-sm p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl shadow-xl border border-gray-200/80 animate-float-in" style={{animationDelay: '1000ms'}}>
+                            <div className="xl:col-span-2 bg-white/90 backdrop-blur-sm p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl shadow-xl border border-gray-200/80 animate-float-in" style={{ animationDelay: '1000ms' }}>
                                 <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
                                     <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl shadow-lg">
                                         <BarChart2 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
@@ -278,9 +270,9 @@ const LeetCode = () => {
                                             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                                             <XAxis dataKey="name" stroke="#6b7280" fontSize={12} />
                                             <YAxis stroke="#6b7280" fontSize={12} />
-                                            <Tooltip 
-                                                contentStyle={{ 
-                                                    background: 'rgba(255, 255, 255, 0.9)', 
+                                            <Tooltip
+                                                contentStyle={{
+                                                    background: 'rgba(255, 255, 255, 0.9)',
                                                     backdropFilter: 'blur(10px)',
                                                     border: '1px solid #e5e7eb',
                                                     borderRadius: '12px',
@@ -288,11 +280,11 @@ const LeetCode = () => {
                                                 }}
                                             />
                                             <Legend />
-                                            <Line 
-                                                type="monotone" 
-                                                dataKey="submissions" 
-                                                stroke="#3b82f6" 
-                                                strokeWidth={2} 
+                                            <Line
+                                                type="monotone"
+                                                dataKey="submissions"
+                                                stroke="#3b82f6"
+                                                strokeWidth={2}
                                                 dot={{ fill: '#3b82f6', r: 3 }}
                                             />
                                         </LineChart>
@@ -301,21 +293,21 @@ const LeetCode = () => {
                             </div>
 
                             {/* Problem Difficulty */}
-                            <div className="animate-float-in" style={{animationDelay: '1100ms'}}>
-                                <ProblemStats problemsData={getLeetcodeDifficultyData(data.problemsCount.acSubmissionNum)}/>
+                            <div className="animate-float-in" style={{ animationDelay: '1100ms' }}>
+                                <ProblemStats problemsData={getLeetcodeDifficultyData(data.problemsCount.acSubmissionNum)} />
                             </div>
                         </div>
 
                         {/* Additional Insights */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
                             {/* Topic Mastery */}
-                            <div className="animate-float-in" style={{animationDelay: '1200ms'}}>
-                                <TopicStats topicData={getLeetcodeTopicData(data.topicWiseProblems)}/>
+                            <div className="animate-float-in" style={{ animationDelay: '1200ms' }}>
+                                <TopicStats topicData={getLeetcodeTopicData(data.topicWiseProblems)} />
                             </div>
 
                             {/* AI Recommended Video */}
-                            {data?.profileAnalysis?.video && <div className="animate-float-in" style={{animationDelay: '1300ms'}}>
-                                <VideoSuggestion suggestedVideo={data.profileAnalysis.video}/>
+                            {data?.profileAnalysis?.video && <div className="animate-float-in" style={{ animationDelay: '1300ms' }}>
+                                <VideoSuggestion suggestedVideo={data.profileAnalysis.video} />
                             </div>}
                         </div>
                     </div>
@@ -327,12 +319,12 @@ const LeetCode = () => {
                             error={error}
                             onRetry={handleAnalyze}
                             isLoading={isFetching}
-                            errorAdditionalHelp={["Make sure the LeetCode username is correct","Ensure the user has a public profile", "Try again in a few minutes if issues persist"]}
+                            errorAdditionalHelp={["Make sure the LeetCode username is correct", "Ensure the user has a public profile", "Try again in a few minutes if issues persist"]}
                         />
                     </div>
                 )}
             </main>
-        </div>
+        </>
     );
 };
 
