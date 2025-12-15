@@ -28,7 +28,6 @@ import {
     BarChart3,
     UserX,
 } from 'lucide-react';
-import Sidebar from '../components/Sidebar';
 import {
     ResponsiveContainer,
     LineChart,
@@ -143,14 +142,8 @@ const LeetCode = () => {
     `;
 
     return (
-        <div className="flex h-screen bg-gradient-to-br from-blue-50/30 via-white to-purple-50/30 font-sans">
+        <>
             <style>{animationStyles}</style>
-
-            <Sidebar
-                isSidebarCollapsed={false}
-                activeMenu="LeetCode"
-                setActiveMenu={() => { }}
-            />
 
             {/* Main Content */}
             <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-6 md:space-y-8">
@@ -331,7 +324,7 @@ const LeetCode = () => {
                     </div>
                 )}
             </main>
-        </div>
+        </>
     );
 };
 
