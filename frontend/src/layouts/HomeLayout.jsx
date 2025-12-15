@@ -13,12 +13,12 @@ const HomeLayout = () => {
         if (path === '/dashboard' || path === '/home') return 'Dashboard';
         if (path === '/analyzer/leetcode') return 'LeetCode';
         if (path === '/analyzer/github') return 'GitHub';
-        if (path === '/analyzer/resume-analyse') return 'Resume Analysis';
+        if (path === '/analyzer/resume') return 'Resume Analysis';
         return 'Dashboard';
     };
 
     return (
-        <ProtectedRoute>
+        <ProtectedRoute requiresAuthentication={true}>
             <div className="flex h-screen bg-gradient-to-br from-green-50/30 via-white to-blue-50/30 font-sans">
                 <Sidebar
                     isSidebarCollapsed={isSidebarCollapsed}
