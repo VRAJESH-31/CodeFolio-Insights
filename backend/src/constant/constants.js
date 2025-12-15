@@ -41,6 +41,13 @@ const leetCodeApiQueries = {
                 globalRanking
                 attendedContestsCount
                 topPercentage
+                totalParticipants
+                badge {
+                    name
+                    icon
+                    expired
+                    hoverText
+                }
             }
             userContestRankingHistory(username: $username) {
                 attended

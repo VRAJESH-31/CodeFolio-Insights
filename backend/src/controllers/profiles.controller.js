@@ -1,6 +1,4 @@
-import UserModel from '../models/user.model.js';
 import ProfileModel from '../models/profiles.model.js';
-import axios from 'axios';
 import mongoose from 'mongoose';
 import * as leetcodeFetching from '../utils/fetching/leetcodeFetch.js';
 import * as scrapeSpideyFetching from '../utils/fetching/scrapeSpideyFetch.js';
@@ -90,7 +88,7 @@ const refreshProfileData = async (req, res) => {
         const freshData = {
             gfg: profileLinks.gfgUsername ? {
                 profile: await scrapeSpideyFetching.fetchGfgUserData(profileLinks.gfgUsername),
-                // submission: await scrapeSpideyFetching.fetchGfgUserSubmissionData(profileLinks.gfgUsername),
+                submission: await scrapeSpideyFetching.fetchGfgUserMultiYearSubmissionData(profileLinks.gfgUsername),
             } : null,
             codechef: profileLinks.codechefUsername ? {
                 profile: await scrapeSpideyFetching.fetchCodeChefUserData(profileLinks.codechefUsername),
@@ -98,13 +96,23 @@ const refreshProfileData = async (req, res) => {
             } : null,
             interviewbit: profileLinks.interviewbitUsername ? {
                 profile: await scrapeSpideyFetching.fetchInterviewbitUserData(profileLinks.interviewbitUsername),
+                badges: await scrapeSpideyFetching.fetchInterviewbitBadgesData(profileLinks.interviewbitUsername),
+                submission: await scrapeSpideyFetching.fetchInterviewbitUserMultiYearSubmissionData(profileLinks.interviewbitUsername),
+            } : null,
+            code360: profileLinks.code360Username ? {
+                profile: await scrapeSpideyFetching.fetchCode360UserData(profileLinks.code360Username),
+                submission: await scrapeSpideyFetching.fetchCode360UserMultiYearSubmissionData(profileLinks.code360Username),
+            } : null,
+            hackerrank: profileLinks.hackerrankUsername ? {
+                profile: await scrapeSpideyFetching.fetchHackerRankUserData(profileLinks.hackerrankUsername),
             } : null,
             leetcode: profileLinks.leetCodeUsername ? {
                 profile: await leetcodeFetching.getLeetCodeProfileInfo(profileLinks.leetCodeUsername),
                 badges: await leetcodeFetching.getLeetCodeBadges(profileLinks.leetCodeUsername),
                 contest: await leetcodeFetching.getLeetCodeContestData(profileLinks.leetCodeUsername),
                 problems: await leetcodeFetching.getLeetCodeProblemsCount(profileLinks.leetCodeUsername),
-                submission: await leetcodeFetching.getLeetCodeUserStreaksAndCalendar(profileLinks.leetCodeUsername, new Date().getFullYear()),
+                submission: await leetcodeFetching.fetchLeetcodeUserMultiYearSubmissionData(profileLinks.leetCodeUsername),
+                topicStats: await leetcodeFetching.getLeetCodeTopicWiseProblems(profileLinks.leetCodeUsername),
             } : null,
             github: profileLinks.githubUsername ? {
                 profile: await githubFetching.getUserProfileData(profileLinks.githubUsername),
@@ -121,54 +129,39 @@ const refreshProfileData = async (req, res) => {
 
         const mergedData = { ...existingData };
 
-        const platforms = ['gfg', 'codechef', 'interviewbit', 'leetcode', 'github'];
+        const platforms = ['gfg', 'codechef', 'interviewbit', 'leetcode', 'github', 'code360', 'hackerrank'];
 
         platforms.forEach(platform => {
-            // 1. If fresh data is explicitly null (meaning user has no username in DB for this),
-            // then we should set mergedData field to null (overwriting any old cache).
-            // However, our fetch logic above sets freshData[platform] to null if username is missing.
-            // BUT it also sets it to null if fetch fails completely for some cases (depending on implementation).
-            // Let's ensure we distinguish "not configured" vs "fetch failed".
-            // We can check profileLinks keys. 
-
             let usernameKey = "";
             if (platform === 'gfg') usernameKey = 'gfgUsername';
             if (platform === 'codechef') usernameKey = 'codechefUsername';
             if (platform === 'interviewbit') usernameKey = 'interviewbitUsername';
             if (platform === 'leetcode') usernameKey = 'leetCodeUsername';
             if (platform === 'github') usernameKey = 'githubUsername';
+            if (platform === 'code360') usernameKey = 'code360Username';
+            if (platform === 'hackerrank') usernameKey = 'hackerrankUsername';
 
             if (!profileLinks[usernameKey]) {
-                // User removed their username, so remove from cache
                 mergedData[platform] = null;
             } else {
-                // User HAS a username.
-
-                // If freshData[platform] is NOT null, we merge.
                 if (freshData[platform]) {
                     if (!mergedData[platform]) {
-                        // No previous cache for this platform, just take fresh
                         mergedData[platform] = freshData[platform];
                     } else {
-                        // We have previous cache AND fresh data. Deep merge subfields.
-                        // freshData[platform] is an object (e.g. { profile: ..., badges: ... })
                         const freshPlatformData = freshData[platform];
                         const cachedPlatformData = mergedData[platform];
 
                         const mergedPlatformData = { ...cachedPlatformData };
 
                         Object.keys(freshPlatformData).forEach(key => {
-                            // If fresh subfield is NOT null, update it.
                             if (freshPlatformData[key] !== null && freshPlatformData[key] !== undefined) {
                                 mergedPlatformData[key] = freshPlatformData[key];
                             }
-                            // If fresh subfield IS null (fetch failed), keep cachedPlatformData[key] (if exists).
                         });
 
                         mergedData[platform] = mergedPlatformData;
                     }
                 }
-                // If freshData[platform] IS null (e.g. total fetch failure), keep existing mergedData[platform] as is.
             }
         });
 

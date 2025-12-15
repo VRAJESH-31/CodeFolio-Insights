@@ -35,7 +35,8 @@ const PLATFORM_TO_BACKEND_KEY = {
     'github': 'githubUsername',
     'linkedin': 'linkedinUsername',
     'gfg': 'gfgUsername',
-    'hackerrank': 'hackerRankUsername',
+    'hackerrank': 'hackerrankUsername',
+    'code360': 'code360Username',
     'codechef': 'codechefUsername',
     'codeforces': 'codeForcesUsername',
     'twitter': 'twitterUsername',
@@ -100,6 +101,7 @@ const getDefaultUrl = (platform, username) => {
         codeforces: `https://codeforces.com/profile/${username}`,
         twitter: `https://twitter.com/${username}`,
         interviewbit: `https://www.interviewbit.com/profile/${username}`,
+        code360: `https://www.naukri.com/code360/profile/${username}`,
     };
     // For portfolio/resume, the 'username' is the full URL, so return it directly if no map exists
     return urlMap[platform] || username;
@@ -127,6 +129,7 @@ const LinkPage = () => {
         { value: 'codechef', label: 'CodeChef', icon: Code, color: 'from-yellow-600 to-yellow-700', bgColor: 'bg-yellow-500/10', placeholder: 'codechef_username' },
         { value: 'codeforces', label: 'CodeForces', icon: Code, color: 'from-red-500 to-red-600', bgColor: 'bg-red-500/10', placeholder: 'codeforces_username' },
         { value: 'twitter', label: 'Twitter', icon: Twitter, color: 'from-blue-400 to-blue-500', bgColor: 'bg-sky-500/10', placeholder: 'twitter_username' },
+        { value: 'code360', label: 'Code360', icon: Code, color: 'from-blue-700 to-blue-900', bgColor: 'bg-blue-700/10', placeholder: 'code360_username' },
         { value: 'interviewbit', label: 'InterviewBit', icon: Code, color: 'from-blue-700 to-blue-900', bgColor: 'bg-blue-700/10', placeholder: 'interviewbit_username' },
         { value: 'portfolio', label: 'Portfolio', icon: Globe, color: 'from-purple-500 to-purple-600', bgColor: 'bg-purple-500/10', placeholder: 'yourportfolio.com' },
         { value: 'resume', label: 'Resume', icon: FileText, color: 'from-indigo-500 to-indigo-600', bgColor: 'bg-indigo-500/10', placeholder: 'drive.google.com/your-resume' },

@@ -1,9 +1,18 @@
 import { leetCodeQuery } from "../../api/axiosInstance.js";
 import { leetCodeApiQueries } from "../../constant/constants.js";
 
+const getSortedHeatmap = (heatmap) => {
+    const finalSortedHeatmap = {};
+    Object.keys(heatmap).sort().forEach(key => {
+        finalSortedHeatmap[key] = heatmap[key];
+    });
+
+    return finalSortedHeatmap;
+}
+
 const getNormalizedLeetCodeHeatmap = (heatmap, year) => {
     if (!heatmap || typeof heatmap !== 'object' || Array.isArray(heatmap) || typeof year !== 'number' || year < 1900) {
-        return {}; 
+        return {};
     }
 
     const completedHeatmap = {};
@@ -12,7 +21,7 @@ const getNormalizedLeetCodeHeatmap = (heatmap, year) => {
             const timestampSeconds = parseInt(timestampKey, 10);
             const timestampMilliseconds = timestampSeconds * 1000;
             const date = new Date(timestampMilliseconds);
-            
+
             const y = date.getUTCFullYear();
             const m = String(date.getUTCMonth() + 1).padStart(2, '0');
             const d = String(date.getUTCDate()).padStart(2, '0');
@@ -24,11 +33,11 @@ const getNormalizedLeetCodeHeatmap = (heatmap, year) => {
 
     const startDate = new Date(Date.UTC(year, 0, 1));
     const endDate = new Date(Date.UTC(year, 11, 31));
-    
+
     for (let currentDate = startDate; currentDate <= endDate; currentDate.setUTCDate(currentDate.getUTCDate() + 1)) {
 
         const currentYear = currentDate.getUTCFullYear();
-        
+
         if (currentYear === year) {
             const currentMonth = String(currentDate.getUTCMonth() + 1).padStart(2, '0');
             const currentDay = String(currentDate.getUTCDate()).padStart(2, '0');
@@ -40,7 +49,7 @@ const getNormalizedLeetCodeHeatmap = (heatmap, year) => {
         }
     }
 
-    return completedHeatmap;
+    return getSortedHeatmap(completedHeatmap);
 };
 
 const getLeetCodeProblemsCount = async (username) => {
@@ -58,6 +67,36 @@ const getLeetCodeUserStreaksAndCalendar = async (username, year) => {
     data["matchedUser"]["userCalendar"]["submissionCalendar"] = getNormalizedLeetCodeHeatmap(JSON.parse(data["matchedUser"]["userCalendar"]["submissionCalendar"]), year);
     if (data) return data["matchedUser"]["userCalendar"];
     return data;
+}
+
+const fetchLeetcodeUserMultiYearSubmissionData = async (username) => {
+    const startYear = 2015;
+    const currentYear = new Date().getFullYear();
+
+    const years = Array.from(
+        { length: currentYear - startYear + 1 },
+        (_, i) => startYear + i
+    );
+
+    const fetchPromises = years.map(async (year) => {
+        const query = leetCodeApiQueries.LEETCODE_USER_STREAKS_CALENDAR_QUERY;
+        const variables = { username, year };
+        const data = (await leetCodeQuery(query, variables)).data?.matchedUser?.userCalendar?.submissionCalendar;
+
+        let normalizedData = {};
+        if (data) normalizedData = getNormalizedLeetCodeHeatmap(JSON.parse(data), year);
+
+        return { year, data: normalizedData };
+    });
+
+    const results = await Promise.all(fetchPromises);
+
+    const submissionData = {};
+    results.forEach(({ year, data }) => {
+        submissionData[year] = data;
+    });
+
+    return submissionData;
 }
 
 const getLeetCodeContestData = async (username) => {
@@ -95,6 +134,7 @@ const getLeetCodeTopicWiseProblems = async (username) => {
 export {
     getLeetCodeProblemsCount,
     getLeetCodeUserStreaksAndCalendar,
+    fetchLeetcodeUserMultiYearSubmissionData,
     getLeetCodeContestData,
     getLeetCodeProfileInfo,
     getLeetCodeBadges,

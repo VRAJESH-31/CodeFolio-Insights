@@ -138,7 +138,7 @@ const ContestGraph = ({ contestData }) => {
 
             {/* Contest Graph Area */}
             {/* onMouseLeave is on the main container to reset the state when leaving the graph area */}
-            <div className="relative h-96 pt-4" onMouseLeave={handleMouseLeave}>
+            <div className="relative h-64 pt-4" onMouseLeave={handleMouseLeave}>
                 {canRenderGraph ? (
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart

@@ -1,216 +1,318 @@
-// src/components/SubmissionHeatmap.jsx
-import React from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 
-// --- Helper Functions and Data Processing (Modified) ---
-
-/**
- * Normalizes day of the week: 0 (Mon) to 6 (Sun).
- * Date.getDay() returns 0 (Sun) to 6 (Sat).
- */
 const normalizeDayOfWeek = (date) => {
   const day = date.getDay();
   return day === 0 ? 6 : day - 1;
 };
 
-/**
- * Transforms the input object {dateString: count} into a sorted array of objects
- * {date: Date, count: number}.
- * @param {Object<string, number>} calendarObject - The input data object.
- * @returns {Array<{date: Date, count: number}>} A sorted array of calendar entries.
- */
-const transformAndSortData = (calendarObject) => {
-  if (!calendarObject || Object.keys(calendarObject).length === 0) return [];
-  
-  const transformedData = Object.entries(calendarObject).map(([dateString, count]) => ({
-    date: new Date(dateString),
-    count: count,
-  }));
+// Generates a complete list of days for the given year to ensure the heatmap is dense and accurate
+const generateFullYearData = (year, calendarData) => {
+  if (!year) return [];
+  const start = new Date(year, 0, 1);
+  const end = new Date(year, 11, 31);
+  const days = [];
 
-  // Sort data chronologically
-  return transformedData.sort((a, b) => a.date - b.date);
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    // Format key as YYYY-MM-DD to match the input data keys
+    const isoDate = d.toISOString().split('T')[0];
+    // We also need to construct the key manually to be safe with timezone offsets if input keys are local string based,
+    // but assuming standard ISO strings from the previous step:
+    const y = d.getFullYear(); // Should match year
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const dayOfMonth = String(d.getDate()).padStart(2, '0');
+    const key = `${y}-${m}-${dayOfMonth}`;
+
+    days.push({
+      date: new Date(d),
+      count: calendarData[key] || 0,
+      dateString: key
+    });
+  }
+  return days;
 };
 
+// Groups the linear list of days into Months, and then Weeks within those Months
+const groupDataByMonth = (days) => {
+  const months = [];
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-/**
- * Processes the flat data array into a grid structure (rows=days, columns=weeks).
- * @param {Array<{date: Date, count: number}>} data - The calendar array.
- * @returns {Array<Array<Object | null>>} A 2D array representing the heatmap grid.
- */
-const processDataForHeatmap = (data) => {
-  if (!data || data.length === 0) return Array.from({ length: 7 }, () => []);
-
-  // 1. Initialize a 7-row array for Mon-Sun
-  const weeks = Array.from({ length: 7 }, () => []);
-  
-  const firstDay = data[0].date;
-
-  // 2. Calculate padding for the first week
-  const startPadding = normalizeDayOfWeek(firstDay);
-
-  // Pad the start of the first week column
-  for (let i = 0; i < startPadding; i++) {
-    weeks[i].push(null);
-  }
-
-  // 3. Populate the grid
-  data.forEach(day => {
-    const normalizedDayIndex = normalizeDayOfWeek(day.date);
-    weeks[normalizedDayIndex].push(day);
+  // Group by Month Index (0-11)
+  const daysByMonth = {};
+  days.forEach(day => {
+    const mIndex = day.date.getMonth();
+    if (!daysByMonth[mIndex]) daysByMonth[mIndex] = [];
+    daysByMonth[mIndex].push(day);
   });
 
-  // 4. Pad the last week column to ensure all rows are the same length
-  const lastWeekLength = weeks[0].length;
-  for (let i = 0; i < 7; i++) {
-    while (weeks[i].length < lastWeekLength) {
-      weeks[i].push(null);
+  Object.keys(daysByMonth).sort((a, b) => a - b).forEach(mIndex => {
+    const monthDays = daysByMonth[mIndex];
+    if (monthDays.length === 0) return;
+
+    const weeks = [];
+    let currentWeek = Array(7).fill(null);
+
+    monthDays.forEach(dayObj => {
+      const dayOfWeek = normalizeDayOfWeek(dayObj.date);
+      currentWeek[dayOfWeek] = dayObj;
+
+      if (dayOfWeek === 6) { // Sunday, end of week
+        weeks.push(currentWeek);
+        currentWeek = Array(7).fill(null);
+      }
+    });
+
+    // Push last partial week if it has any data
+    if (currentWeek.some(d => d !== null)) {
+      weeks.push(currentWeek);
     }
-  }
 
-  return weeks;
-};
+    months.push({
+      name: monthNames[mIndex],
+      weeks: weeks
+    });
+  });
 
-/**
- * Calculates month labels and their starting column index.
- */
-const getMonthLabels = (data) => {
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const labels = [];
-  let currentMonthIndex = -1;
-  
-  if (data.length === 0) return [];
-  
-  const firstDay = data[0].date;
-
-  for (let i = 0; i < data.length; i++) {
-    const day = data[i].date;
-    
-    if (day.getMonth() !== currentMonthIndex) {
-        // Calculate the column index (week number)
-        // Days Passed = Index in the array
-        const daysPassed = i;
-        // Total slots passed including initial padding
-        const totalSlots = daysPassed + normalizeDayOfWeek(firstDay); 
-        const column = Math.floor(totalSlots / 7);
-        
-        labels.push({
-            name: months[day.getMonth()],
-            column: column, 
-        });
-        currentMonthIndex = day.getMonth();
-    }
-  }
-  return labels;
+  return months;
 };
 
 
-// Determine color based on submission count (Light Mode)
 const getColorClass = (count) => {
-  if (count === 0) return 'bg-gray-200';
+  if (count === 0) return 'bg-gray-100';
+  if (count <= 2) return 'bg-green-100';
   if (count <= 4) return 'bg-green-300';
-  if (count <= 9) return 'bg-green-500';
-  if (count <= 14) return 'bg-green-600';
+  if (count <= 8) return 'bg-green-500';
   return 'bg-green-700';
 };
 
-// --- Component Definition ---
+const getBorderClass = (count) => {
+  return 'border-gray-400';
+};
 
-/**
- * @param {{calendar: Object<string, number>, className: String}} props 
- */
-const SubmissionHeatmap = ({ calendar, className }) => {
-  
-  // 1. Transform and sort the incoming object data
-  const processedCalendar = transformAndSortData(calendar);
+const calculateOverallStats = (calendar) => {
+  if (!calendar) return { totalSubmissions: 0, maxStreak: 0, currentStreak: 0 };
 
-  // 2. Process data for the 7-day row heatmap grid
-  const weeks = processDataForHeatmap(processedCalendar);
-  const monthLabels = getMonthLabels(processedCalendar);
+  let totalSubmissions = 0;
+  const allDates = [];
+  const allDataMap = {};
 
-  // Placeholder stats for the header
-  const totalSubmissions = processedCalendar.reduce((sum, day) => sum + day.count, 0);
+  Object.values(calendar).forEach(yearData => {
+    Object.entries(yearData).forEach(([dateStr, count]) => {
+      if (count > 0) {
+        totalSubmissions += count;
+        allDataMap[dateStr] = count;
+        allDates.push(new Date(dateStr));
+      }
+    });
+  });
 
-  // Heatmap constants
-  const cellWidth = 20; 
+  allDates.sort((a, b) => a - b);
+
+  let maxStreak = 0;
+  let currentRun = 0;
+  let prevDate = null;
+
+  for (const date of allDates) {
+    if (!prevDate) {
+      currentRun = 1;
+    } else {
+      const diffTime = Math.abs(date - prevDate);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (diffDays === 1) currentRun += 1;
+      else if (diffDays > 1) currentRun = 1;
+    }
+    if (currentRun > maxStreak) maxStreak = currentRun;
+    prevDate = date;
+  }
+
+  // Calculate Current Streak
+  let currentStreak = 0;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Normalize today
+
+  // Format helper
+  const formatDateKey = (d) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
+  // Check today and backwards
+  let checkDate = new Date(today);
+  if (allDataMap[formatDateKey(checkDate)]) {
+    currentStreak++;
+  }
+  // Ideally check yesterday if today has no submission but streak is still valid? 
+  // Standard simple streak: strict contiguous days including today? 
+  // Or allowed to miss today if it's not over yet? 
+  // Let's assume strict backwards search from yesterday if today is 0.
+  if (currentStreak === 0) {
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (allDataMap[formatDateKey(yesterday)]) {
+      checkDate = yesterday;
+      currentStreak = 1;
+    }
+  }
+
+  if (currentStreak > 0) {
+    while (true) {
+      checkDate.setDate(checkDate.getDate() - 1);
+      if (allDataMap[formatDateKey(checkDate)]) {
+        currentStreak++;
+      } else {
+        break;
+      }
+    }
+  }
+
+  return { totalSubmissions, maxStreak, currentStreak };
+};
+
+const SubmissionHeatmap = ({ calendar, className, title }) => {
+  const [selectedYear, setSelectedYear] = useState(null);
+
+  const years = useMemo(() => {
+    if (!calendar) return [];
+    return Object.keys(calendar).sort((a, b) => b - a);
+  }, [calendar]);
+
+  useEffect(() => {
+    if (years.length > 0 && !selectedYear) {
+      setSelectedYear(years[0]);
+    }
+  }, [years, selectedYear]);
+
+  const globalStats = useMemo(() => calculateOverallStats(calendar), [calendar]);
+
+  const currentYearData = useMemo(() => {
+    if (!calendar || !selectedYear) return {};
+    return calendar[selectedYear] || {};
+  }, [calendar, selectedYear]);
+
+  // Generate full year dense data and render-ready structure
+  const monthlyGroups = useMemo(() => {
+    const fullYearData = generateFullYearData(selectedYear, currentYearData);
+    return groupDataByMonth(fullYearData);
+  }, [selectedYear, currentYearData]);
+
+  const currentYearTotal = useMemo(() => {
+    return Object.values(currentYearData).reduce((sum, count) => sum + count, 0);
+  }, [currentYearData]);
+
+  if (!calendar || Object.keys(calendar).length === 0) {
+    return (
+      <div className={`bg-white p-6 rounded-xl shadow-lg border border-gray-200 w-full ${className} flex justify-center items-center h-48 text-gray-400`}>
+        {title && <h3 className="text-xl font-bold text-gray-800 mb-4 absolute top-4 left-6">{title}</h3>}
+        No submission data available
+      </div>
+    )
+  }
 
   return (
-    <div className={`flex flex-col bg-white p-6 rounded-xl shadow-lg border border-gray-200 font-sans text-gray-800 w-full  ${className}`}>
-      
-      {/* Header with stats and navigation */}
-      <div className="flex justify-between items-center mb-6 border-b pb-4 border-gray-200">
-        <div className="flex space-x-4 text-sm font-medium">
-          <span className="text-gray-900">Submissions <span className="text-green-600">{totalSubmissions}</span></span>
-          {/* <span className="text-gray-900">Max.Streak <span className="text-green-600">{maxStreak}</span></span>
-          <span className="text-gray-900">Current.Streak <span className="text-green-600">{currentStreak}</span></span> */}
-        </div>
-        {/* <div className="flex items-center space-x-2">
-          Dropdown for year/period selection
-          <select className="bg-gray-100 text-gray-700 rounded px-3 py-1 text-sm border border-gray-300 appearance-none pr-8">
-            <option>Current</option>
-          </select>
-          Navigation Arrows
-          <div className="flex space-x-1">
-            <button className="bg-gray-100 p-1 rounded text-gray-500 hover:bg-gray-200 transition">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-                </svg>
-            </button>
-            <button className="bg-gray-100 p-1 rounded text-gray-500 hover:bg-gray-200 transition">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                </svg>
-            </button>
+    <div className={`flex flex-col bg-white p-4 rounded-xl shadow-lg border border-gray-200 font-sans text-gray-800 w-full ${className}`}>
+
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 border-b pb-2 border-gray-200 gap-4">
+
+        {/* Stats */}
+        <div className="flex flex-wrap gap-10 text-sm font-medium">
+          <div className="flex items-center gap-2">
+            <span className="text-gray-500 text-xs uppercase tracking-wider">Total Submissions</span>
+            <span className="text-gray-900 text-lg">{globalStats.totalSubmissions}</span>
           </div>
-        </div> */}
-      </div>
-      
-      {/* Heatmap Grid */}
-      <div className="flex overflow-x-auto pb-2 scrollbar-hide ">
-        
-        {/* Day labels (Y-axis: Mon, Wed, Fri, Sun) */}
-        <div className="flex flex-col justify-between text-xs text-gray-500 mr-2 py-1 h-full">
-            <span>Mon</span>
-            <span></span>
-            <span>Wed</span>
-            <span></span>
-            <span>Fri</span>
-            <span></span>
-            <span>Sun</span>
+          <div className="flex items-center gap-2">
+            <span className="text-gray-500 text-xs uppercase tracking-wider">Submissions ({selectedYear})</span>
+            <span className="text-gray-900 text-lg">{currentYearTotal}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-gray-500 text-xs uppercase tracking-wider">Max Streak</span>
+            <span className="text-gray-900 text-lg">{globalStats.maxStreak}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-gray-500 text-xs uppercase tracking-wider">Current Streak</span>
+            <span className="text-gray-900 text-lg">{globalStats.currentStreak}</span>
+          </div>
         </div>
-        
-        {/* Main Grid Area */}
-        <div className="flex space-x-1">
-          {/* Iterate over columns (weeks) */}
-          {weeks[0].map((_, colIndex) => (
-            <div key={colIndex} className="flex flex-col space-y-1">
-              {/* Iterate over rows (days Mon-Sun) */}
-              {weeks.map((dayRow, rowIndex) => {
-                const day = dayRow[colIndex];
-                const dateString = day?.date?.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) || 'No Data';
-                
-                return (
-                  <div
-                    key={`${colIndex}-${rowIndex}`}
-                    className={`w-4 h-4 rounded-sm transition duration-150 ${day ? getColorClass(day.count) : 'bg-gray-100'}`}
-                    title={day ? `${day.count} submissions on ${dateString}` : 'No submissions'}
-                  />
-                );
-              })}
+
+        {/* Year Dropdown */}
+        <div className="flex items-center">
+          <select
+            value={selectedYear || ''}
+            onChange={(e) => setSelectedYear(e.target.value)}
+            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block w-full p-2.5 outline-none cursor-pointer"
+          >
+            {years.map(year => (
+              <option key={year} value={year}>{year}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Heatmap Container */}
+      <div className="w-full overflow-x-auto pb-4 custom-scrollbar">
+        <div className="flex gap-4 min-w-max">
+          {/* Render Labels for Weeks (Optional, vertical labels Mon/Wed/Fri?) 
+                 Standard heatmaps often don't label every day row in this view, or just Mon/Wed/Fri.
+                 Let's stick to simple or no row labels if space corresponds to Month blocks.
+                 Let's add a small legend column on the left if needed, but per Month-Group request, sticky labels are tricky.
+                 We'll omit row labels (Mon-Sun) to keep it clean, or put them sticky on left. 
+                 User didn't strictly ask for row labels, but "render each block at correct day".
+                 Let's rely on tooltip for exact day.
+             */}
+
+          {/* Left Sticky Day Labels (Optional) */}
+          <div className="flex flex-col justify-between py-1 mr-2 text-[10px] text-gray-400 font-medium h-[112px]">
+            {/* h-112px approx 7 * 12px gap + ... calculated: 7 * (12px height + 4px gap) = 7*16 = 112px */}
+            <span>Mon</span>
+            <span className="invisible">Tue</span>
+            <span>Wed</span>
+            <span className="invisible">Thu</span>
+            <span>Fri</span>
+            <span className="invisible">Sat</span>
+            <span>Sun</span>
+          </div>
+
+          {monthlyGroups.map((month) => (
+            <div key={month.name} className="flex flex-col gap-2">
+              {/* The Seven-Row Grid for this Month */}
+              <div className="flex gap-1">
+                {month.weeks.map((week, wIndex) => (
+                  <div key={wIndex} className="flex flex-col gap-1">
+                    {week.map((day, dIndex) => (
+                      <div
+                        key={dIndex}
+                        className={`w-3 h-3 rounded-[2px] border transition-colors duration-200 ${day ? `${getColorClass(day.count)} ${getBorderClass(day.count)}` : 'bg-transparent border-transparent'}`}
+                        title={day ? `${day.count} submissions on ${day.dateString}` : ''}
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
+
+              {/* Month Name Below */}
+              <span className="text-xs font-semibold text-gray-500 text-center">{month.name}</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Month Labels */}
-      <div className="flex justify-start text-xs text-gray-500 mt-2 relative overflow-x-hidden">
-        {monthLabels.map((month, index) => {
-          const leftOffset = month.column * cellWidth; 
-          return (
-            <span key={index} className="absolute" style={{ left: `${leftOffset}px` }}>
-              {month.name}
-            </span>
-          );
-        })}
-      </div>
+      <style>{`
+          .custom-scrollbar::-webkit-scrollbar {
+              height: 6px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-track {
+              background: #f1f5f9;
+              border-radius: 4px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb {
+              background: #cbd5e1;
+              border-radius: 4px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+              background: #94a3b8;
+          }
+      `}</style>
     </div>
   );
 };
