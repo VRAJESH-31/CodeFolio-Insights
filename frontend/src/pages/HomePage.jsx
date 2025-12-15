@@ -340,8 +340,22 @@ const CodingDashboard = () => {
         <>
             <style>{animationStyles}</style>
 
-            {/* Conditional Loader rendered on top of everything else */}
-            {isLoading && <Loader />}
+            {/* Loader Logic:
+                1. Initial Cache Load (Blocking) -> Centered Spinner
+                2. Background Refresh (Non-blocking) -> Top Right Toast Loader
+            */}
+            {isLoadingCache && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm">
+                    <div className="relative flex items-center justify-center">
+                        <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {isRefreshing && <Loader text="Loading the latest coding stats..." showLoading={true} />}
 
             {/* Main Content */}
             <main className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8">
@@ -384,7 +398,7 @@ const CodingDashboard = () => {
                                                 />
                                             </div>
 
-                                            <BadgeCollection badges={getBadges(data)} />
+                                            <BadgeCollection title="badges" defaultBadgesCount={2} badges={getBadges(data)} />
 
                                             <TopicAnalysis
                                                 title="DSA Topic Analysis"
@@ -438,7 +452,7 @@ const CodingDashboard = () => {
                                             { icon: <GitPullRequest className="text-green-500" />, name: "PRs", value: data?.github?.contributions?.pullRequestContributions?.totalCount || 0 },
                                             { icon: <Ban className="text-red-500" />, name: "issues", value: data?.github?.contributions?.issueContributions?.totalCount || 0 },
                                         ]} />
-                                        <BadgeCollection title="Badges" badges={data?.github?.badges?.map((badge) => { return { icon: badge.icon, name: badge.name } })} />
+                                        <BadgeCollection title="Badges" badges={data?.github?.badges?.map((badge) => { return { icon: badge.icon, name: badge.name } })} defaultBadgesCount={2} />
                                     </>
                                 }
                             </>

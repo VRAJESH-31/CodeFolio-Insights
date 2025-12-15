@@ -250,7 +250,7 @@ const LeetCode = () => {
                                 <LeetCodeContestStats contestData={data.contestData?.userContestRanking} />
                             </div>
                             <div className="animate-float-in" style={{ animationDelay: '900ms' }}>
-                                <BadgeCollection badges={data.badges.badges} />
+                                <BadgeCollection badges={data.badges.badges} defaultBadgesCount={6} />
                             </div>
                         </div>
 

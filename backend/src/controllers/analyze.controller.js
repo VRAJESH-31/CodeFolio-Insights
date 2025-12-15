@@ -6,6 +6,7 @@ import * as leetCodeScoring from "../utils/scoring/leetcodeScore.js";
 import { getPdfContent } from "../utils/pdfUtils.js";
 import { MAX_PDF_SIZE } from "../constant/constants.js";
 import scoreModel from "../models/score.model.js";
+import handleError from '../utils/handleError.js';
 
 
 const analyzeGithub = async (req, res) => {
@@ -29,11 +30,11 @@ const analyzeGithub = async (req, res) => {
 
         userReposStat = await githubFetching.getUserRepos(username, repoCount);
 
-        starsCount = userReposStat.filter((repo)=>repo["fork"]==false).reduce((totalStars, repoData)=>totalStars+repoData["stargazers_count"], 0);
-        forksCount = userReposStat.filter((repo)=>repo["fork"]==false).reduce((totalForks, repoData)=>totalForks+repoData["forks_count"], 0);
+        starsCount = userReposStat.filter((repo) => repo["fork"] == false).reduce((totalStars, repoData) => totalStars + repoData["stargazers_count"], 0);
+        forksCount = userReposStat.filter((repo) => repo["fork"] == false).reduce((totalForks, repoData) => totalForks + repoData["forks_count"], 0);
 
         userReposLanguageStat = await Promise.all(
-            userReposStat.filter((repo)=>repo["fork"]==false).map(async (repoData) => ({
+            userReposStat.filter((repo) => repo["fork"] == false).map(async (repoData) => ({
                 repoId: repoData.id,
                 repoName: repoData.name,
                 repoUrl: repoData.html_url,
@@ -43,7 +44,7 @@ const analyzeGithub = async (req, res) => {
 
         lastYearCommitsCount = await githubFetching.getLastYearCommitsCount(username);
 
-        uniqueLanguages = Array.from(userReposLanguageStat.reduce((languages, repoLanguageStats)=>{
+        uniqueLanguages = Array.from(userReposLanguageStat.reduce((languages, repoLanguageStats) => {
             Object.keys(repoLanguageStats.languageUsedInBytes).forEach(lang => languages.add(lang));
             return languages;
         }, new Set()));
@@ -55,27 +56,27 @@ const analyzeGithub = async (req, res) => {
         const issueRequestsCount = contributionCount["issueContributions"]["totalCount"];
 
         const contributionCalendar = await githubFetching.getContributionCalendar(username);
-        const {currentStreak, maxStreak, activeDays} = await githubFetching.getUserStreak(contributionCalendar);
+        const { currentStreak, maxStreak, activeDays } = await githubFetching.getUserStreak(contributionCalendar);
         const githubContributionBadges = await githubFetching.getGithubContributionBadges(username);
 
         const commitsQualityReport = await githubFetching.getCommitsQualityReport(username);
-        const commitsQualityReportArray = Object.values(commitsQualityReport).map((commit)=>commit["rating"]);
+        const commitsQualityReportArray = Object.values(commitsQualityReport).map((commit) => commit["rating"]);
 
         const githubData = {
             userData,
-            repoCount, 
+            repoCount,
             followersCount,
             followingCount,
             pinnedRepoCount,
-            starsCount, 
+            starsCount,
             forksCount,
             lastYearCommitsCount,
             languageUsageInBytes,
-            userReposStat: userReposStat.slice(0,5),
+            userReposStat: userReposStat.slice(0, 5),
             contributionCount,
             pullRequestsCount,
             issueRequestsCount,
-            commitsQualityReport : Object.values(commitsQualityReport).slice(0,5),
+            commitsQualityReport: Object.values(commitsQualityReport).slice(0, 5),
             currentStreak,
             maxStreak,
             activeDays,
@@ -97,7 +98,7 @@ const analyzeGithub = async (req, res) => {
         const streakScore = githubScoring.getStreakScore(maxStreak, currentStreak, activeDays);
         const commitsQualityScore = githubScoring.getCommitsQualityScore(commitsQualityReportArray);
 
-        score = repoCountScore*0.1 + followersCountScore*0.025 + followingRatioScore*0.025 + languagesCountScore*0.05 + totalCommitsScore*0.1 + forksCountScore*0.1 + starsCountScore*0.1 + profileReadmeScore*0.1 + pinnedReposCountScore*0.05 + pullRequestsCountScore*0.1 + issuesCountScore*0.1 + streakScore*0.05 + commitsQualityScore*0.1;
+        score = repoCountScore * 0.1 + followersCountScore * 0.025 + followingRatioScore * 0.025 + languagesCountScore * 0.05 + totalCommitsScore * 0.1 + forksCountScore * 0.1 + starsCountScore * 0.1 + profileReadmeScore * 0.1 + pinnedReposCountScore * 0.05 + pullRequestsCountScore * 0.1 + issuesCountScore * 0.1 + streakScore * 0.05 + commitsQualityScore * 0.1;
 
         try {
             await scoreModel.create({ username: username, score: score, platform: "Github" });
@@ -107,9 +108,9 @@ const analyzeGithub = async (req, res) => {
 
         return res.status(200).json({
             score,
-            avatarUrl : userData["avatar_url"],
-            publicName : userData["name"],
-            bio : userData["bio"],
+            avatarUrl: userData["avatar_url"],
+            publicName: userData["name"],
+            bio: userData["bio"],
             email: userData["email"],
             followersCount: userData["followers"],
             followingCount: userData["following"],
@@ -130,10 +131,8 @@ const analyzeGithub = async (req, res) => {
             profileAnalysis,
         });
 
-    } catch (error){
-        console.log("Error occurred while fetching github data: ", error.message);
-        console.log(error.stack)
-        return res.status(500).json({"message" : "Couldn't retrieve user data"});
+    } catch (error) {
+        return handleError(res, error, "Couldn't retrieve user data");
     }
 }
 
@@ -149,7 +148,7 @@ const analyzeLeetCode = async (req, res) => {
         const profileInfo = await leetCodeFetching.getLeetCodeProfileInfo(username);
         const badges = await leetCodeFetching.getLeetCodeBadges(username);
         const topicWiseProblems = await leetCodeFetching.getLeetCodeTopicWiseProblems(username);
-        
+
         const acceptanceRate = problemsCount["acSubmissionNum"][0]["submissions"] / problemsCount["totalSubmissionNum"][0]["submissions"];
 
         const leetCodeData = {
@@ -161,7 +160,7 @@ const analyzeLeetCode = async (req, res) => {
             topicWiseProblems,
             acceptanceRate
         }
-        
+
         const profileAnalysis = await getLeetCodeProfileAnalysis(leetCodeData);
 
         let acceptanceRateScore = leetCodeScoring.getAcceptanceRateScore(acceptanceRate);
@@ -172,9 +171,9 @@ const analyzeLeetCode = async (req, res) => {
         let submissionConsistencyScore = leetCodeScoring.getSubmissionConsistencyScore(submissionCalendar);
         let topicWiseProblemsScore = leetCodeScoring.getTopicWiseProblemsScore(topicWiseProblems);
 
-        const contestBonus = contestScore>=95 ? 10 + Math.max(0, contestScore - 95) * 4 : 0;
+        const contestBonus = contestScore >= 95 ? 10 + Math.max(0, contestScore - 95) * 4 : 0;
 
-        score = acceptanceRateScore*0.1 + badgesScore*0.05 + submissionConsistencyScore*0.25 + contestScore*0.25 + problemsSolvedScore*0.25 + profileScore * 0.05 + topicWiseProblemsScore*0.05;
+        score = acceptanceRateScore * 0.1 + badgesScore * 0.05 + submissionConsistencyScore * 0.25 + contestScore * 0.25 + problemsSolvedScore * 0.25 + profileScore * 0.05 + topicWiseProblemsScore * 0.05;
 
         score = Math.min(100, score + contestBonus);
 
@@ -196,10 +195,8 @@ const analyzeLeetCode = async (req, res) => {
             profileAnalysis
         });
 
-    } catch (error){
-        console.log("Error occurred while fetching leetCode data: ", error.message);
-        console.log(error.stack)
-        return res.status(500).json({"message" : "Couldn't retrieve user data"});
+    } catch (error) {
+        return handleError(res, error, "Couldn't retrieve user data");
     }
 
 }
@@ -213,17 +210,17 @@ const analyzeResume = async (req, res) => {
 
         const validExperienceYearsRange = ["0 - 2 Years (New Grad)", "3 - 5 Years (Mid-Level)", "6 - 10 Years (Senior)", "10+ Years (Lead/Architect)"];
 
-        if (!file) return res.status(400).json({message: "Resume pdf not provided!"});
-        if (file.mimetype!="application/pdf") return res.status(400).json({message: "Resume should be in only pdf format!"});
-        if (file.size>MAX_PDF_SIZE) return res.status(400).json({message: `Size of resume should not surpass ${MAX_PDF_SIZE/(1024*1204)} MB!`});
-        if (!validExperienceYearsRange.includes(experienceInYears)) return res.status(400).json({message: `Invalid experience years range!`});
+        if (!file) return res.status(400).json({ message: "Resume pdf not provided!" });
+        if (file.mimetype != "application/pdf") return res.status(400).json({ message: "Resume should be in only pdf format!" });
+        if (file.size > MAX_PDF_SIZE) return res.status(400).json({ message: `Size of resume should not surpass ${MAX_PDF_SIZE / (1024 * 1204)} MB!` });
+        if (!validExperienceYearsRange.includes(experienceInYears)) return res.status(400).json({ message: `Invalid experience years range!` });
 
-        const {noOfPages, pdfText} = await getPdfContent(file.path);
-        if (noOfPages==0) return res.status(500).json({message: "Something went wrong while parsing pdf content! Try Again!"});
-        
-        const resumeAnalysis = await getResumeAnalysis({resumeContent : pdfText, experienceInYears, noOfResumePages : noOfPages, jobDescription: jobDescription});
+        const { noOfPages, pdfText } = await getPdfContent(file.path);
+        if (noOfPages == 0) return res.status(500).json({ message: "Something went wrong while parsing pdf content! Try Again!" });
 
-        if (Object.keys(resumeAnalysis).length == 0) return res.status(500).json({"message" : "Something Went Wrong while analyzing the resume"});
+        const resumeAnalysis = await getResumeAnalysis({ resumeContent: pdfText, experienceInYears, noOfResumePages: noOfPages, jobDescription: jobDescription });
+
+        if (Object.keys(resumeAnalysis).length == 0) return res.status(500).json({ "message": "Something Went Wrong while analyzing the resume" });
 
         const scoreAnalysis = resumeAnalysis["scoreAnalysis"];
 
@@ -257,10 +254,10 @@ const analyzeResume = async (req, res) => {
         const technicalSkillsScore = scoreAnalysis["section"]["technicalSkills"]["score"];
         const jobDescriptionScore = scoreAnalysis["jobDescription"]["score"];
 
-        const baseScore = (professionalismScore*resumeScoringWeights.PROFESSIONALISM + contactScore*resumeScoringWeights.CONTACT  + achievementScore*resumeScoringWeights.ACHIEVEMENT + courseworkScore*resumeScoringWeights.COURSEWORK + educationScore*resumeScoringWeights.EDUCATION + experienceScore*resumeScoringWeights.EXPERIENCE + projectsScore*resumeScoringWeights.PROJECT + technicalSkillsScore*resumeScoringWeights.TECHNICAL_SKILLS + impactScore*resumeScoringWeights.IMPACT);
+        const baseScore = (professionalismScore * resumeScoringWeights.PROFESSIONALISM + contactScore * resumeScoringWeights.CONTACT + achievementScore * resumeScoringWeights.ACHIEVEMENT + courseworkScore * resumeScoringWeights.COURSEWORK + educationScore * resumeScoringWeights.EDUCATION + experienceScore * resumeScoringWeights.EXPERIENCE + projectsScore * resumeScoringWeights.PROJECT + technicalSkillsScore * resumeScoringWeights.TECHNICAL_SKILLS + impactScore * resumeScoringWeights.IMPACT);
 
-        const scoreMultiplier = (logicalFlowScore*resumeScoringMultiplierWeights.LOGICAL_FLOW + resumeLengthScore*resumeScoringMultiplierWeights.RESUME_LENGTH) / 100;
-        const jobDescriptionMatchMultiplier = jobDescriptionScore/100;
+        const scoreMultiplier = (logicalFlowScore * resumeScoringMultiplierWeights.LOGICAL_FLOW + resumeLengthScore * resumeScoringMultiplierWeights.RESUME_LENGTH) / 100;
+        const jobDescriptionMatchMultiplier = jobDescriptionScore / 100;
 
         const score = baseScore * scoreMultiplier * jobDescriptionMatchMultiplier;
         resumeAnalysis["score"] = score;
@@ -272,12 +269,10 @@ const analyzeResume = async (req, res) => {
             console.log('Failed to save resume score:', error.message);
         }
 
-        return res.status(200).json({resumeAnalysis});
+        return res.status(200).json({ resumeAnalysis });
 
     } catch (error) {
-        console.log("Error occurred while fetching leetCode data: ", error.message);
-        console.log(error.stack)
-        return res.status(500).json({"message" : "Couldn't retrieve user data"});
+        return handleError(res, error, "Couldn't retrieve user data");
     }
 }
 

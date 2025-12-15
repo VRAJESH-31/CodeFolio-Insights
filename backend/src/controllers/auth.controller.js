@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import UserModel from "../models/user.model.js";
 import { JWT_SECRET, ENV } from '../config/config.js';
 import { generateToken } from '../utils/tokenGenerator.js';
+import handleError from '../utils/handleError.js';
 
 const signup = async (req, res) => {
     try {
@@ -28,11 +29,9 @@ const signup = async (req, res) => {
         if (userObject.googleId) delete userObject.googleId;
 
         const token = generateToken(user._id, res);
-        return res.json(201).json({user:userObject, token});
+        return res.json(201).json({ user: userObject, token });
     } catch (err) {
-        console.error(err.message);
-        console.log(err.stack);
-        res.status(500).json({ message: "Something went wrong!" });
+        handleError(res, err, "Something went wrong!");
     }
 }
 
@@ -40,7 +39,7 @@ const login = async (req, res) => {
     try {
         const { email, password } = req.body;
         let user = await UserModel.findOne({ email });
-        
+
         if (!user) return res.status(400).json({ message: 'Invalid Credentials' });
         if (!user.password) return res.status(400).json({ message: 'Authentication for this email is done by non password authentication system' });
 
@@ -52,11 +51,9 @@ const login = async (req, res) => {
         if (userObject.hasOwnProperty("googleId")) delete userObject.googleId;
 
         const token = generateToken(user._id, res);
-        return res.status(200).json({token, user : userObject});
+        return res.status(200).json({ token, user: userObject });
     } catch (err) {
-        console.error(err.message);
-        console.log(err.stack);
-        res.status(500).json({ message: "Something went wrong!" });
+        handleError(res, err, "Something went wrong!");
     }
 };
 
@@ -73,13 +70,13 @@ const logout = (req, res, next) => {
     const user = req.user;
 
     res.clearCookie("token", {
-        httpOnly : true,
-        sameSite : "Lax",
+        httpOnly: true,
+        sameSite: "Lax",
         secure: ENV == "production",
     });
 
-    if (user.hasOwnProperty("googleId")){
-        req.logout(function(err) {
+    if (user.hasOwnProperty("googleId")) {
+        req.logout(function (err) {
             if (err) return next(err);
             req.session.destroy((err) => {
                 if (err) return res.status(500).json({ message: 'Error destroying session' });
@@ -103,9 +100,7 @@ const checkAuth = async (req, res) => {
         if (!user) return res.status(401).json({ message: "Invalid token" });
         return res.status(200).json({ user: user, token: token, message: "Token validated!" });
     } catch (error) {
-        console.log("Error in checkAuth function:", error.message);
-        console.log(error.stack);
-        return res.status(404).json({ message: "Something went wrong!" });
+        return handleError(res, error, "Something went wrong!");
     }
 };
 
