@@ -37,12 +37,12 @@ const App = () => {
             <Route path="/analyzer" element={<HomeLayout />}>
                 <Route path="leetcode" element={<LeetCode />} />
                 <Route path="github" element={<GitHub />} />
-                <Route path="resume-analyse" element={<ResumeAnalyse />} />
+                <Route path="resume" element={<ResumeAnalyse />} />
             </Route>
 
             {/* Other Protected Routes (without Sidebar layout) */}
-            <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-            <Route path="/link" element={<ProtectedRoute><LinkPage /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute requiresAuthentication={true}><ProfilePage /></ProtectedRoute>} />
+            <Route path="/link" element={<ProtectedRoute requiresAuthentication={true}><LinkPage /></ProtectedRoute>} />
 
             {/* Redirect /home to /dashboard */}
             <Route path="/home" element={<Navigate to="/dashboard" replace />} />

@@ -10,7 +10,7 @@ const signup = async (req, res) => {
         const { name, email, password } = req.body;
 
         let user = await UserModel.findOne({ email });
-        if (user) return res.status(400).json({ message: 'User already exists' });
+        if (user) return res.status(400).json({ message: 'User with this email already exists' });
 
         user = new UserModel({
             name,
@@ -29,7 +29,7 @@ const signup = async (req, res) => {
         if (userObject.googleId) delete userObject.googleId;
 
         const token = generateToken(user._id, res);
-        return res.json(201).json({ user: userObject, token });
+        return res.status(201).json({ user: userObject, token });
     } catch (err) {
         handleError(res, err, "Something went wrong!");
     }
@@ -41,7 +41,7 @@ const login = async (req, res) => {
         let user = await UserModel.findOne({ email });
 
         if (!user) return res.status(400).json({ message: 'Invalid Credentials' });
-        if (!user.password) return res.status(400).json({ message: 'Authentication for this email is done by non password authentication system' });
+        if (!user.password) return res.status(400).json({ message: 'Invalid Credentials' });
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ message: 'Invalid Credentials' });

@@ -156,9 +156,6 @@ const CodingDashboard = () => {
             // Leetcode badges
             ...(data?.leetcode?.badges?.badges?.map((badge) => { return { icon: badge.icon, name: badge.displayName, subTitle: null, subTitleIcon: null } }) || []),
 
-            // Github badges
-            ...(data?.github?.badges?.map((badge) => { return { icon: badge.icon, name: badge.name, subTitle: null, subTitleIcon: null } }) || []),
-
             // Codechef badges
             ...(data?.codechef?.profile?.badges?.map((badge) => { return { icon: badge.badgeImage, name: badge.badgeTitle, subTitle: null, subTitleIcon: null } }) || []),
 

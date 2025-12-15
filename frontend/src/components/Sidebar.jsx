@@ -44,7 +44,7 @@ const Sidebar = ({ isSidebarCollapsed, activeMenu, setActiveMenu }) => {
         { name: 'Dashboard', icon: 'fa-solid fa-table-columns', path: '/dashboard', collapsedIcon: <LayoutDashboard className="w-5 h-5" /> },
         { name: 'LeetCode', icon: 'fa-solid fa-code', path: '/analyzer/leetcode', collapsedIcon: <img src="/Images/Icons/leetcode.png" alt="LeetCode" className="w-5 h-5 object-contain" /> },
         { name: 'GitHub', icon: 'fa-brands fa-github', path: '/analyzer/github', collapsedIcon: <img src="/Images/Icons/github.png" alt="GitHub" className="w-5 h-5 object-contain" /> },
-        { name: 'Resume Analysis', icon: 'fa-solid fa-file-lines', path: '/analyzer/resume-analyse', collapsedIcon: <FileUser className="w-5 h-5" /> },
+        { name: 'Resume Analysis', icon: 'fa-solid fa-file-lines', path: '/analyzer/resume', collapsedIcon: <FileUser className="w-5 h-5" /> },
     ];
 
     // Enhanced animations CSS (kept exactly as provided)

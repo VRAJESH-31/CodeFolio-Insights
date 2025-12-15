@@ -10,7 +10,6 @@ const UserSchema = new Schema({
     name: {
         type: String,
         required: true,
-        unique: true,
         trim: true,
     },
     jobTitle: {
@@ -56,13 +55,13 @@ const UserSchema = new Schema({
     },
     countryCode: {
         type: String,
-        enum: getCountries().map((code)=>getCountryCallingCode(code)),
+        enum: getCountries().map((code) => getCountryCallingCode(code)),
     },
     phone: {
         type: Number,
         length: 10,
     },
-}, {timestamps: true});
+}, { timestamps: true });
 
 const UserModel = mongoose.model('users', UserSchema);
 
