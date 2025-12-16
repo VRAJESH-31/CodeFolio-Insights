@@ -18,8 +18,8 @@ const generateToken = (userId, res) => {
     res.cookie("token", token, {
         maxAge: 15 * 24 * 60 * 60 * 1000,
         httpOnly : true,
-        sameSite : "Lax",
-        secure: ENV == "production",
+        sameSite : ENV === "production" ? "None" : "Lax",
+        secure: ENV === "production",
     })
 
     return token;

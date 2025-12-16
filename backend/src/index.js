@@ -16,6 +16,8 @@ import { createAdmin } from './utils/seed/adminSeed.js';
 
 const app = express();
 
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(bodyParser.json());
 app.use(express.json({ limit: '16mb' }));
