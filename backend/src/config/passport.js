@@ -6,7 +6,7 @@ import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from '../config/config.js';
 passport.use(new GoogleStrategy({
     clientID: GOOGLE_CLIENT_ID,
     clientSecret: GOOGLE_CLIENT_SECRET,
-    callbackURL: "/auth/google/callback"
+    callbackURL: process.env.GOOGLE_CALLBACK_URL
 },
     async (accessToken, refreshToken, profile, done) => {
         try {
