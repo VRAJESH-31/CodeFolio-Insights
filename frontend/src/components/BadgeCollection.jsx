@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Trophy, Crown, Sparkles, X } from "lucide-react";
 import BadgeCard from "./BadgeCard";
 
-const BadgeCollection = ({ badges, title = "Awards", defaultBadgesCount = 4 }) => {
+const BadgeCollection = ({ badges, title = "Awards", defaultBadgesCount = 4, className="" }) => {
     console.log(badges.length, title, defaultBadgesCount);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const displayedBadges = badges.slice(0, defaultBadgesCount);
@@ -18,7 +18,7 @@ const BadgeCollection = ({ badges, title = "Awards", defaultBadgesCount = 4 }) =
 
     return (
         <>
-            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 font-sans text-gray-800 w-full animate-float-in">
+            <div className={`bg-white p-6 rounded-xl shadow-lg border border-gray-200 font-sans text-gray-800 w-full animate-float-in ${className}`}>
 
                 {/* Header */}
                 <div className="flex flex-col mb-6">
