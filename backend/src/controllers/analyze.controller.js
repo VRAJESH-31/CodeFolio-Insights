@@ -1,6 +1,6 @@
 import * as githubScoring from "../utils/scoring/githubScore.js";
 import * as githubFetching from "../utils/fetching/githubFetch.js"
-import * as leetCodeFetching from "../utils/fetching/leetcodeFetch.js"
+import * as scrapeSpideyFetching from "../utils/fetching/scrapeSpideyFetch.js"
 import { getGithubProfileAnalysis, getLeetCodeProfileAnalysis, getResumeAnalysis } from "../utils/geminiUtils.js";
 import * as leetCodeScoring from "../utils/scoring/leetcodeScore.js";
 import { getPdfContent } from "../utils/pdfUtils.js";
@@ -142,14 +142,14 @@ const analyzeLeetCode = async (req, res) => {
         const username = req.query.username;
         let score = 0;
 
-        const problemsCount = await leetCodeFetching.getLeetCodeProblemsCount(username);
-        const submissionCalendar = await leetCodeFetching.getLeetCodeUserStreaksAndCalendar(username, new Date().getFullYear());
-        const contestData = await leetCodeFetching.getLeetCodeContestData(username);
-        const profileInfo = await leetCodeFetching.getLeetCodeProfileInfo(username);
-        const badges = await leetCodeFetching.getLeetCodeBadges(username);
-        const topicWiseProblems = await leetCodeFetching.getLeetCodeTopicWiseProblems(username);
+        const problemsCount = await scrapeSpideyFetching.fetchLeetCodeProblemsCount(username);
+        const submissionCalendar = await scrapeSpideyFetching.fetchLeetCodeUserSubmissionData(username, new Date().getFullYear());
+        const contestData = await scrapeSpideyFetching.fetchLeetCodeContestData(username);
+        const profileInfo = await scrapeSpideyFetching.fetchLeetCodeProfileData(username);
+        const badges = await scrapeSpideyFetching.fetchLeetCodeBadgesData(username);
+        const topicWiseProblems = await scrapeSpideyFetching.fetchLeetCodeTopicWiseProblemsData(username);
 
-        const acceptanceRate = problemsCount["acSubmissionNum"][0]["submissions"] / problemsCount["totalSubmissionNum"][0]["submissions"];
+        const acceptanceRate = (problemsCount?.matchedUser?.submitStats?.acSubmissionNum?.[0]?.submissions || 0) / (problemsCount?.matchedUser?.submitStats?.totalSubmissionNum?.[0]?.submissions || 1);
 
         const leetCodeData = {
             problemsCount,
@@ -164,12 +164,12 @@ const analyzeLeetCode = async (req, res) => {
         const profileAnalysis = await getLeetCodeProfileAnalysis(leetCodeData);
 
         let acceptanceRateScore = leetCodeScoring.getAcceptanceRateScore(acceptanceRate);
-        let badgesScore = leetCodeScoring.getBadgesScore(badges);
+        let badgesScore = leetCodeScoring.getBadgesScore(badges?.matchedUser);
         let contestScore = leetCodeScoring.getContestPerformanceScore(contestData);
-        let problemsSolvedScore = leetCodeScoring.getProblemsSolvedCountScore(problemsCount);
+        let problemsSolvedScore = leetCodeScoring.getProblemsSolvedCountScore(problemsCount?.matchedUser?.submitStats);
         let profileScore = leetCodeScoring.getProfileDataScore(profileInfo);
-        let submissionConsistencyScore = leetCodeScoring.getSubmissionConsistencyScore(submissionCalendar);
-        let topicWiseProblemsScore = leetCodeScoring.getTopicWiseProblemsScore(topicWiseProblems);
+        let submissionConsistencyScore = leetCodeScoring.getSubmissionConsistencyScore(submissionCalendar?.matchedUser?.userCalendar);
+        let topicWiseProblemsScore = leetCodeScoring.getTopicWiseProblemsScore(topicWiseProblems?.matchedUser?.tagProblemCounts);
 
         const contestBonus = contestScore >= 95 ? 10 + Math.max(0, contestScore - 95) * 4 : 0;
 

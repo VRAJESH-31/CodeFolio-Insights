@@ -12,7 +12,6 @@ const router = express.Router();
 router.post('/signup', signupValidation, validate, getAnalytics, signup);
 router.post('/login', loginValidation, validate, getAnalytics, login);
 router.get("/check", checkAuth);
-// router.get('/user', getCurrentUser);
 router.post('/logout', protectRoute, getAnalytics, logout);
 
 router.get('/google', 

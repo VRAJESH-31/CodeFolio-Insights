@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
-const Schema = mongoose.Schema;
 
-const ProfileSchema = new Schema({
+const ProfileSchema = new mongoose.Schema({
     userId : {
         type: mongoose.Types.ObjectId,
         ref: "users",

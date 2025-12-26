@@ -13,8 +13,12 @@ import { connectToDB } from './db.js';
 import { PORT, SESSION_SECRET, CORS_ORIGIN } from './config/config.js';
 import cookieParser from "cookie-parser";
 import { createAdmin } from './utils/seed/adminSeed.js';
+import { deleteUploads } from './utils/fileCleanup.js';
+
 
 const app = express();
+
+app.set('trust proxy', 1);
 
 // Middleware
 app.use(bodyParser.json());
@@ -52,8 +56,9 @@ app.use('/user', UserRouter);
 app.use('/analytics', AnalyticsRouter);
 app.use('/score', ScoreRouter);
 
-// Start server after DB connection & admin seeding
+
 const startServer = async () => {
+    await deleteUploads();
     await createAdmin();
     app.listen(PORT, () => {
         console.log(`✅ Server running on PORT ${PORT}`);

@@ -25,7 +25,8 @@ const getCommitAnalysis = async (commitMessages) => {
                             improvedCommitMessage: {
                                 type: Type.STRING,
                             }
-                        }
+                        },
+                        required: ["rating", "commitMessage", "improvedCommitMessage"],
                     }
                 }
             }
@@ -48,7 +49,7 @@ const getGithubProfileAnalysis = async (githubData) => {
                 analysis: This will contain a analysis on user github data like what he has done and all other stuff. 
                 strongPoints: This will be an array of 3-5 length and in each element you should try to compliment the user on the basis of data you received but remember if there's nothing to talk about then no need to sugar-clot the stuff and just provide general analysis.
                 improvementAreas: This will be an array of 3-5 length with each element being a short point that gives suggestion for improvement based on the data provided
-                suggestedVideo: This will contain a video suggestion that user will need to see to enhance his github profile. Structure of video object: {link: A link that can be used in iframe to embed youtube video component, title: title of the video, description: description of the video, time: length of the video in seconds, views: Total views of the video}
+                suggestedVideo: This will contain a video suggestion that user will need to see to enhance his github profile. Structure of video object: {link: {embed: A link that can be used in iframe to embed youtube video component, url: A link that can be used to open the video in a new tab}, title: title of the video, description: description of the video, time: length of the video in seconds, views: Total views of the video}. Remember both embed link and actual url should be real one rather than just dummy one.
             }
 
             Take care that you should not miss to return any field empty and try to align the content with respect to user data
@@ -98,7 +99,7 @@ const getLeetCodeProfileAnalysis = async (leetCodeData) => {
                 analysis: This will contain a analysis on user leetCode data like what he has done and all other stuff. 
                 strongPoints: This will be an array of 3-5 length and in each element you should try to compliment the user on the basis of data you received but remember if there's nothing to talk about then no need to sugar-clot the stuff and just provide general analysis.
                 improvementAreas: This will be an array of 3-5 length with each element being a short point that gives suggestion for improvement based on the data provided
-                suggestedVideo: This will contain a video suggestion that user will need to see to enhance his leetcode profile by up skilling his problem solving skills. Structure of video object: {link: A link that can be used in iframe to embed youtube video component, title: title of the video, description: description of the video, time: length of the video in seconds, views: Total views of the video}
+                suggestedVideo: This will contain a video suggestion that user will need to see to enhance his leetcode profile by up skilling his problem solving skills. Structure of video object: {link: { embed: A link that can be used in iframe to embed youtube video component, url: A link that can be used to open the video in a new tab}, title: title of the video, description: description of the video, time: length of the video in seconds, views: Total views of the video}. Remember both embed link and actual url should be real one rather than just dummy one.
             }
 
             Take care that you should not miss to return any field empty and try to align the content with respect to user data

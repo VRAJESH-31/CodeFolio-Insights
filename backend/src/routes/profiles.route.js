@@ -7,7 +7,7 @@ const router = Router();
 
 
 router.route("/:userId").get(optionalAuth, getAnalytics, getProfiles);
-router.route("/").patch(protectRoute, getAnalytics, updateProfiles); // Corrected to match previous logic (PATCH /)
+router.route("/").patch(protectRoute, getAnalytics, updateProfiles);
 router.route("/fetch/:userId").get(optionalAuth, getAnalytics, refreshProfileData);
 router.route("/cache/:userId").get(optionalAuth, getAnalytics, getProfileCache);
 

@@ -1,12 +1,12 @@
-import { Type} from "@google/genai";
+import { Type } from "@google/genai";
 
 const simpleAnalysisSchema = {
     type: Type.OBJECT,
     properties: {
-        score: {type: Type.INTEGER},
+        score: { type: Type.INTEGER },
         analysis: {
             type: Type.ARRAY,
-            items: {type: Type.STRING,}
+            items: { type: Type.STRING, }
         },
     },
     required: ["score", "analysis"],
@@ -15,10 +15,10 @@ const simpleAnalysisSchema = {
 const complexAnalysisSchema = {
     type: Type.OBJECT,
     properties: {
-        score: {type: Type.INTEGER},
+        score: { type: Type.INTEGER },
         analysis: {
             type: Type.ARRAY,
-            items: {type: Type.STRING,}
+            items: { type: Type.STRING, }
         },
         pointAnalysis: {
             type: Type.ARRAY,
@@ -28,13 +28,13 @@ const complexAnalysisSchema = {
                     point: {
                         type: Type.OBJECT,
                         properties: {
-                            original : {type: Type.STRING},
-                            refactored: {type: Type.STRING},
+                            original: { type: Type.STRING },
+                            refactored: { type: Type.STRING },
                         },
                         required: ["original", "refactored"],
                     },
-                    score: {type: Type.INTEGER},
-                    analysis: {type: Type.STRING},
+                    score: { type: Type.INTEGER },
+                    analysis: { type: Type.STRING },
                 },
                 required: ["point", "score", "analysis"],
             }
@@ -45,24 +45,27 @@ const complexAnalysisSchema = {
 
 const simpleListSchema = {
     type: Type.ARRAY,
-    items: {type: Type.STRING,}
+    items: { type: Type.STRING, }
 }
 
 const jobDescriptionSchema = {
-    type: simpleAnalysisSchema.type,
-    required: simpleAnalysisSchema.required,
+    type: Type.OBJECT,
     properties: {
-        ...simpleAnalysisSchema.properties,
-        isJobDescriptionGiven : {
+        score: { type: Type.INTEGER },
+        analysis: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING, }
+        },
+        isJobDescriptionGiven: {
             type: Type.BOOLEAN,
         },
         keywordsPresent: {
             type: Type.ARRAY,
-            items: {type: Type.STRING},
+            items: { type: Type.STRING },
         },
         keywordsAbsent: {
             type: Type.ARRAY,
-            items: {type: Type.STRING},
+            items: { type: Type.STRING },
         },
     },
     required: ["score", "analysis", "isJobDescriptionGiven", "keywordsPresent", "keywordsAbsent"],
@@ -72,7 +75,16 @@ const videoSchema = {
     type: Type.OBJECT,
     properties: {
         link: {
-            type: Type.STRING
+            type: Type.OBJECT,
+            properties: {
+                embed: {
+                    type: Type.STRING
+                },
+                url: {
+                    type: Type.STRING
+                },
+            },
+            required: ["embed", "url"],
         },
         title: {
             type: Type.STRING

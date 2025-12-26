@@ -1,6 +1,5 @@
 import ProfileModel from '../models/profiles.model.js';
 import mongoose from 'mongoose';
-import * as leetcodeFetching from '../utils/fetching/leetcodeFetch.js';
 import * as scrapeSpideyFetching from '../utils/fetching/scrapeSpideyFetch.js';
 import * as githubFetching from '../utils/fetching/githubFetch.js';
 import redisClient from '../config/redis.js';
@@ -102,12 +101,12 @@ const refreshProfileData = async (req, res) => {
                 profile: await scrapeSpideyFetching.fetchHackerRankUserData(profileLinks.hackerrankUsername),
             } : null,
             leetcode: profileLinks.leetCodeUsername ? {
-                profile: await leetcodeFetching.getLeetCodeProfileInfo(profileLinks.leetCodeUsername),
-                badges: await leetcodeFetching.getLeetCodeBadges(profileLinks.leetCodeUsername),
-                contest: await leetcodeFetching.getLeetCodeContestData(profileLinks.leetCodeUsername),
-                problems: await leetcodeFetching.getLeetCodeProblemsCount(profileLinks.leetCodeUsername),
-                submission: await leetcodeFetching.fetchLeetcodeUserMultiYearSubmissionData(profileLinks.leetCodeUsername),
-                topicStats: await leetcodeFetching.getLeetCodeTopicWiseProblems(profileLinks.leetCodeUsername),
+                profile: (await scrapeSpideyFetching.fetchLeetCodeProfileData(profileLinks.leetCodeUsername))?.matchedUser,
+                badges: (await scrapeSpideyFetching.fetchLeetCodeBadgesData(profileLinks.leetCodeUsername))?.matchedUser,
+                contest: await scrapeSpideyFetching.fetchLeetCodeContestData(profileLinks.leetCodeUsername),
+                problems: (await scrapeSpideyFetching.fetchLeetCodeProblemsCount(profileLinks.leetCodeUsername))?.matchedUser?.submitStats,
+                submission: await scrapeSpideyFetching.fetchLeetCodeUserMultiYearSubmissionData(profileLinks.leetCodeUsername),
+                topicStats: (await scrapeSpideyFetching.fetchLeetCodeTopicWiseProblemsData(profileLinks.leetCodeUsername))?.matchedUser?.tagProblemCounts,
             } : null,
             github: profileLinks.githubUsername ? {
                 profile: await githubFetching.getUserProfileData(profileLinks.githubUsername),

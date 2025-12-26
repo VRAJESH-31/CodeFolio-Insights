@@ -7,6 +7,6 @@ const router = express.Router();
 
 router.get("/", protectRoute, checkAdmin, getAnalytics);
 router.get("/:userId", protectRoute, checkAdmin, getPerUserAnalytics);
-router.get("/unauthenticated", protectRoute, checkAdmin, getPerUserAnalytics);
+router.get("/unauthenticated", protectRoute, checkAdmin, getUnAuthenticatedUserAnalytics);
 
 export default router;

@@ -1,9 +1,7 @@
 import mongoose from "mongoose";
 import { getCountries, getCountryCallingCode } from 'libphonenumber-js';
 
-const Schema = mongoose.Schema;
-
-const UserSchema = new Schema({
+const UserSchema = new mongoose.Schema({
     googleId: {
         type: String,
     },
