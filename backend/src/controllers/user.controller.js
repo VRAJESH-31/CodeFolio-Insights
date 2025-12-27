@@ -9,9 +9,6 @@ const getUser = async (req, res) => {
     try {
         const userId = req.params.id;
 
-        if (!userId) return res.status(200).json({ message: "User id is required!" });
-        if (!mongoose.Types.ObjectId.isValid(userId)) return res.status(400).json({ message: "Invalid user ID format." });
-
         const queriedUser = await UserModel.findById(userId).select("-googleId -password -__v");
         if (!queriedUser) return res.status(404).json({ message: "Invalid user id!" });;
 
@@ -23,7 +20,6 @@ const getUser = async (req, res) => {
 
 const getUsers = async (req, res) => {
     try {
-        const isAdmin = req.isAdmin;
         const limit = Math.min(req.query.limit || 10, 100);
         const searchQuery = req.query.searchQuery || "";
         const searchField = req.query.searchField;
@@ -33,15 +29,10 @@ const getUsers = async (req, res) => {
         let fieldQuery = {};
         let sortQuery = {};
 
-        if (!isAdmin) return res.status(403).json({ message: "You are not authorized to access this service." });
         if (searchOrder !== 1 && searchOrder !== -1) return res.status(400).json({ message: "The value of search order should be 1 or -1 only!" });
 
         if (req.query.cursor) {
-            try {
-                cursor = JSON.parse(decodeURIComponent(req.query.cursor));
-            } catch (error) {
-                return res.status(400).json({ message: "Invalid cursor format" });
-            }
+            cursor = JSON.parse(decodeURIComponent(req.query.cursor));
         }
 
         if (searchField == "createdAt") sortQuery = getSortQuery("createdAt", searchOrder);

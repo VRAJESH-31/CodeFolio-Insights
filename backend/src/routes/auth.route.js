@@ -1,16 +1,17 @@
 import express from "express";
 import passport from "passport";
 import { signup, login, logout, checkAuth } from "../controllers/auth.controller.js";
-import { signupValidation, loginValidation, validate } from "../middlewares/auth.middleware.js";
+import { signupValidationSchema, loginValidationSchema } from "../validators/auth.validate.js";
 import { getAnalytics } from "../middlewares/analytics.middleware.js";
 import { protectRoute } from "../middlewares/auth.middleware.js";
 import {CORS_ORIGIN} from "../config/config.js"
 import {generateToken} from "../utils/tokenGenerator.js"
+import { validate } from "../middlewares/validate.middleware.js";
 
 const router = express.Router();
 
-router.post('/signup', signupValidation, validate, getAnalytics, signup);
-router.post('/login', loginValidation, validate, getAnalytics, login);
+router.post('/signup', validate(signupValidationSchema), getAnalytics, signup);
+router.post('/login', validate(loginValidationSchema), getAnalytics, login);
 router.get("/check", checkAuth);
 router.post('/logout', protectRoute, getAnalytics, logout);
 

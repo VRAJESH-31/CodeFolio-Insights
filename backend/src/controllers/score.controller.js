@@ -8,8 +8,6 @@ const saveScore = async (req, res) => {
 
         const userId = user?._id;
 
-        if (!score || !platform) return res.status(400).json({ message: "score and platform both are required!" });
-
         const newScore = await scoreModel.create({
             userId,
             score,
@@ -26,7 +24,6 @@ const saveScore = async (req, res) => {
 const getPlatformScoreStats = async (req, res) => {
     try {
         const { score, platform } = req.query;
-        if (!score || !platform) return res.status(400).json({ message: "score and platform both are required!" });
 
         const equalOrLesserScore = await scoreModel.find({
             platform,
@@ -57,10 +54,6 @@ const getUserScoreHistory = async (req, res) => {
         const { platform, last, username } = req.query;
 
         const userId = user?._id;
-        if (!last) last = 10;
-
-        if (!platform) return res.status(400).json({ message: "platform is required!" });
-        if (last > 100) return res.status(400).json({ message: "You cannot access more than 100 scores" });
 
         let scoreHistory;
         if (platform == "Leetcode" || platform == "Github") {

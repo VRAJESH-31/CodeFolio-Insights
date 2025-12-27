@@ -13,7 +13,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@faker-js/faker": "^10.1.0",
     "@google/genai": "^1.20.0",
     "axios": "^1.12.2",
     "bcrypt": "^5.1.1",
@@ -24,7 +23,6 @@
     "dotenv": "^16.4.5",
     "express": "^4.21.2",
     "express-session": "^1.18.2",
-    "express-validator": "^7.0.1",
     "ioredis": "^5.8.2",
     "jsonwebtoken": "^9.0.2",
     "libphonenumber-js": "^1.12.25",
@@ -33,9 +31,11 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "pdf-parse": "^1.1.1",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "zod": "^4.2.1"
   },
   "devDependencies": {
+    "@faker-js/faker": "^10.1.0",
     "nodemon": "^3.1.10"
   }
 }

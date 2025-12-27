@@ -9,7 +9,7 @@ import ProfilesRouter from './routes/profiles.route.js';
 import UserRouter from './routes/user.route.js';
 import ScoreRouter from './routes/score.route.js';
 import AnalyticsRouter from './routes/analytics.route.js';
-import { connectToDB } from './db.js';
+import { connectToDB } from './config/db.js';
 import { PORT, SESSION_SECRET, CORS_ORIGIN } from './config/config.js';
 import cookieParser from "cookie-parser";
 import { createAdmin } from './utils/seed/adminSeed.js';
@@ -30,7 +30,7 @@ app.use(cookieParser());
 // CORS configuration (with credentials for frontend)
 app.use(
     cors({
-        origin: CORS_ORIGIN, // Your frontend URL
+        origin: CORS_ORIGIN,
         credentials: true,
     })
 );

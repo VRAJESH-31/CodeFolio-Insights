@@ -1,32 +1,7 @@
-import { check, validationResult } from 'express-validator';
 import { JWT_SECRET } from '../config/config.js';
 import UserModel from '../models/user.model.js';
 import jwt from "jsonwebtoken";
 import handleError from '../utils/handleError.js';
-
-export const signupValidation = [
-    check('name', 'Name is required').not().isEmpty(),
-    check('email', 'Please include a valid email').isEmail(),
-    check('password', 'Password must be 6 or more characters').isLength({ min: 6 })
-];
-
-export const loginValidation = [
-    check('email', 'Please include a valid email').isEmail(),
-    check('password', 'Password is required').exists()
-];
-
-export const validate = (req, res, next) => {
-    const errors = validationResult(req);
-    if (errors.isEmpty()) {
-        return next();
-    }
-    const extractedErrors = [];
-    errors.array().map(err => extractedErrors.push({ [err.path]: err.msg }));
-
-    return res.status(422).json({
-        errors: extractedErrors,
-    });
-};
 
 export const protectRoute = async (req, res, next) => {
     try {
@@ -61,8 +36,6 @@ export const optionalAuth = async (req, res, next) => {
 
         next();
     } catch (error) {
-        console.log("Error in auth middleware:", error.message);
-        console.log(error.stack);
-        next();
+        return handleError(res, error, "Internal Server Error!");
     }
 }

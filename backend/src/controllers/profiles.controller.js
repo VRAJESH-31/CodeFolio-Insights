@@ -10,9 +10,6 @@ const getProfiles = async (req, res) => {
     try {
         const userId = req.params.userId;
 
-        if (!userId) return res.status(200).json({ message: "User id is required!" });
-        if (!mongoose.Types.ObjectId.isValid(userId)) return res.status(400).json({ message: "Invalid user ID format." });
-
         const profiles = await ProfileModel.findOneAndUpdate(
             { userId: userId },
             { userId: userId },
@@ -38,9 +35,6 @@ const updateProfile = async (req, res) => {
     try {
         const user = req.user;
         const { platformName, platformUsername } = req.query;
-
-        if (!platformName || !platformUsername) return res.status(200).json({ message: "Platform name and username are required!" });
-        if (!Object.keys(platforms).includes(platformName)) return res.status(200).json({ message: "Invalid platform name!" });
 
         const platformKey = platforms[platformName].field;
 
@@ -109,7 +103,6 @@ const updateProfiles = async (req, res) => {
 const getProfileCache = async (req, res) => {
     try {
         const userId = req.params.userId;
-        if (!userId || !mongoose.Types.ObjectId.isValid(userId)) return res.status(200).json(null);
 
         const cachedDataParams = await redisClient.get(`profileData:${userId}`);
 
@@ -121,11 +114,9 @@ const getProfileCache = async (req, res) => {
     }
 }
 
-
 const refreshProfileData = async (req, res) => {
     try {
         const userId = req.params.userId;
-        if (!userId) return res.status(400).json({ message: "UserId not provided" });
 
         const profileLinks = await ProfileModel.findOne({ userId: userId });
         if (!profileLinks) return res.status(404).json({ message: "User profiles not configured." });
