@@ -1,9 +1,9 @@
 import ProfileModel from '../models/profiles.model.js';
 import mongoose from 'mongoose';
-import * as scrapeSpideyFetching from '../utils/fetching/scrapeSpideyFetch.js';
-import * as githubFetching from '../utils/fetching/githubFetch.js';
 import redisClient from '../config/redis.js';
 import handleError from '../utils/handleError.js';
+import { platforms } from '../constant/constants.js';
+import * as platformsFetching from '../utils/fetching/platformsFetch.js';
 
 
 const getProfiles = async (req, res) => {
@@ -31,6 +31,57 @@ const getProfiles = async (req, res) => {
     }
 };
 
+const updateProfile = async (req, res) => {
+
+    const session = await mongoose.startSession();
+
+    try {
+        const user = req.user;
+        const { platformName, platformUsername } = req.query;
+
+        if (!platformName || !platformUsername) return res.status(200).json({ message: "Platform name and username are required!" });
+        if (!Object.keys(platforms).includes(platformName)) return res.status(200).json({ message: "Invalid platform name!" });
+
+        const platformKey = platforms[platformName].field;
+
+        session.startTransaction();
+
+        const profile = await ProfileModel.findOneAndUpdate(
+            { userId: user._id },
+            { [platformKey]: platformUsername },
+            { new: true, upsert: true, session }
+        );
+
+        if (!profile) return res.status(500).json({ message: "Failed to update the user data." });
+
+        let mergedData = null;
+
+        if (platforms[platformName].isCodingPlatform) {
+            const profilesData = await redisClient.get(`profileData:${user._id}`);
+            const existingData = profilesData ? JSON.parse(profilesData) : {};
+
+            const platformFreshData = await platforms[platformName].fetchFunction(platformUsername);
+            if (!platformFreshData) {
+                await session.abortTransaction();
+                return res.status(200).json({ message: "Failed to fetch the user data." });
+            }
+
+            mergedData = { ...existingData };
+            mergedData[platformName] = platformFreshData;
+        }
+
+        await session.commitTransaction();
+        if (mergedData) await redisClient.set(`profileData:${user._id}`, JSON.stringify(mergedData));
+
+        return res.status(200).json(profile);
+
+    } catch (error) {
+        await session.abortTransaction();
+        return handleError(res, error, "Couldn't update user profile links");
+    } finally {
+        session.endSession();
+    }
+}
 
 const updateProfiles = async (req, res) => {
     try {
@@ -80,42 +131,13 @@ const refreshProfileData = async (req, res) => {
         if (!profileLinks) return res.status(404).json({ message: "User profiles not configured." });
 
         const freshData = {
-            gfg: profileLinks.gfgUsername ? {
-                profile: await scrapeSpideyFetching.fetchGfgUserData(profileLinks.gfgUsername),
-                submission: await scrapeSpideyFetching.fetchGfgUserMultiYearSubmissionData(profileLinks.gfgUsername),
-            } : null,
-            codechef: profileLinks.codechefUsername ? {
-                profile: await scrapeSpideyFetching.fetchCodeChefUserData(profileLinks.codechefUsername),
-                submission: await scrapeSpideyFetching.fetchCodeChefUserSubmissionData(profileLinks.codechefUsername),
-            } : null,
-            interviewbit: profileLinks.interviewbitUsername ? {
-                profile: await scrapeSpideyFetching.fetchInterviewbitUserData(profileLinks.interviewbitUsername),
-                badges: await scrapeSpideyFetching.fetchInterviewbitBadgesData(profileLinks.interviewbitUsername),
-                submission: await scrapeSpideyFetching.fetchInterviewbitUserMultiYearSubmissionData(profileLinks.interviewbitUsername),
-            } : null,
-            code360: profileLinks.code360Username ? {
-                profile: await scrapeSpideyFetching.fetchCode360UserData(profileLinks.code360Username),
-                submission: await scrapeSpideyFetching.fetchCode360UserMultiYearSubmissionData(profileLinks.code360Username),
-            } : null,
-            hackerrank: profileLinks.hackerrankUsername ? {
-                profile: await scrapeSpideyFetching.fetchHackerRankUserData(profileLinks.hackerrankUsername),
-            } : null,
-            leetcode: profileLinks.leetCodeUsername ? {
-                profile: (await scrapeSpideyFetching.fetchLeetCodeProfileData(profileLinks.leetCodeUsername))?.matchedUser,
-                badges: (await scrapeSpideyFetching.fetchLeetCodeBadgesData(profileLinks.leetCodeUsername))?.matchedUser,
-                contest: await scrapeSpideyFetching.fetchLeetCodeContestData(profileLinks.leetCodeUsername),
-                problems: (await scrapeSpideyFetching.fetchLeetCodeProblemsCount(profileLinks.leetCodeUsername))?.matchedUser?.submitStats,
-                submission: await scrapeSpideyFetching.fetchLeetCodeUserMultiYearSubmissionData(profileLinks.leetCodeUsername),
-                topicStats: (await scrapeSpideyFetching.fetchLeetCodeTopicWiseProblemsData(profileLinks.leetCodeUsername))?.matchedUser?.tagProblemCounts,
-            } : null,
-            github: profileLinks.githubUsername ? {
-                profile: await githubFetching.getUserProfileData(profileLinks.githubUsername),
-                contributions: await githubFetching.getContributionCount(profileLinks.githubUsername),
-                commits: await githubFetching.getLastYearCommitsCount(profileLinks.githubUsername),
-                calendar: await githubFetching.getContributionCalendar(profileLinks.githubUsername),
-                badges: await githubFetching.getGithubContributionBadges(profileLinks.githubUsername),
-                languageStats: await githubFetching.getUserLanguageStats(profileLinks.githubUsername)
-            } : null
+            gfg: profileLinks.gfgUsername ? await platformsFetching.fetchGfgData(profileLinks.gfgUsername) : null,
+            codechef: profileLinks.codechefUsername ? await platformsFetching.fetchCodeChefData(profileLinks.codechefUsername) : null,
+            interviewbit: profileLinks.interviewbitUsername ? await platformsFetching.fetchInterviewbitData(profileLinks.interviewbitUsername) : null,
+            code360: profileLinks.code360Username ? await platformsFetching.fetchCode360Data(profileLinks.code360Username) : null,
+            hackerrank: profileLinks.hackerrankUsername ? await platformsFetching.fetchHackerRankData(profileLinks.hackerrankUsername) : null,
+            leetcode: profileLinks.leetCodeUsername ? await platformsFetching.fetchLeetCodeData(profileLinks.leetCodeUsername) : null,
+            github: profileLinks.githubUsername ? await platformsFetching.fetchGitHubData(profileLinks.githubUsername) : null,
         };
 
         const cachedJson = await redisClient.get(`profileData:${userId}`);
@@ -123,17 +145,9 @@ const refreshProfileData = async (req, res) => {
 
         const mergedData = { ...existingData };
 
-        const platforms = ['gfg', 'codechef', 'interviewbit', 'leetcode', 'github', 'code360', 'hackerrank'];
-
-        platforms.forEach(platform => {
-            let usernameKey = "";
-            if (platform === 'gfg') usernameKey = 'gfgUsername';
-            if (platform === 'codechef') usernameKey = 'codechefUsername';
-            if (platform === 'interviewbit') usernameKey = 'interviewbitUsername';
-            if (platform === 'leetcode') usernameKey = 'leetCodeUsername';
-            if (platform === 'github') usernameKey = 'githubUsername';
-            if (platform === 'code360') usernameKey = 'code360Username';
-            if (platform === 'hackerrank') usernameKey = 'hackerrankUsername';
+        Object.keys(platforms).forEach(platform => {
+            if (!platforms[platform].isCodingPlatform) return;
+            let usernameKey = platforms[platform]?.field;
 
             if (!profileLinks[usernameKey]) {
                 mergedData[platform] = null;
@@ -173,6 +187,7 @@ const refreshProfileData = async (req, res) => {
 
 export {
     getProfiles,
+    updateProfile,
     updateProfiles,
     refreshProfileData,
     getProfileCache
