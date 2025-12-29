@@ -60,7 +60,10 @@ const getGithubProfileAnalysis = async (githubData) => {
                     type: Type.OBJECT,
                     properties: {
                         analysis : {
-                            type: Type.STRING,
+                            type: Type.ARRAY,
+                            items: {
+                                type: Type.STRING,
+                            }
                         },
                         strongPoints : {
                             type: Type.ARRAY,
@@ -110,7 +113,10 @@ const getLeetCodeProfileAnalysis = async (leetCodeData) => {
                     type: Type.OBJECT,
                     properties: {
                         analysis : {
-                            type: Type.STRING,
+                            type: Type.ARRAY,
+                            items: {
+                                type: Type.STRING,
+                            }
                         },
                         strongPoints: {
                             type: Type.ARRAY,

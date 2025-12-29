@@ -1,5 +1,3 @@
-import React from 'react';
-
 const ContestAchievements = ({ achievements }) => {
     if (!achievements || achievements.length === 0) {
         return null;
@@ -19,7 +17,13 @@ const ContestAchievements = ({ achievements }) => {
                         <div className="flex items-center justify-between w-full px-4 max-w-xs">
                             {/* Badge */}
                             <div className="flex-shrink-0">
-                                {item.achievementBadge}
+                                {item.badgeUrl && (
+                                    <img
+                                        src={item.badgeUrl}
+                                        alt={`${item.platform} Badge`}
+                                        className={`w-28 h-28 object-contain ${item.isDefaultBadge ? 'opacity-25 grayscale' : ''}`}
+                                    />
+                                )}
                             </div>
 
                             {/* Rating & Details */}

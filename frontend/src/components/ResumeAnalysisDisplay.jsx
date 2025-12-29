@@ -1,55 +1,15 @@
 import { UploadCloud, FileText, TrendingUp, Target, Shield, CheckCircle, Sparkles, AlertCircle, TrendingDown, ChevronDown, ChevronUp } from 'lucide-react';
-import {v4 as uuid} from 'uuid';
+import { v4 as uuid } from 'uuid';
 import { useState } from 'react';
-
-import ScoreMeter from './ScoreMeter';
-import MemeContainer from './MemeContainer';
-import AnalysisCard from './AnalysisCard';
-import StatCard from './StatCard';
-
-const getScoreColorName = (score) => {
-    if (score >= 80) return "green";
-    if (score >= 60) return "blue";
-    if (score >= 40) return "yellow";
-    return "red";
-};
-
-const mapScoreAnalysisToStats = (scoreAnalysis) => {
-    const metrics = [
-        { key: 'resumeLength', title: 'Length Score', icon: FileText },
-        { key: 'impact', title: 'Impact Score', icon: TrendingUp },
-        { key: 'professionalism', title: 'Professionalism', icon: Shield },
-        { key: 'logicalFlow', title: 'Logical Flow', icon: CheckCircle },
-    ];
-
-    return metrics.map((metric, index) => {
-        const score = scoreAnalysis[metric.key].score;
-        return {
-            icon: metric.icon,
-            title: metric.title,
-            value: `${score}`,
-            color: getScoreColorName(score),
-            delay: (index + 1) * 150,
-        }
-    });
-};
+import { ScoreMeter, MemeContainer } from './export.js';
+import { AnalysisCard } from './card/export.js';
+import { getMemeForScore } from '../utils/meme.js';
 
 const ResumeAnalysisDisplay = ({ resumeAnalysis, onUploadAgain }) => {
     const overallScore = resumeAnalysis.score;
-    
-    const getScoreColorClasses = (score) => {
-        if (score >= 80) return 'from-green-500 to-emerald-600 shadow-green-200';
-        if (score >= 60) return 'from-blue-500 to-cyan-600 shadow-blue-200';
-        if (score >= 40) return 'from-amber-500 to-orange-500 shadow-amber-200';
-        return 'from-red-500 to-rose-600 shadow-red-200';
-    }
 
-    const getSectionGradient = (score) => {
-        if (score >= 80) return 'bg-gradient-to-br from-green-50/80 to-emerald-100/60 border-green-200';
-        if (score >= 60) return 'bg-gradient-to-br from-blue-50/80 to-cyan-100/60 border-blue-200';
-        if (score >= 40) return 'bg-gradient-to-br from-amber-50/80 to-orange-100/60 border-amber-200';
-        return 'bg-gradient-to-br from-rose-50/80 to-red-100/60 border-rose-200';
-    }
+    const getScoreColorClasses = (score) => getMemeForScore(score).scoreClasses;
+    const getSectionGradient = (score) => getMemeForScore(score).gradient;
 
     const [pointAnalysisVisibility, setPointAnalysisVisibility] = useState({});
 
@@ -93,9 +53,10 @@ const ResumeAnalysisDisplay = ({ resumeAnalysis, onUploadAgain }) => {
                             <h2 className="text-2xl font-black text-gray-800 mb-2">Overall Resume Score</h2>
                             <p className="text-gray-600">Based on comprehensive AI analysis</p>
                         </div>
+
                         <ScoreMeter score={overallScore} />
                     </div>
-                    
+
                     {/* Meme Container Card */}
                     <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/60 p-6 hover:shadow-2xl transition-all duration-500">
                         <MemeContainer score={overallScore} />
@@ -104,11 +65,11 @@ const ResumeAnalysisDisplay = ({ resumeAnalysis, onUploadAgain }) => {
 
                 {/* Analysis Cards Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <AnalysisCard 
-                        title="Strengths" 
-                        points={resumeAnalysis?.strengths} 
-                        Icon={TrendingUp} 
-                        PointIcon={CheckCircle} 
+                    <AnalysisCard
+                        title="Strengths"
+                        points={resumeAnalysis?.strengths}
+                        Icon={TrendingUp}
+                        PointIcon={CheckCircle}
                         className='bg-gradient-to-br from-blue-50/80 via-white to-cyan-50/80 border-blue-200/60 backdrop-blur-sm'
                         iconBg="bg-blue-100/80"
                         iconColor="text-blue-600"
@@ -116,23 +77,23 @@ const ResumeAnalysisDisplay = ({ resumeAnalysis, onUploadAgain }) => {
                         pointColor="text-blue-800"
                     />
 
-                    <AnalysisCard 
-                        title="Weaknesses" 
-                        points={resumeAnalysis?.weaknesses} 
-                        Icon={TrendingDown} 
-                        PointIcon={AlertCircle} 
+                    <AnalysisCard
+                        title="Weaknesses"
+                        points={resumeAnalysis?.weaknesses}
+                        Icon={TrendingDown}
+                        PointIcon={AlertCircle}
                         className='bg-gradient-to-br from-amber-50/80 via-white to-orange-50/80 border-amber-200/60 backdrop-blur-sm'
                         iconBg="bg-amber-100/80"
                         iconColor="text-amber-600"
                         pointIconColor="text-amber-500"
                         pointColor="text-amber-800"
                     />
-                    
-                    <AnalysisCard 
-                        title="Improvement Areas" 
-                        points={resumeAnalysis?.improvements} 
-                        Icon={Target} 
-                        PointIcon={CheckCircle} 
+
+                    <AnalysisCard
+                        title="Improvement Areas"
+                        points={resumeAnalysis?.improvements}
+                        Icon={Target}
+                        PointIcon={CheckCircle}
                         className='bg-gradient-to-br from-green-50/80 via-white to-cyan-50/80 border-green-200/60 backdrop-blur-sm md:col-span-2'
                         iconBg="bg-green-100/80"
                         iconColor="text-green-600"
@@ -142,7 +103,7 @@ const ResumeAnalysisDisplay = ({ resumeAnalysis, onUploadAgain }) => {
                 </div>
 
                 {/* Resume Structure Deep Dive */}
-                <div className="pt-4 space-y-6">    
+                <div className="pt-4 space-y-6">
                     <div className="text-center mb-8">
                         <h2 className="text-3xl font-black bg-gradient-to-r from-gray-800 to-purple-700 bg-clip-text text-transparent">
                             Resume Structure Deep Dive
@@ -151,7 +112,7 @@ const ResumeAnalysisDisplay = ({ resumeAnalysis, onUploadAgain }) => {
                     </div>
                     {Object.keys(resumeAnalysis.scoreAnalysis).map((sectionKey) => {
                         const section = resumeAnalysis.scoreAnalysis[sectionKey];
-                        
+
                         if (sectionKey === 'section' || sectionKey === 'jobDescription') return null;
 
                         return (
@@ -166,7 +127,7 @@ const ResumeAnalysisDisplay = ({ resumeAnalysis, onUploadAgain }) => {
                                 </div>
                                 <ul className="space-y-3 text-gray-700">
                                     {section.analysis.map((line, lineIndex) => (
-                                        <li key={lineIndex} className="flex items-start gap-3 p-3 bg-white/50 rounded-xl backdrop-blur-sm">
+                                        !!line.trim() && <li key={lineIndex} className="flex items-start gap-3 p-3 bg-white/50 rounded-xl backdrop-blur-sm">
                                             <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
                                             <span className="leading-relaxed">{line}</span>
                                         </li>
@@ -211,7 +172,7 @@ const ResumeAnalysisDisplay = ({ resumeAnalysis, onUploadAgain }) => {
                                 {/* Enhanced Point Analysis Section */}
                                 {section.pointAnalysis && (
                                     <div className="mt-6 pt-6 border-t border-white/50 space-y-4">
-                                        <button 
+                                        <button
                                             onClick={() => togglePointAnalysis(sectionKey)}
                                             className="w-full flex justify-between items-center p-4 bg-white/60 rounded-2xl backdrop-blur-sm hover:bg-white/80 transition-all duration-300 group"
                                         >
@@ -227,8 +188,8 @@ const ResumeAnalysisDisplay = ({ resumeAnalysis, onUploadAgain }) => {
                                                 </div>
                                             </div>
                                             <div className="p-2 bg-white rounded-full shadow-lg">
-                                                {isPointAnalysisVisible ? 
-                                                    <ChevronUp className="h-5 w-5 text-purple-600" /> : 
+                                                {isPointAnalysisVisible ?
+                                                    <ChevronUp className="h-5 w-5 text-purple-600" /> :
                                                     <ChevronDown className="h-5 w-5 text-purple-600" />
                                                 }
                                             </div>
@@ -247,7 +208,7 @@ const ResumeAnalysisDisplay = ({ resumeAnalysis, onUploadAgain }) => {
                                                         <p className="text-gray-800 italic mb-4 p-3 bg-gray-50 rounded-lg border-l-4 border-blue-300">
                                                             {pointData.point.original}
                                                         </p>
-                                                        
+
                                                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4 border-t border-gray-200">
                                                             <div>
                                                                 <div className="flex items-center gap-2 mb-2">

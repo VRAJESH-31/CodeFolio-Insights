@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import ContestGraph from './ContestGraph';
+import { useState, useEffect } from 'react';
+import { ContestGraph } from './charts/export.js';
 
 const Contest = ({ data }) => {
     const platforms = Object.keys(data || {});
@@ -16,20 +16,16 @@ const Contest = ({ data }) => {
     }
 
     const currentContestData = data[selectedPlatform] || [];
-
-    // Calculate total contests across all platforms
     const totalContests = Object.values(data || {}).reduce((acc, curr) => acc + (curr?.length || 0), 0);
 
     return (
         <div className="w-full">
             <div className="bg-white rounded-xl p-6 mb-6 flex flex-col md:flex-row items-stretch shadow-lg border border-gray-200">
-                {/* Left Side: Total Contests */}
                 <div className="flex flex-col items-center justify-center w-full md:w-1/2 mb-6 md:mb-0 md:border-r border-gray-100 p-4">
                     <span className="text-gray-500 text-sm font-semibold uppercase tracking-wider mb-1">Total Contests</span>
                     <span className="text-gray-900 text-5xl font-black tracking-tight">{totalContests}</span>
                 </div>
 
-                {/* Right Side: Platform List */}
                 <div className="flex flex-col justify-center gap-3 w-full md:w-1/2 p-4">
                     {platforms.map((platform) => {
                         const count = data[platform]?.length || 0;
@@ -53,13 +49,6 @@ const Contest = ({ data }) => {
                     })}
                 </div>
             </div>
-
-            {/* Render Guidelines/Image Placeholder if needed? 
-                User said "render the image provided and Contest.jsx". 
-                "Contest.jsx" is this component. 
-                "Render the image provided" might refer to a specific layout requirement.
-                Since I don't have a new image, I will focus on the ContestGraph wrapper.
-            */}
 
             <ContestGraph contestData={currentContestData} />
         </div>

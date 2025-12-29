@@ -1,36 +1,14 @@
-import axiosInstance from "../api/axiosInstance.js"
-import {useMutation, useQuery} from "@tanstack/react-query"
-
-const throwAxiosError = (error) => {
-    const errorMessage = error.response?.data?.message || error.message || 'An unknown API error occurred.';
-    throw new Error(errorMessage);
-};
-
-// LeetCode function
-const getLeetcodeAnalysis = async (username) => {
-    try {
-        const response = await axiosInstance.get(`/analyze/leetcode?username=${username}`);
-        return response.data;
-    } catch (error){ // Corrected: (error) is defined
-        throwAxiosError(error);
-    }
-}
-
-// GitHub function
-const getGithubAnalysis = async (username) => {
-    try {
-        const response = await axiosInstance.get(`/analyze/github?username=${username}`);
-        return response.data;
-    } catch (error){ // Corrected: (error) is defined
-        throwAxiosError(error);
-    }
-}
+import { axiosInstance, asyncWrapper } from "../api/export.js";
+import { useMutation, useQuery } from "@tanstack/react-query"
 
 // LeetCode hook
 export const useLeetcodeAnalysis = (username) => {
     return useQuery({
         queryKey: ["leetcodeData", username],
-        queryFn: () => getLeetcodeAnalysis(username),
+        queryFn: asyncWrapper(async () => {
+            const response = await axiosInstance.get(`/analyze/leetcode?username=${username}`);
+            return response.data;
+        }),
         enabled: false, // prevents auto-fetch until Analyze is clicked
         retry: false,
     });
@@ -40,8 +18,25 @@ export const useLeetcodeAnalysis = (username) => {
 export const useGithubAnalysis = (username) => {
     return useQuery({
         queryKey: ["githubData", username],
-        queryFn: () => getGithubAnalysis(username),
+        queryFn: asyncWrapper(async () => {
+            const response = await axiosInstance.get(`/analyze/github?username=${username}`);
+            return response.data;
+        }),
         enabled: false, // Prevents auto-fetch until Analyze is clicked
         retry: false,
+    });
+}
+
+// Resume hook
+export const useResumeAnalysis = () => {
+    return useMutation({
+        mutationFn: asyncWrapper(async (formData) => {
+            const response = await axiosInstance.post("/analyze/resume", formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            return response.data;
+        }),
     });
 }

@@ -1,21 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import {
-    BarChart2,
-    PlayCircle,
-    ArrowRight,
-    RefreshCcw,
-    MoreHorizontal,
-    Code2,
-    Brain,
-    Github,
-    Linkedin,
-    Users,
-    CheckCircle,
-    FileText,
-    LayoutDashboard,
-    Sparkles,
-} from "lucide-react";
+import { BarChart2, PlayCircle, ArrowRight, RefreshCcw, MoreHorizontal, Code2, Brain, Github, Linkedin, CheckCircle, FileText, LayoutDashboard, Sparkles } from "lucide-react";
 
 // Custom hook to detect if an element is in the viewport
 const useOnScreen = (options) => {
