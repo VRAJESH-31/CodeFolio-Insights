@@ -2,13 +2,7 @@ import z from "zod";
 
 const objectIdRegex = /^[0-9a-fA-F]{24}$/;
 
-const getUserValidationSchema = z.object({
-    params: z.object({
-        id: z.string({ message: "User id is required!" }).regex(objectIdRegex, "Invalid user ID format.")
-    })
-});
-
-const getUsersValidationSchema = z.object({
+const usersQueryValidationSchema = z.object({
     query: z.object({
         limit: z.string().optional().transform(v => parseInt(v) || 10),
         searchQuery: z.string().optional(),
@@ -18,7 +12,7 @@ const getUsersValidationSchema = z.object({
     })
 });
 
-const updateUserInfoValidationSchema = z.object({
+const userInfoUpdateValidationSchema = z.object({
     body: z.object({
         name: z.string().min(3, "Name must be at least 3 characters long").optional(),
     }).passthrough()
@@ -31,16 +25,22 @@ const changePasswordValidationSchema = z.object({
     })
 });
 
-const addProfileViewValidationSchema = z.object({
+const userIdValidationSchema = z.object({
     params: z.object({
         userId: z.string({ message: "User id is required!" }).regex(objectIdRegex, "Invalid user ID format.")
     })
 });
 
+const usernameValidationSchema = z.object({
+    query: z.object({
+        username: z.string({ message: "Username is required!" }).min(1, "Username cannot be empty")
+    })
+});
+
 export {
-    getUserValidationSchema,
-    getUsersValidationSchema,
-    updateUserInfoValidationSchema,
+    usersQueryValidationSchema,
+    userInfoUpdateValidationSchema,
     changePasswordValidationSchema,
-    addProfileViewValidationSchema
+    userIdValidationSchema,
+    usernameValidationSchema
 }

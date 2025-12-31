@@ -59,6 +59,22 @@ const UserSchema = new mongoose.Schema({
         type: Number,
         length: 10,
     },
+    linkedinUsername: {
+        type: String,
+        default: "",
+    },
+    twitterUsername: {
+        type: String,
+        default: "",
+    },
+    portfolioWebsiteLink: {
+        type: String,
+        default: "",
+    },
+    resumeLink: {
+        type: String,
+        default: "",
+    },
 }, { timestamps: true });
 
 const UserModel = mongoose.model('users', UserSchema);

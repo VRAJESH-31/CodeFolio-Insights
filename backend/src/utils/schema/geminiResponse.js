@@ -75,16 +75,7 @@ const videoSchema = {
     type: Type.OBJECT,
     properties: {
         link: {
-            type: Type.OBJECT,
-            properties: {
-                embed: {
-                    type: Type.STRING
-                },
-                url: {
-                    type: Type.STRING
-                },
-            },
-            required: ["embed", "url"],
+            type: Type.STRING
         },
         title: {
             type: Type.STRING

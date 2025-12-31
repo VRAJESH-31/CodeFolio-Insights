@@ -12,20 +12,6 @@ const resumeAnalyzerValidationSchema = z.object({
         .refine((file) => file?.size <= MAX_PDF_SIZE, { message: `Size of resume should not surpass ${MAX_PDF_SIZE / (1024 * 1024)} MB!` }),
 });
 
-const githubAnalyzerValidationSchema = z.object({
-    query: z.object({
-        username: z.string({ message: "Username is required!" }).min(1, "Username cannot be empty")
-    })
-});
-
-const leetcodeAnalyzerValidationSchema = z.object({
-    query: z.object({
-        username: z.string({ message: "Username is required!" }).min(1, "Username cannot be empty")
-    })
-});
-
 export {
     resumeAnalyzerValidationSchema,
-    githubAnalyzerValidationSchema,
-    leetcodeAnalyzerValidationSchema
 }

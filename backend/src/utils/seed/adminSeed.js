@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 
 const createAdmin = async () => {
     try {
-        const admin = await UserModel.findOne({isAdmin: true});
+        const admin = await UserModel.findOne({email: ADMIN_EMAIL});
 
         if (admin){
             console.log("Admin already exists");

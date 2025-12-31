@@ -78,17 +78,23 @@ const getPinnedReposCountScore = (pinnedReposCount) => {
 }
 
 // NOTE: getProfileReadmeScore is an async function and requires the githubAPI import to work
-const getProfileReadmeScore = async (username) => {
-    try {
-        const profileReadmeResponse = await githubAPI.get(`/repos/${username}/${username}/readme`);
-        const profileReadmeData = profileReadmeResponse.data;
-        // Check for 'url' existence which is present if a README file is found
-        const value = ("url" in profileReadmeData) ? 100 : 0;
-        return value;
-    } catch (error) {
-        // Returns 0 if the API call fails (i.e., README not found)
-        return 0;
+const getProfileReadmeScore = async (profileReadme) => {
+    if (!profileReadme) return 0;
+    return 100;
+}
+
+const getPinnedReposScore = (pinnedRepos) => {
+    let score = 0;
+    for (let i=0; i<pinnedRepos.length; i++){
+        const pinnedRepo = pinnedRepos[i];
+        let repoScore = 0;
+
+        if (pinnedRepo.description) repoScore = repoScore + 10;
+        if (pinnedRepo.readmeFile) repoScore = repoScore + 90;
+        if (pinnedRepo?.repositoryTopics?.nodes) repoScore = repoScore + 10*Math.min(1, pinnedRepo?.repositoryTopics?.nodes.length/10);
+        score = score + repoScore/6;
     }
+    return Math.min(100, score);
 }
 
 const getStreakScore = (maxStreak, currentStreak, activeDays) => {
@@ -127,4 +133,5 @@ export {
     getIssuesCountScore,
     getStreakScore,
     getCommitsQualityScore,
+    getPinnedReposScore,
 }

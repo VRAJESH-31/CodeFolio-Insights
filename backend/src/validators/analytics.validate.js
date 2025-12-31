@@ -1,30 +1,20 @@
 import z from "zod";
 
-const objectIdRegex = /^[0-9a-fA-F]{24}$/;
-
-const getAnalyticsValidationSchema = z.object({
+const analyticsValidationSchemas = z.object({
     query: z.object({
-        interval: z.string().optional().transform(v => parseInt(v) || 24 * 60 * 60 * 1000)
-    })
-});
-
-const getPerUserAnalyticsValidationSchema = z.object({
-    params: z.object({
-        userId: z.string({ message: "User id is required!" }).regex(objectIdRegex, "Invalid user ID format.")
-    }),
-    query: z.object({
-        interval: z.string().optional().transform(v => parseInt(v) || 24 * 60 * 60 * 1000)
-    })
-});
-
-const getUnAuthenticatedUserAnalyticsValidationSchema = z.object({
-    query: z.object({
-        interval: z.string().optional().transform(v => parseInt(v) || 24 * 60 * 60 * 1000)
+        startTime: z.string().optional().transform(v => {
+            if (!v) return new Date(Date.now() - 24 * 60 * 60 * 1000);
+            const num = Number(v);
+            return isNaN(num) ? new Date(v) : new Date(num);
+        }),
+        endTime: z.string().optional().transform(v => {
+            if (!v) return new Date();
+            const num = Number(v);
+            return isNaN(num) ? new Date(v) : new Date(num);
+        }),
     })
 });
 
 export {
-    getAnalyticsValidationSchema,
-    getPerUserAnalyticsValidationSchema,
-    getUnAuthenticatedUserAnalyticsValidationSchema
+    analyticsValidationSchemas,
 }

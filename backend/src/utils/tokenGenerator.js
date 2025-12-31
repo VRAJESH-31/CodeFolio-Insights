@@ -25,6 +25,16 @@ const generateToken = (userId, res) => {
     return token;
 }
 
+const deleteToken = (res) => {
+    res.cookie("token", "", {
+        maxAge: 1,
+        httpOnly : true,
+        sameSite : ENV === "production" ? "None" : "Lax",
+        secure: ENV === "production",
+    })
+}
+
 export {
     generateToken,
+    deleteToken,
 }
