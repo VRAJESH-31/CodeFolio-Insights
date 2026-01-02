@@ -7,7 +7,9 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "seed:users": "node src/utils/seed/userSeed.js $1"
+    "seed:users": "node src/utils/seed/userSeed.js $1",
+    "test:githubScore": "node -r dotenv/config src/tests/githubScore.test.js",
+    "test:leetcodeScore": "node -r dotenv/config src/tests/leetcodeScore.test.js"
   },
   "keywords": [],
   "author": "",

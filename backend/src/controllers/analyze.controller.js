@@ -1,19 +1,14 @@
-import * as githubScoring from "../utils/scoring/githubScore.js";
-import * as githubFetching from "../utils/fetching/githubFetch.js"
-import * as scrapeSpideyFetching from "../utils/fetching/scrapeSpideyFetch.js"
-import { getGithubProfileAnalysis, getLeetCodeProfileAnalysis, getResumeAnalysis } from "../utils/geminiUtils.js";
-import * as leetCodeScoring from "../utils/scoring/leetcodeScore.js";
 import { getPdfContent } from "../utils/pdfUtils.js";
 import scoreModel from "../models/score.model.js";
 import redisClient from "../config/redis.js";
 import asyncHandler from '../utils/asyncHandler.js';
-import { getStreaksAndActiveDays } from "../utils/calendar.js";
-import { getScoreComparison } from "../utils/score.js";
+import { getScoreComparison, savePlatformScore } from "../utils/score.js";
+import { getAnalysisGithubData, getAnalysisLeetCodeData, getGithubScore, getLeetCodeScore } from "../services/analyze.service.js";
+import { getGithubProfileAnalysis, getLeetCodeProfileAnalysis, getResumeAnalysis } from "../utils/geminiUtils.js";
 
 
 const analyzeGithub = asyncHandler(async (req, res) => {
     const username = req.query.username;
-    let score = 0;
 
 
     // Checking if data is cached
@@ -22,81 +17,35 @@ const analyzeGithub = asyncHandler(async (req, res) => {
 
 
     // Data Fetching
-    const userData = await githubFetching.getUserProfileData(username);
-    if (!userData) return res.status(404).json({ message: "User not found" });
-
-    const [{ starsCount, forksCount }, pinnedRepos, lastYearContributionStats, contributionCalendar, contributionCount, profileReadme, contributionBadges, languageStats] = await Promise.all([
-        githubFetching.getUserStarsAndForks(username),
-        githubFetching.getGithubPinnedRepos(username),
-        githubFetching.getLastYearContributionCalendar(username),
-        githubFetching.getMultiYearContributionCalendar(username, new Date(userData.created_at).getFullYear(), new Date().getFullYear()),
-        githubFetching.getMultiYearContributionCount(username, new Date(userData.created_at).getFullYear(), new Date().getFullYear()),
-        githubFetching.getProfileReadme(username),
-        githubFetching.getGithubContributionBadges(username),
-        githubFetching.getUserLanguageStats(username)
-    ]);
-
-    const {currentStreak, maxStreak, activeDays, totalContributions} = getStreaksAndActiveDays(contributionCalendar);
-
-
-    // Getting Analysis on some commits to calculate commits quality score
-    const commitAnalysis = await githubFetching.getCommitsQualityReport(username);
-    const commitsQualityReport = Object.values(commitAnalysis).map((commit) => commit["rating"]);
+    const githubData = await getAnalysisGithubData(username);
+    if (!githubData) return res.status(404).json({ message: "User not found" });
 
 
     // Scoring
-    const repoCountScore = githubScoring.getRepoCountScore(userData.public_repos);
-    const followersCountScore = githubScoring.getFollowersCountScore(userData.followers);
-    const followingRatioScore = githubScoring.getFollowingRatioScore(userData.followers, userData.following);
-    const languagesCountScore = githubScoring.getLanguagesCountScore(Object.entries(languageStats).length);
-    const totalCommitsScore = githubScoring.getTotalCommitsScore(contributionCount.commitsCount);
-    const pullRequestsCountScore = githubScoring.getPullRequestsCountScore(contributionCount.pullRequestsCount);
-    const issuesCountScore = githubScoring.getIssuesCountScore(contributionCount.issuesCount);
-    const forksCountScore = githubScoring.getForksCountScore(forksCount);
-    const starsCountScore = githubScoring.getStarsCountScore(starsCount);
-    const profileReadmeScore = await githubScoring.getProfileReadmeScore(profileReadme);
-    const pinnedReposScore = githubScoring.getPinnedReposScore(pinnedRepos);
-    const streakScore = githubScoring.getStreakScore(maxStreak, currentStreak, activeDays);
-    const commitsQualityScore = githubScoring.getCommitsQualityScore(commitsQualityReport);
-
-    score = repoCountScore * 0.1 + followersCountScore * 0.025 + followingRatioScore * 0.025 + languagesCountScore * 0.05 + totalCommitsScore * 0.1 + forksCountScore * 0.1 + starsCountScore * 0.1 + profileReadmeScore * 0.1 + pinnedReposScore * 0.05 + pullRequestsCountScore * 0.1 + issuesCountScore * 0.1 + streakScore * 0.05 + commitsQualityScore * 0.1;
-
-    const scoreData = {
-        overall: score,
-        parameterWise: { repoCountScore, followersCountScore, followingRatioScore, languagesCountScore, totalCommitsScore, forksCountScore, starsCountScore, profileReadmeScore, pinnedReposScore, pullRequestsCountScore, issuesCountScore, streakScore, commitsQualityScore }
-    }
+    const scoreData = await getGithubScore(githubData);
 
 
     // Getting AI Analysis on Github Data
-    const githubAnalysisContext = { userData, starsCount, forksCount, pinnedRepos, lastYearContributionStats, contributionCount, profileReadme, contributionBadges, languageStats, currentStreak, maxStreak, activeDays, totalContributions, commitAnalysis, scoreData }
-
+    const githubAnalysisContext = { ...githubData, scoreData }
     const profileAnalysis = await getGithubProfileAnalysis(githubAnalysisContext);
 
 
     // Saving Score and comparing with the existing score
-    try {
-        await scoreModel.create({ username: username, score: score, platform: "Github" });
-    } catch (error) {
-        console.log('Failed to save github score:', error.message);
-        console.log(error.stack);
-    }
-
-    const scoreComparison = await getScoreComparison(score, "Github");
+    await savePlatformScore(scoreData.overall, "Github", username);
+    const scoreComparison = await getScoreComparison(scoreData.overall, "Github");
 
 
     // Returning the response and saving it in cache
     const response = { ...githubAnalysisContext, profileAnalysis, scoreData, scoreComparison }
-
     await redisClient.set(`profileAnalysis:github:${username}`, JSON.stringify(response), "EX", 10 * 60);
 
     return res.status(200).json(response);
-    
+
 });
 
 
 const analyzeLeetCode = asyncHandler(async (req, res) => {
     const username = req.query.username;
-    let score = 0;
 
 
     // Checking if data is cached
@@ -105,55 +54,27 @@ const analyzeLeetCode = asyncHandler(async (req, res) => {
 
 
     // LeetCode Data Fetching
-    const problemsCount = await scrapeSpideyFetching.fetchLeetCodeProblemsCount(username);
-    const submissionCalendar = await scrapeSpideyFetching.fetchLeetCodeUserSubmissionData(username, new Date().getFullYear());
-    const contestData = await scrapeSpideyFetching.fetchLeetCodeContestData(username);
-    const profileInfo = await scrapeSpideyFetching.fetchLeetCodeProfileData(username);
-    const badges = await scrapeSpideyFetching.fetchLeetCodeBadgesData(username);
-    const topicWiseProblems = await scrapeSpideyFetching.fetchLeetCodeTopicWiseProblemsData(username);
-
-    const acceptanceRate = (problemsCount?.matchedUser?.submitStats?.acSubmissionNum?.[0]?.submissions || 0) / (problemsCount?.matchedUser?.submitStats?.totalSubmissionNum?.[0]?.submissions || 1);
+    const leetCodeData = await getAnalysisLeetCodeData(username);
+    if (!leetCodeData) return res.status(404).json({ message: "User not found" });
 
 
     // Scoring
-    let acceptanceRateScore = leetCodeScoring.getAcceptanceRateScore(acceptanceRate);
-    let badgesScore = leetCodeScoring.getBadgesScore(badges?.matchedUser);
-    let contestScore = leetCodeScoring.getContestPerformanceScore(contestData);
-    let problemsSolvedScore = leetCodeScoring.getProblemsSolvedCountScore(problemsCount?.matchedUser?.submitStats);
-    let profileScore = leetCodeScoring.getProfileDataScore(profileInfo);
-    let submissionConsistencyScore = leetCodeScoring.getSubmissionConsistencyScore(submissionCalendar?.matchedUser?.userCalendar);
-    let topicWiseProblemsScore = leetCodeScoring.getTopicWiseProblemsScore(topicWiseProblems?.matchedUser?.tagProblemCounts);
-
-    score = acceptanceRateScore * 0.1 + badgesScore * 0.05 + submissionConsistencyScore * 0.25 + contestScore * 0.25 + problemsSolvedScore * 0.25 + profileScore * 0.05 + topicWiseProblemsScore * 0.05;
-
-    const contestBonus = contestScore >= 95 ? 10 + Math.max(0, contestScore - 95) * 4 : 0;
-
-    score = Math.min(100, score + contestBonus);
-
-    const scoreData = { 
-        overall: score, 
-        parameterWise: { acceptanceRateScore, badgesScore, contestScore, problemsSolvedScore, profileScore, submissionConsistencyScore, topicWiseProblemsScore } 
-    };
+    const scoreData = await getLeetCodeScore(leetCodeData);
 
 
     // Getting AI Analysis on LeetCode Data
-    const leetCodeAnalysisContext = { problemsCount, submissionCalendar, contestData, profileInfo, badges, topicWiseProblems, acceptanceRate, scoreData };
+    const leetCodeAnalysisContext = { ...leetCodeData, scoreData };
+    delete leetCodeAnalysisContext.multiYearSubmissionCalendar;
     const profileAnalysis = await getLeetCodeProfileAnalysis(leetCodeAnalysisContext);
 
 
     // Saving Score and comparing with the existing score
-    try {
-        await scoreModel.create({ username: username, score: score, platform: "Leetcode" });
-    } catch (error) {
-        console.log('Failed to save leetcode score:', error.message);
-    }
-
-    const scoreComparison = await getScoreComparison(score, "Leetcode");
+    await savePlatformScore(scoreData.overall, "Leetcode", username);
+    const scoreComparison = await getScoreComparison(scoreData.overall, "Leetcode");
 
 
     // Returning the response and saving it in cache
-    const response = { ...leetCodeAnalysisContext, profileAnalysis, scoreData, scoreComparison }
-
+    const response = { ...leetCodeData, profileAnalysis, scoreData, scoreComparison }
     await redisClient.set(`profileAnalysis:leetcode:${username}`, JSON.stringify(response), "EX", 10 * 60);
 
     return res.status(200).json(response);

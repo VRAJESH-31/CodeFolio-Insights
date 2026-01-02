@@ -45,27 +45,11 @@ const getCommitsPerRepo = async (reponame, username) => {
     return commitCount;
 }
 
-const getPinnedReposCount = async (username) => {
-    const query = GITHUB_API_QUERIES.GITHUB_TOTAL_PINNED_REPO_COUNT_QUERY;
-    const pinnedRepoData = await githubGraphQlQuery(query, { username });
-    if (pinnedRepoData == null) return 0;
-    return pinnedRepoData["data"]["user"]["pinnedItems"]["totalCount"];
-}
-
 const getGithubPinnedRepos = async (username) => {
     const query = GITHUB_API_QUERIES.GITHUB_PINNED_REPOS_QUERY;
     const pinnedRepoData = await githubGraphQlQuery(query, { username });
     if (pinnedRepoData == null || pinnedRepoData["data"]["user"]["pinnedItems"]["nodes"] == null) return [];
     return pinnedRepoData["data"]["user"]["pinnedItems"]["nodes"];
-}
-
-const getContributionCount = async (username) => {
-
-    const query = GITHUB_API_QUERIES.GITHUB_CONTRIBUTION_COUNT_QUERY;
-
-    const contributionCountData = await githubGraphQlQuery(query, { username });
-    if (contributionCountData == null) return null;
-    return contributionCountData["data"]["user"]["contributionsCollection"];
 }
 
 const getYearlyContributionCount = async (username, year) => {
@@ -76,7 +60,7 @@ const getYearlyContributionCount = async (username, year) => {
 }
 
 const getMultiYearContributionCount = async (username, startYear, endYear) => {
-    let contributionCount = {pullRequestsCount: 0, issuesCount: 0, commitsCount: 0, pullRequestReviewsCount: 0, repositoriesCount: 0, restrictedCount: 0};
+    let contributionCount = {pullRequestsCount: 0, issuesCount: 0, commitsCount: 0, pullRequestReviewsCount: 0, repositoriesCount: 0, restrictedCintributionCount: 0};
     for (let year = startYear; year <= endYear; year++) {
         const yearlyContributions = await getYearlyContributionCount(username, year);
         contributionCount.pullRequestsCount = contributionCount.pullRequestsCount + yearlyContributions?.pullRequestContributions?.totalCount;
@@ -84,16 +68,9 @@ const getMultiYearContributionCount = async (username, startYear, endYear) => {
         contributionCount.commitsCount = contributionCount.commitsCount + yearlyContributions?.totalCommitContributions;
         contributionCount.pullRequestReviewsCount = contributionCount.pullRequestReviewsCount + yearlyContributions?.pullRequestReviewContributions?.totalCount;
         contributionCount.repositoriesCount = contributionCount.repositoriesCount + yearlyContributions?.repositoryContributions?.totalCount;
-        contributionCount.restrictedCount = contributionCount.restrictedCount + yearlyContributions?.restrictedContributionsCount;
+        contributionCount.restrictedCintributionCount = contributionCount.restrictedCintributionCount + yearlyContributions?.restrictedContributionsCount;
     }
     return contributionCount;
-}
-
-const getContributionCalendar = async (username) => {
-    const query = GITHUB_API_QUERIES.GITHUB_YEARLY_CONTRIBUTION_CALENDAR_QUERY;
-    const contributionCalendarData = await githubGraphQlQuery(query, { username });
-    if (contributionCalendarData == null) return {};
-    else return getPolishedGithubHeatmap(contributionCalendarData["data"]["user"]["contributionsCollection"]["contributionCalendar"]["weeks"]);
 }
 
 const getLastYearContributionCalendar = async (username) => {
@@ -118,29 +95,6 @@ const getMultiYearContributionCalendar = async (username, startYear, endYear) =>
     return contributionCalendar;
 }
 
-const getUserStreak = async (contributionCalendar) => {
-
-    let currentStreak = 0;
-    let maxStreak = 0;
-    let activeDays = 0;
-
-    for (let i = 0; i < contributionCalendar.length; i++) {
-        const week = contributionCalendar[i];
-        for (let day = 0; day < week["contributionDays"].length; day++) {
-            let dailyContributions = week["contributionDays"][day]["contributionCount"];
-            if (dailyContributions == 0) {
-                currentStreak = 0;
-            } else {
-                currentStreak++;
-                activeDays++;
-                maxStreak = Math.max(maxStreak, currentStreak);
-            }
-        }
-    }
-
-    return { currentStreak, maxStreak, activeDays };
-}
-
 const getUserRepos = async (username, repoCount) => {
 
     let userReposStat = [];
@@ -158,37 +112,6 @@ const getUserRepos = async (username, repoCount) => {
     return userReposStat;
 }
 
-const getRepoLanguages = async (username, repoName) => {
-    const data = await githubRestApiQuery(`/repos/${username}/${repoName}/languages`);
-    if (data == null) return {};
-    return data;
-}
-
-const getLastYearCommitsCount = async (username) => {
-    const query = GITHUB_API_QUERIES.GITHUB_LAST_YEAR_COMMITS_COUNT_QUERY;
-    const lastYearCommitsData = await githubGraphQlQuery(query, { username });
-    if (lastYearCommitsData == null) return 0;
-    return lastYearCommitsData["data"]["user"]["contributionsCollection"]["contributionCalendar"]["totalContributions"];
-}
-
-const getLanguageUsageStats = (uniqueLanguages, userReposLanguageStat) => {
-
-    let languageUsage = {};
-    const languageUsagePerRepos = userReposLanguageStat.map((repo) => repo["languageUsedInBytes"]);
-
-    for (let language of uniqueLanguages) {
-        languageUsage[language] = 0;
-    }
-
-    for (let i = 0; i < languageUsagePerRepos.length; i++) {
-        for (let language in languageUsagePerRepos[i]) {
-            languageUsage[language] = languageUsage[language] + languageUsagePerRepos[i][language];
-        }
-    }
-
-    return languageUsage;
-}
-
 const getGithubContributionBadges = async (username) => {
     try {
         const githubBadgesResponse = await scrapeSpideyAPI.get(`/api/v1/github/user/badges?user=${username}&apiKey=${SCRAPE_SPIDEY_API_KEY}`);
@@ -204,6 +127,12 @@ const getGithubContributionBadges = async (username) => {
     }
 }
 
+const getRepoLanguages = async (username, repoName) => {
+    const data = await githubRestApiQuery(`/repos/${username}/${repoName}/languages`);
+    if (data == null) return {};
+    return data;
+}
+
 const getUserLanguageStats = async (username) => {
     try {
         const userData = await getUserProfileData(username);
@@ -211,21 +140,18 @@ const getUserLanguageStats = async (username) => {
 
         const userReposStat = await getUserRepos(username, repoCount);
 
-        const userReposLanguageStat = await Promise.all(
-            userReposStat.map(async (repoData) => ({
-                repoId: repoData.id,
-                repoName: repoData.name,
-                repoUrl: repoData.html_url,
-                languageUsedInBytes: await getRepoLanguages(username, repoData.name),
-            }))
+        const userReposLanguageStats = await Promise.all(
+            userReposStat.map((repoData) => getRepoLanguages(username, repoData.name))
         );
 
-        const uniqueLanguages = Array.from(userReposLanguageStat.reduce((languages, repoLanguageStats) => {
-            Object.keys(repoLanguageStats.languageUsedInBytes).forEach(lang => languages.add(lang));
-            return languages;
-        }, new Set()));
+        const languageUsageInBytes = {};
 
-        const languageUsageInBytes = getLanguageUsageStats(uniqueLanguages, userReposLanguageStat);
+        for (let i=0; i<userReposLanguageStats.length; i++){
+            Object.keys(userReposLanguageStats[i]).forEach((language)=>{
+                languageUsageInBytes[language] = (languageUsageInBytes[language] || 0) + userReposLanguageStats[i][language];
+            })
+        }
+
         return languageUsageInBytes;
     } catch (error) {
         console.log("Error occurred while fetching github language stats: ", error.message);
@@ -243,7 +169,7 @@ const getProfileReadme = async (username) => {
 
 const getUserStarsAndForks = async (username) => {
     let starsCount = 0, forksCount = 0;
-    const repoCount = await getUserProfileData(username)?.public_repos;
+    const repoCount = (await getUserProfileData(username))?.public_repos;
     
     for (let i = 0; i < Math.ceil(repoCount / PAGE_SIZE); i++) {
         const userRepoData = await githubRestApiQuery(`/users/${username}/repos?per_page=${PAGE_SIZE}&page=${i + 1}`);
@@ -264,16 +190,10 @@ export {
     PAGE_SIZE,
     TOTAL_COMMITS_LIMIT,
     getCommitsPerRepo,
-    getPinnedReposCount,
-    getContributionCount,
-    getUserStreak,
     getUserProfileData,
     getUserRepos,
     getRepoLanguages,
-    getLastYearCommitsCount,
     getCommitsQualityReport,
-    getContributionCalendar,
-    getLanguageUsageStats,
     getGithubContributionBadges,
     getUserLanguageStats,
     getProfileReadme,
