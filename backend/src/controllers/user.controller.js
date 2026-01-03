@@ -4,23 +4,29 @@ import bcrypt from "bcrypt";
 import { getSearchQuery, getSortQuery } from "../utils/query/userQuery.js"
 import asyncHandler from '../utils/asyncHandler.js';
 import ProfileViewModel from "../models/profileView.model.js";
+import { ENV } from "../config/config.js";
 
 const getUser = asyncHandler(async (req, res) => {
     const userId = req.params.userId;
     const viewerId = req.user._id;
-    const viewerIp = req.ip;
+    const viewerDeviceToken = req.cookies.deviceToken;
+    const viewerSignedDeviceToken = req.signedCookies.deviceToken;
+    let newDeviceToken = null;
 
-    const userViewerProfileViewCount = await ProfileViewModel.findOne({ viewerId, viewerIp, vieweeId: userId });
+    if (viewerDeviceToken && !viewerSignedDeviceToken){ 
+        console.log("Invalid device token!");
+        return;
+    }
+    
+    newDeviceToken = await addProfileView(userId, viewerId, viewerDeviceToken);
 
-    if (userViewerProfileViewCount) {
-        if (userViewerProfileViewCount.lastSeenAt.getTime() + 10 * 60 * 1000 < new Date().getTime()) {
-            userViewerProfileViewCount.count += 1;
-            userViewerProfileViewCount.lastSeenAt = new Date();
-            await userViewerProfileViewCount.save();
-        }
-    } else {
-        const profileView = new ProfileViewModel({ viewerId, viewerIp, vieweeId: userId });
-        await profileView.save();
+    if (newDeviceToken){
+        res.cookie("deviceToken", newDeviceToken, {
+            signed: true,
+            httpOnly: true,
+            secure: ENV !== "development",
+            sameSite: ENV === "development" ? "lax" : "strict",
+        });
     }
 
     const queriedUser = await UserModel.findById(userId).select("-googleId -password");

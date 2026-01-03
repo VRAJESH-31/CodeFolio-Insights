@@ -44,10 +44,6 @@ const UserSchema = new mongoose.Schema({
         type: Date,
         default: Date.now(),
     },
-    profileViews: {
-        type: Number,
-        default: 0,
-    },
     location: {
         type: String,
     },

@@ -1,10 +1,10 @@
 import { getPdfContent } from "../utils/pdfUtils.js";
-import scoreModel from "../models/score.model.js";
 import redisClient from "../config/redis.js";
 import asyncHandler from '../utils/asyncHandler.js';
-import { getScoreComparison, savePlatformScore } from "../utils/score.js";
+import { getScoreComparison, savePlatformScore } from "../services/score.servive.js";
 import { getAnalysisGithubData, getAnalysisLeetCodeData, getGithubScore, getLeetCodeScore } from "../services/analyze.service.js";
 import { getGithubProfileAnalysis, getLeetCodeProfileAnalysis, getResumeAnalysis } from "../utils/geminiUtils.js";
+import scoreModel from "../models/score.model.js";
 
 
 const analyzeGithub = asyncHandler(async (req, res) => {
@@ -23,6 +23,7 @@ const analyzeGithub = asyncHandler(async (req, res) => {
 
     // Scoring
     const scoreData = await getGithubScore(githubData);
+    if (!scoreData) return res.status(400).json({ message: "Something went wrong while scoring github data! Try Again!" });
 
 
     // Getting AI Analysis on Github Data
@@ -60,6 +61,7 @@ const analyzeLeetCode = asyncHandler(async (req, res) => {
 
     // Scoring
     const scoreData = await getLeetCodeScore(leetCodeData);
+    if (!scoreData) return res.status(400).json({ message: "Something went wrong while scoring leetcode data! Try Again!" });
 
 
     // Getting AI Analysis on LeetCode Data
@@ -148,7 +150,6 @@ const analyzeResume = asyncHandler(async (req, res) => {
     } catch (error) {
         console.log('Failed to save resume score:', error.message);
     }
-
     const scoreComparison = await getScoreComparison(score, platform);
 
     return res.status(200).json({ resumeAnalysis, scoreComparison });

@@ -1,7 +1,7 @@
 import { githubGraphQlQuery, githubRestApiQuery, scrapeSpideyAPI } from "../../api/axiosInstance.js";
 import { getCommitAnalysis } from "../geminiUtils.js";
 import { SCRAPE_SPIDEY_API_KEY } from "../../config/config.js";
-import { GITHUB_API_QUERIES } from "../../constant/constants.js";
+import { GITHUB_API_QUERIES } from "../../constant/index.js";
 import { getPolishedGithubHeatmap } from "../../utils/calendar.js";
 
 const PAGE_SIZE = 100;
@@ -60,7 +60,7 @@ const getYearlyContributionCount = async (username, year) => {
 }
 
 const getMultiYearContributionCount = async (username, startYear, endYear) => {
-    let contributionCount = {pullRequestsCount: 0, issuesCount: 0, commitsCount: 0, pullRequestReviewsCount: 0, repositoriesCount: 0, restrictedCintributionCount: 0};
+    let contributionCount = { pullRequestsCount: 0, issuesCount: 0, commitsCount: 0, pullRequestReviewsCount: 0, repositoriesCount: 0, restrictedCintributionCount: 0 };
     for (let year = startYear; year <= endYear; year++) {
         const yearlyContributions = await getYearlyContributionCount(username, year);
         contributionCount.pullRequestsCount = contributionCount.pullRequestsCount + yearlyContributions?.pullRequestContributions?.totalCount;
@@ -146,8 +146,8 @@ const getUserLanguageStats = async (username) => {
 
         const languageUsageInBytes = {};
 
-        for (let i=0; i<userReposLanguageStats.length; i++){
-            Object.keys(userReposLanguageStats[i]).forEach((language)=>{
+        for (let i = 0; i < userReposLanguageStats.length; i++) {
+            Object.keys(userReposLanguageStats[i]).forEach((language) => {
                 languageUsageInBytes[language] = (languageUsageInBytes[language] || 0) + userReposLanguageStats[i][language];
             })
         }
@@ -170,7 +170,7 @@ const getProfileReadme = async (username) => {
 const getUserStarsAndForks = async (username) => {
     let starsCount = 0, forksCount = 0;
     const repoCount = (await getUserProfileData(username))?.public_repos;
-    
+
     for (let i = 0; i < Math.ceil(repoCount / PAGE_SIZE); i++) {
         const userRepoData = await githubRestApiQuery(`/users/${username}/repos?per_page=${PAGE_SIZE}&page=${i + 1}`);
         if (userRepoData != null) {

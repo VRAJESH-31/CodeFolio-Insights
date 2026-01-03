@@ -1,19 +1,22 @@
 import mongoose from "mongoose";
 
 const profileViewSchema = new mongoose.Schema({
-    viewerIp : {
-        type: String,
-        required: true,
-    },
     viewerId: {
         type: mongoose.Types.ObjectId,
         ref: "users",
-        required: true,
+    },
+    viewerDeviceToken: {
+        type: String,
     },
     vieweeId: {
         type: mongoose.Types.ObjectId,
         ref: "users",
         required: true,
+    },
+    viewerType: {
+        type: String,
+        enum: ["user", "guest"],
+        default: "guest",
     },
     lastSeenAt: {
         type: Date,

@@ -8,8 +8,7 @@ import { TOTAL_COMMITS_LIMIT } from "../fetching/githubFetch.js";
 const getRepoCountScore = (repoCount) => {
     // Logarithmic: Harder to max out, maxes around 50 repos (log10(51) is approx 1.7)
     // Scale: 100 * log10(C+1) / 2 
-    const cappedCount = Math.min(repoCount, 50);
-    const value = 100 * (Math.log10(cappedCount + 1) / 2);
+    const value = 100 * (Math.log10(repoCount + 1) / 2);
     return Math.min(100, value);
 }
 
@@ -31,7 +30,7 @@ const getFollowingRatioScore = (followersCount, followingCount) => {
 const getLanguagesCountScore = (languagesCount) => {
     // Combination of Linear and Logarithmic (log10) for diminishing returns on language hopping
     // Formula: 10 * C + 20 * log10(C+1)
-    const value = 10 * languagesCount + 20 * Math.log10(languagesCount + 1);
+    const value = 10 * languagesCount + 10 * Math.log10(languagesCount + 1);
     return Math.min(100, value);
 }
 
@@ -83,7 +82,20 @@ const getProfileReadmeScore = (profileReadme) => {
 }
 
 const getPinnedReposScore = (pinnedRepos) => {
-    let score = (pinnedRepos.length / 6) * 100;
+    let score = 0;
+
+    for (let i = 0; i < pinnedRepos.length; i++) {
+        const pinnedRepo = pinnedRepos[i];
+        let pinnedRepoScore = 50;
+        
+        if (pinnedRepo.readmeFile) pinnedRepoScore = pinnedRepoScore + 30;
+        if (pinnedRepo.description) pinnedRepoScore = pinnedRepoScore + 5;
+        if (pinnedRepo.license) pinnedRepoScore = pinnedRepoScore + 10;
+        if (pinnedRepo.repositoryTopics?.nodes) pinnedRepoScore = pinnedRepoScore + (Math.min(pinnedRepo.repositoryTopics?.nodes.length, 10))/2;
+
+        score += pinnedRepoScore/6;
+    }
+
     return Math.min(100, score);
 }
 

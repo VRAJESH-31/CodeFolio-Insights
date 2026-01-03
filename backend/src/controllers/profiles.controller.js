@@ -3,7 +3,7 @@ import UserModel from '../models/user.model.js';
 import mongoose from 'mongoose';
 import redisClient from '../config/redis.js';
 import asyncHandler from '../utils/asyncHandler.js';
-import { PLATFORMS } from '../constant/constants.js';
+import { PLATFORMS } from '../constant/index.js';
 import * as platformsFetching from '../utils/fetching/platformsFetch.js';
 
 
