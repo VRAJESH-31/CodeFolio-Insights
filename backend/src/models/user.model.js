@@ -1,9 +1,7 @@
 import mongoose from "mongoose";
 import { getCountries, getCountryCallingCode } from 'libphonenumber-js';
 
-const Schema = mongoose.Schema;
-
-const UserSchema = new Schema({
+const UserSchema = new mongoose.Schema({
     googleId: {
         type: String,
     },
@@ -13,7 +11,7 @@ const UserSchema = new Schema({
         trim: true,
     },
     jobTitle: {
-        String,
+        type: String,
     },
     email: {
         type: String,
@@ -44,11 +42,7 @@ const UserSchema = new Schema({
     },
     lastRefresh: {
         type: Date,
-        default: Date.now(),
-    },
-    profileViews: {
-        type: Number,
-        default: 0,
+        default: Date.now,
     },
     location: {
         type: String,
@@ -60,6 +54,22 @@ const UserSchema = new Schema({
     phone: {
         type: Number,
         length: 10,
+    },
+    linkedinUsername: {
+        type: String,
+        default: "",
+    },
+    twitterUsername: {
+        type: String,
+        default: "",
+    },
+    portfolioWebsiteLink: {
+        type: String,
+        default: "",
+    },
+    resumeLink: {
+        type: String,
+        default: "",
     },
 }, { timestamps: true });
 

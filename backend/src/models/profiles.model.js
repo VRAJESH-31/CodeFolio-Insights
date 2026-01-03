@@ -1,27 +1,10 @@
 import mongoose from "mongoose";
-const Schema = mongoose.Schema;
 
-const ProfileSchema = new Schema({
-    userId : {
+const ProfileSchema = new mongoose.Schema({
+    userId: {
         type: mongoose.Types.ObjectId,
         ref: "users",
-        require: true,
-    },
-    linkedinUsername : {
-        type: String,
-        default: "",
-    },
-    twitterUsername : {
-        type: String,
-        default: "",
-    },
-    portfolioWebsiteLink: {
-        type: String,
-        default: "",
-    },
-    resumeLink: {
-        type: String,
-        default: "",
+        required: true,
     },
     githubUsername : {
         type: String,
@@ -55,7 +38,7 @@ const ProfileSchema = new Schema({
         type: String,
         default: "",
     }
-}, {timestamps: true});
+}, { timestamps: true });
 
 const ProfileModel = mongoose.model('profiles', ProfileSchema);
 
