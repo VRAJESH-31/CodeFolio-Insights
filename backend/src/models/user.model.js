@@ -11,7 +11,7 @@ const UserSchema = new mongoose.Schema({
         trim: true,
     },
     jobTitle: {
-        String,
+        type: String,
     },
     email: {
         type: String,
@@ -42,7 +42,7 @@ const UserSchema = new mongoose.Schema({
     },
     lastRefresh: {
         type: Date,
-        default: Date.now(),
+        default: Date.now,
     },
     location: {
         type: String,

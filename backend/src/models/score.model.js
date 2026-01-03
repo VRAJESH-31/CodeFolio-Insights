@@ -10,13 +10,13 @@ const scoreSchema = new mongoose.Schema({
     },
     score: {
         type: Number,
-        require: true,
+        required: true,
         min: 0,
         max: 100,
     },
     platform: {
         type: String,
-        require: true,
+        required: true,
         enum: ["Leetcode", "Github", "Generic Resume", "Resume with JD"],
     },
 }, {timestamps: true});

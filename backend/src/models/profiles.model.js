@@ -4,7 +4,7 @@ const ProfileSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Types.ObjectId,
         ref: "users",
-        require: true,
+        required: true,
     },
     githubUsername : {
         type: String,
