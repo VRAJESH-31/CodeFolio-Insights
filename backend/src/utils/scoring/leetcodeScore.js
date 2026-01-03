@@ -1,3 +1,5 @@
+import { getStreaksAndActiveDays } from "../calendar.js";
+
 // Natural logarithm (ln) is Math.log()
 
 const getProblemsSolvedCountScore = (problemsCount) => {
@@ -12,17 +14,12 @@ const getProblemsSolvedCountScore = (problemsCount) => {
     
     // 2. Ratio scores (Kept Linear/Ratio)
     // Avoid division by zero if totalProblemsSolved is 0
-    const mediumProblemsRatioScore = (totalProblemsSolved === 0) 
-        ? 0 
-        : Math.min(100, (mediumProblemsSolved / (0.5 * totalProblemsSolved)) * 100);
-        
-    const hardProblemsRatioScore = (totalProblemsSolved === 0) 
-        ? 0 
-        : Math.min(100, (hardProblemsSolved / (0.3 * totalProblemsSolved)) * 100);
+    const mediumProblemsRatioScore = (totalProblemsSolved === 0) ? 0 : Math.min(100, (mediumProblemsSolved / (0.5 * totalProblemsSolved)) * 100);
+    const hardProblemsRatioScore = (totalProblemsSolved === 0) ? 0 : Math.min(100, (hardProblemsSolved / (0.3 * totalProblemsSolved)) * 100);
 
     // 3. Final Score Combination with Cubic Root Scaling on the main component
     // Logarithmic/Non-linear scaling: Math.cbrt is the cube root function
-    const scaledCodingScore = Math.min(100, Math.cbrt(codingScore) * 25); 
+    const scaledCodingScore = Math.min(100, Math.cbrt(codingScore) * 5); 
 
     // Final score weights remain the same
     const score = scaledCodingScore * 0.7 + mediumProblemsRatioScore * 0.2 + hardProblemsRatioScore * 0.1;
@@ -32,37 +29,43 @@ const getProblemsSolvedCountScore = (problemsCount) => {
 
 const getAcceptanceRateScore = (acceptanceRate) => {
     // Acceptance rate is already a ratio (0-100), so linear is appropriate.
-    return acceptanceRate;
+    return Math.min(100, acceptanceRate*100);
 }
 
 const getContestPerformanceScore = (contestData) => {
-
     if (!contestData) return 0;
 
     const contestGiven = contestData.userContestRanking?.attendedContestsCount || 0;
+    if (contestGiven == 0) return 0;
+
     const contestTopPercentage = contestData.userContestRanking?.topPercentage || 100;
 
-    // Logarithmic Scaling for Contest Count (ln)
-    // Formula: 40 * ln(C+1) -> Needs ~22 attended contests to hit 100
-    const contestCountScore = Math.min(100, 40 * Math.log(contestGiven + 1));
+    // 1. Logarithmic Scaling for Volume (unchanged)
+    const contestCountScore = Math.min(100, 25 * Math.log(contestGiven + 1));
     
-    // Contest Rating is relative to elite performance, so linear is appropriate.
-    const contestRatingScore = 100 - Math.floor(contestTopPercentage);
+    // 2. Non-Linear Rating Score
+    // Using an exponential-style curve: 100 * (0.97 ^ topPercentage)
+    // This creates a steep difference at the top.
+    const contestRatingScore = Math.max(0, 100 * Math.pow(0.97, contestTopPercentage));
     
-    const score = contestCountScore * 0.2 + contestRatingScore * 0.8
+    const score = Math.max(contestRatingScore, (contestCountScore * 0.2) + (contestRatingScore * 0.8));
 
-    return Math.min(100, score);
+    return Math.round(Math.min(100, score));
 }
 
 const getSubmissionConsistencyScore = (submissionCalendarData) => {
 
+    const { currentStreak, maxStreak, activeDays } = getStreaksAndActiveDays(submissionCalendarData);
+
     // Logarithmic Scaling for Streak (ln)
     // Formula: 40 * ln(C+1) -> Makes long streaks difficult to improve score
-    const streakScore = Math.min(100, 40 * Math.log(submissionCalendarData["streak"] + 1));
+    const currentStreakScore = Math.min(100, 20 * Math.log(currentStreak + 1));
+    const maxStreakScore = Math.min(100, 20 * Math.log(maxStreak + 1));
+    const streakScore = currentStreakScore*0.2 + maxStreakScore*0.8;
     
     // Logarithmic Scaling for Active Days (ln)
     // Formula: 25 * ln(C+1) -> Heavily rewards first year, slows down significantly after
-    const submissionScore = Math.min(100, 25 * Math.log(submissionCalendarData["totalActiveDays"] + 1));
+    const submissionScore = Math.min(100, 15 * Math.log(activeDays + 1));
     
     const score = streakScore * 0.3 + submissionScore * 0.7;
 
@@ -72,7 +75,12 @@ const getSubmissionConsistencyScore = (submissionCalendarData) => {
 const getBadgesScore = (badgesData) => {
     // Kept Linear: Badges are a discrete achievement metric.
     let score = Math.min(badgesData["badges"].length * 10, 100);
-    if (badgesData["contestBadge"]) score = score + 50; // Bonus for a contest-related badge
+
+    const contestBadge = badgesData["badges"].filter(badge => badge["category"] === "COMPETITION");
+    if (contestBadge) {
+        if (contestBadge.name === "Guardian") score = score + 100;
+        else score = score + 50;
+    }
 
     return Math.min(100, score);
 }

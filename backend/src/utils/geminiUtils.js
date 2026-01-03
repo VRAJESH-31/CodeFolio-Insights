@@ -1,8 +1,9 @@
-import { GoogleGenAI, Type} from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 import { GEMINI_API_KEY } from "../config/config.js";
 import { complexAnalysisSchema, simpleAnalysisSchema, simpleListSchema, jobDescriptionSchema, videoSchema } from "./schema/geminiResponse.js";
+import { VIDEOS } from "../constant/index.js";
 
-const ai = new GoogleGenAI({apiKey : GEMINI_API_KEY});
+const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 const getCommitAnalysis = async (commitMessages) => {
     try {
@@ -15,17 +16,18 @@ const getCommitAnalysis = async (commitMessages) => {
                     type: Type.ARRAY,
                     items: {
                         type: Type.OBJECT,
-                        properties : {
+                        properties: {
                             rating: {
                                 type: Type.INTEGER,
                             },
-                            commitMessage : {
+                            commitMessage: {
                                 type: Type.STRING,
                             },
                             improvedCommitMessage: {
                                 type: Type.STRING,
                             }
-                        }
+                        },
+                        required: ["rating", "commitMessage", "improvedCommitMessage"],
                     }
                 }
             }
@@ -45,33 +47,34 @@ const getGithubProfileAnalysis = async (githubData) => {
             model: "gemini-2.5-flash",
             contents: `You will be given an object which will contain a lot of user github data and you need to return an object :
             {
-                analysis: This will contain a analysis on user github data like what he has done and all other stuff. 
+                analysis: This will contain an array of 4-5 points of deep analysis on user github data like what he has done and all other stuff. 
                 strongPoints: This will be an array of 3-5 length and in each element you should try to compliment the user on the basis of data you received but remember if there's nothing to talk about then no need to sugar-clot the stuff and just provide general analysis.
                 improvementAreas: This will be an array of 3-5 length with each element being a short point that gives suggestion for improvement based on the data provided
-                suggestedVideo: This will contain a video suggestion that user will need to see to enhance his github profile. Structure of video object: {link: A link that can be used in iframe to embed youtube video component, title: title of the video, description: description of the video, time: length of the video in seconds, views: Total views of the video}
+                suggestedVideo: This will contain a video suggestion that user will need to see to enhance his github profile. Choose the most suitable video from the list of videos provided to you. Structure of video object: {link: A link to the video, title: title of the video, description: description of the video, time: length of the video in seconds, views: Total views of the video}. Remember both embed link and actual url should be real one rather than just dummy one.
             }
 
             Take care that you should not miss to return any field empty and try to align the content with respect to user data
             
+            Videos : ${JSON.stringify(VIDEOS.GITHUB)}
             Github Data: ${JSON.stringify(githubData)}`,
             config: {
                 responseMimeType: "application/json",
                 responseSchema: {
                     type: Type.OBJECT,
                     properties: {
-                        analysis : {
+                        analysis: {
                             type: Type.ARRAY,
                             items: {
                                 type: Type.STRING,
                             }
                         },
-                        strongPoints : {
+                        strongPoints: {
                             type: Type.ARRAY,
                             items: {
                                 type: Type.STRING,
                             }
                         },
-                        improvementAreas : {
+                        improvementAreas: {
                             type: Type.ARRAY,
                             items: {
                                 type: Type.STRING,
@@ -85,7 +88,7 @@ const getGithubProfileAnalysis = async (githubData) => {
         });
 
         return JSON.parse(response['candidates'][0]["content"]["parts"][0]["text"]);
-    } catch (error){
+    } catch (error) {
         console.log("Error Occurred while getting github profile analysis in geminiResponse.js", error.message);
         console.log(error.stack);
         return {};
@@ -98,21 +101,22 @@ const getLeetCodeProfileAnalysis = async (leetCodeData) => {
             model: "gemini-2.5-flash",
             contents: `You will be given an object which will contain a lot of user leetCode data and you need to return an object :
             {
-                analysis: This will contain a analysis on user leetCode data like what he has done and all other stuff. 
+                analysis: This will be an array of 4-5 points of deep analysis on user leetCode data like what he has done and all other stuff. 
                 strongPoints: This will be an array of 3-5 length and in each element you should try to compliment the user on the basis of data you received but remember if there's nothing to talk about then no need to sugar-clot the stuff and just provide general analysis.
                 improvementAreas: This will be an array of 3-5 length with each element being a short point that gives suggestion for improvement based on the data provided
-                suggestedVideo: This will contain a video suggestion that user will need to see to enhance his leetcode profile by up skilling his problem solving skills. Structure of video object: {link: A link that can be used in iframe to embed youtube video component, title: title of the video, description: description of the video, time: length of the video in seconds, views: Total views of the video}
+                suggestedVideo: This will contain a video suggestion that user will need to see to enhance his leetcode profile by up skilling his problem solving skills. Choose the most suitable video from the list of videos provided to you. Structure of video object: {link: A link to the video, title: title of the video, description: description of the video, time: length of the video in seconds, views: Total views of the video}. Remember both embed link and actual url should be real one rather than just dummy one.
             }
 
             Take care that you should not miss to return any field empty and try to align the content with respect to user data
             
+            Videos : ${JSON.stringify(VIDEOS.LEETCODE)}
             Leetcode Data: ${JSON.stringify(leetCodeData)}`,
             config: {
                 responseMimeType: "application/json",
                 responseSchema: {
                     type: Type.OBJECT,
                     properties: {
-                        analysis : {
+                        analysis: {
                             type: Type.ARRAY,
                             items: {
                                 type: Type.STRING,
@@ -124,7 +128,7 @@ const getLeetCodeProfileAnalysis = async (leetCodeData) => {
                                 type: Type.STRING,
                             }
                         },
-                        improvementAreas : {
+                        improvementAreas: {
                             type: Type.ARRAY,
                             items: {
                                 type: Type.STRING,
@@ -138,7 +142,7 @@ const getLeetCodeProfileAnalysis = async (leetCodeData) => {
         });
 
         return JSON.parse(response['candidates'][0]["content"]["parts"][0]["text"]);
-    } catch (error){
+    } catch (error) {
         console.log("Error Occurred while getting github profile analysis in geminiResponse.js", error.message);
         console.log(error.stack);
         return {};
@@ -286,11 +290,11 @@ const getResumeAnalysis = async (resumeData) => {
                         scoreAnalysis: {
                             type: Type.OBJECT,
                             properties: {
-                                resumeLength : simpleAnalysisSchema,
-                                impact : simpleAnalysisSchema,
-                                professionalism : simpleAnalysisSchema,
-                                logicalFlow : simpleAnalysisSchema,
-                                section : {
+                                resumeLength: simpleAnalysisSchema,
+                                impact: simpleAnalysisSchema,
+                                professionalism: simpleAnalysisSchema,
+                                logicalFlow: simpleAnalysisSchema,
+                                section: {
                                     type: Type.OBJECT,
                                     properties: {
                                         contact: simpleAnalysisSchema,
@@ -303,11 +307,11 @@ const getResumeAnalysis = async (resumeData) => {
                                     },
                                     required: ["contact", "coursework", "education", "projects", "achievements", "technicalSkills", "experience"],
                                 },
-                                jobDescription : jobDescriptionSchema,
+                                jobDescription: jobDescriptionSchema,
                             },
                             required: ["resumeLength", "impact", "professionalism", "logicalFlow", "section", "jobDescription"],
                         },
-                        strengths : simpleListSchema,
+                        strengths: simpleListSchema,
                         weaknesses: simpleListSchema,
                         improvements: simpleListSchema,
                     },
@@ -317,7 +321,7 @@ const getResumeAnalysis = async (resumeData) => {
         });
 
         return JSON.parse(response['candidates'][0]["content"]["parts"][0]["text"]);
-    } catch (error){
+    } catch (error) {
         console.log("Error Occurred while getting github profile analysis in geminiResponse.js", error.message);
         console.log(error.stack);
         return {};

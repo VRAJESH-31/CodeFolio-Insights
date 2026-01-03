@@ -8,8 +8,7 @@ import { TOTAL_COMMITS_LIMIT } from "../fetching/githubFetch.js";
 const getRepoCountScore = (repoCount) => {
     // Logarithmic: Harder to max out, maxes around 50 repos (log10(51) is approx 1.7)
     // Scale: 100 * log10(C+1) / 2 
-    const cappedCount = Math.min(repoCount, 50);
-    const value = 100 * (Math.log10(cappedCount + 1) / 2);
+    const value = 100 * (Math.log10(repoCount + 1) / 2);
     return Math.min(100, value);
 }
 
@@ -31,77 +30,86 @@ const getFollowingRatioScore = (followersCount, followingCount) => {
 const getLanguagesCountScore = (languagesCount) => {
     // Combination of Linear and Logarithmic (log10) for diminishing returns on language hopping
     // Formula: 10 * C + 20 * log10(C+1)
-    const value = 10 * languagesCount + 20 * Math.log10(languagesCount + 1);
+    const value = 10 * languagesCount + 10 * Math.log10(languagesCount + 1);
     return Math.min(100, value);
 }
 
 const getStarsCountScore = (starsCount) => {
-    // Combination of Linear and Logarithmic (log10)
-    // Formula: 10 * C + 50 * log10(C+1)
-    const value = 10 * starsCount + 50 * Math.log10(starsCount + 1);
+    // Highly Logarithmic (ln) to reward repos that are heavily forked
+    // Formula: 40 * log10(C+1)
+    const value = 40 * Math.log10(starsCount + 1);
     return Math.min(100, value);
 }
 
 const getForksCountScore = (forksCount) => {
     // Highly Logarithmic (ln) to reward repos that are heavily forked
-    // Formula: 40 * ln(C+1)
+    // Formula: 50 * ln(C+1)
     const value = 40 * Math.log(forksCount + 1);
     return Math.min(100, value);
 }
 
 const getTotalCommitsScore = (totalCommits) => {
     // Uses a smooth Sigmoid-like function (1 - e^(-C/k)) which grows fast initially but gradually approaches 100
-    // Maxes near 100 with diminishing returns (k=2000 is the rate constant)
-    const value = 100 * (1 - Math.exp(-totalCommits / 2000));
+    // Maxes near 100 with diminishing returns (k=250 is the rate constant)
+    const value = 100 * (1 - Math.exp(-totalCommits / 250));
     return Math.min(100, value);
 }
 
 const getPullRequestsCountScore = (totalPullRequests) => {
-    // Square Root: Rewards quality contributions, but needs substantially more to max out
-    // Formula: 50 * sqrt(C)
-    const value = 50 * Math.sqrt(totalPullRequests);
+    // Uses a smooth Sigmoid-like function (1 - e^(-C/k)) which grows fast initially but gradually approaches 100
+    // Maxes near 100 with diminishing returns (k=50 is the rate constant)
+    const value = 100 * (1 - Math.exp(-totalPullRequests / 50));
     return Math.min(100, value);
 }
 
 const getIssuesCountScore = (issuesCount) => {
-    // Square Root: Similar to PRs, encouraging issue creation/resolution
-    // Formula: 50 * sqrt(C)
-    const value = 50 * Math.sqrt(issuesCount);
+    // Uses a smooth Sigmoid-like function (1 - e^(-C/k)) which grows fast initially but gradually approaches 100
+    // Maxes near 100 with diminishing returns (k=25 is the rate constant)
+    const value = 100 * (1 - Math.exp(-issuesCount / 25));
     return Math.min(100, value);
 }
 
-// Kept the original Pinned Repos and Profile Readme as they are simple count/binary metrics
-
-const getPinnedReposCountScore = (pinnedReposCount) => {
-    const value = (pinnedReposCount / 6) * 100;
-    return value;
+const getRestrictedContributionCountScore = (restrictedContributionCount) => {
+    // Uses a smooth Sigmoid-like function (1 - e^(-C/k)) which grows fast initially but gradually approaches 100
+    // Maxes near 100 with diminishing returns (k=250 is the rate constant)
+    const value = 100 * (1 - Math.exp(-restrictedContributionCount / 250));
+    return Math.min(100, value);
 }
 
-// NOTE: getProfileReadmeScore is an async function and requires the githubAPI import to work
-const getProfileReadmeScore = async (username) => {
-    try {
-        const profileReadmeResponse = await githubAPI.get(`/repos/${username}/${username}/readme`);
-        const profileReadmeData = profileReadmeResponse.data;
-        // Check for 'url' existence which is present if a README file is found
-        const value = ("url" in profileReadmeData) ? 100 : 0;
-        return value;
-    } catch (error) {
-        // Returns 0 if the API call fails (i.e., README not found)
-        return 0;
+const getProfileReadmeScore = (profileReadme) => {
+    if (!profileReadme) return 0;
+    return 100;
+}
+
+const getPinnedReposScore = (pinnedRepos) => {
+    let score = 0;
+
+    for (let i = 0; i < pinnedRepos.length; i++) {
+        const pinnedRepo = pinnedRepos[i];
+        let pinnedRepoScore = 50;
+        
+        if (pinnedRepo.readmeFile) pinnedRepoScore = pinnedRepoScore + 30;
+        if (pinnedRepo.description) pinnedRepoScore = pinnedRepoScore + 5;
+        if (pinnedRepo.license) pinnedRepoScore = pinnedRepoScore + 10;
+        if (pinnedRepo.repositoryTopics?.nodes) pinnedRepoScore = pinnedRepoScore + (Math.min(pinnedRepo.repositoryTopics?.nodes.length, 10))/2;
+
+        score += pinnedRepoScore/6;
     }
+
+    return Math.min(100, score);
 }
 
 const getStreakScore = (maxStreak, currentStreak, activeDays) => {
     // Focuses on long-term commitment (Max Streak and Active Days) using Logarithmic (log10)
     // Formula: 50 * log10(MaxStreak+1)/2 + 50 * log10(ActiveDays+1)/3
     // Note: Current Streak is less weighted as it's volatile.
-    const maxStreakWeight = 50 * (Math.log10(maxStreak + 1) / 2);
-    const activeDaysWeight = 50 * (Math.log10(activeDays + 1) / 3);
+    const maxStreakWeight = 45 * Math.log10(maxStreak + 1);
+    const activeDaysWeight = 37.5 * Math.log10(activeDays + 1);
     
     // Add a small linear component for current streak, capped at 10 points
-    const currentStreakWeight = Math.min(10, currentStreak * 0.1);
+    const currentStreakWeight = 50 * Math.log10(currentStreak + 1);
 
-    const value = maxStreakWeight + activeDaysWeight + currentStreakWeight;
+    const value = activeDaysWeight*0.7 + maxStreakWeight*0.2 + currentStreakWeight*0.1;
     return Math.min(100, value);
 }
 
@@ -121,10 +129,11 @@ export {
     getStarsCountScore,
     getForksCountScore,
     getTotalCommitsScore,
+    getRestrictedContributionCountScore,
     getProfileReadmeScore,
-    getPinnedReposCountScore,
     getPullRequestsCountScore,
     getIssuesCountScore,
     getStreakScore,
     getCommitsQualityScore,
+    getPinnedReposScore,
 }

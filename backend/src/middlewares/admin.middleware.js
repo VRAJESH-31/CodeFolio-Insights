@@ -1,12 +1,7 @@
-import handleError from '../utils/handleError.js';
+import asyncHandler from '../utils/asyncHandler.js';
 
-export const checkAdmin = async (req, res, next) => {
-    try {
-        const user = req.user;
-        if (!user.isAdmin) req.isAdmin = false;
-        else req.isAdmin = true;
-        next();
-    } catch (error) {
-        return handleError(res, error, "Internal Server Error!");
-    }
-}
+export const checkAdmin = asyncHandler(async (req, res, next) => {
+    const user = req.user;
+    if (!user || !user.isAdmin) return res.status(403).json({ message: "You are not authorized to access this service." });
+    next();
+});
