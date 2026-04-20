@@ -1,4 +1,4 @@
-import { Zap, Shield, CreditCard, Code2, MessageSquare, AlertCircle, Info, Database, UserCheck, Gift, Rocket, Lock, CheckCircle, Fingerprint } from "lucide-react"
+import { Zap, Shield, CreditCard, Code2, MessageSquare, AlertCircle, Info, Database, UserCheck, Gift, Rocket, Lock, CheckCircle, Fingerprint, Activity, BarChart, Globe, RefreshCcw, Share2, Briefcase } from "lucide-react"
 
 const PUBLIC_API_FAQS = [
     {
@@ -93,6 +93,64 @@ const PUBLIC_API_FAQS = [
     }
 ];
 
+const LANDING_FAQS = [
+    {
+        question: "What is CodeFolio Insights?",
+        answer: "CodeFolio Insights is a unified platform that aggregates your diverse developer profiles (LeetCode, GitHub, GeeksforGeeks, CodeChef, etc.) to provide comprehensive analysis and actionable insights to boost your career.",
+        icon: Globe,
+        iconClasses: "w-5 h-5 text-blue-500",
+    },
+    {
+        question: "Which coding platforms are currently supported?",
+        answer: "We currently support major coding platforms including LeetCode, GitHub, GeeksforGeeks, CodeChef, InterviewBit, Code360, and HackerRank. We are continuously working on adding more platforms to our integrations list.",
+        icon: Database,
+        iconClasses: "w-5 h-5 text-indigo-500",
+    },
+    {
+        question: "How is my profile data collected?",
+        answer: "We securely access publicly available data from your coding profiles to generate detailed analytics, topic-wise strengths, and performance trends—without ever needing your platform passwords.",
+        icon: Shield,
+        iconClasses: "w-5 h-5 text-emerald-500",
+    },
+    {
+        question: "Is CodeFolio Insights free to use?",
+        answer: "Yes, the core profile aggregation and analysis features are completely free for developers to use, track their progress, and improve their coding skills.",
+        icon: Gift,
+        iconClasses: "w-5 h-5 text-rose-500",
+    },
+    {
+        question: "Can I use CodeFolio Insights to build my resume?",
+        answer: "Absolutely. We provide AI-powered resume analysis and let you seamlessly showcase your best coding achievements and projects all in one place, making it easier to present to recruiters.",
+        icon: Briefcase,
+        iconClasses: "w-5 h-5 text-amber-500",
+    },
+    {
+        question: "How frequently is my profile data updated?",
+        answer: "Your profile stats are updated practically in real-time when you refresh your dashboard, ensuring that your recent contest ratings and problem counts are always perfectly in sync.",
+        icon: RefreshCcw,
+        iconClasses: "w-5 h-5 text-purple-500",
+    },
+    {
+        question: "Is my personal data secure?",
+        answer: "We only access your public profile data required to build the analytics dashboard. We do not store sensitive information like passwords or your private repository code. Your data privacy is fully guaranteed.",
+        icon: Lock,
+        iconClasses: "w-5 h-5 text-red-500",
+    },
+    {
+        question: "Can I share my unified profile with recruiters?",
+        answer: "Yes, you can easily generate a public, shareable link of your unified developer profile. This serves as a comprehensive portfolio that makes it easier for recruiters to instantly evaluate your skills.",
+        icon: Share2,
+        iconClasses: "w-5 h-5 text-teal-500",
+    },
+    {
+        question: "Does CodeFolio Insights offer an API for developers?",
+        answer: "Yes, we also offer a powerful Public API that allows developers to programmatically fetch curated, scraped data from coding platforms for their own side projects or portfolios.",
+        icon: Activity,
+        iconClasses: "w-5 h-5 text-pink-500",
+    }
+];
+
 export {
-    PUBLIC_API_FAQS
+    PUBLIC_API_FAQS,
+    LANDING_FAQS
 }

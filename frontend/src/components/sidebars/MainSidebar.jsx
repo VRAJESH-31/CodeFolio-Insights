@@ -39,7 +39,7 @@ const MainSidebar = () => {
         >
             <div className={`relative flex items-center h-20 border-b border-gray-50 transition-all duration-500 ${isSidebarCollapsed ? 'justify-center pl-4' : 'justify-between pl-6'}`}>
                 <div className="relative flex-shrink-0">
-                    <img src="/Images/logo.png" alt="app logo" className="w-15 h-15" />
+                    <img src="/Images/logo.png" alt="app logo" className="w-12 h-12" />
                 </div>
 
                 {/* Toggler to toggle the sidebar */}

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { TrendingUp, Code, Zap, FolderOpen, GitCommit, Star, GitFork, Users, UserPlus, GitPullRequest, AlertCircle, CheckCircle, Target, BarChart3 } from 'lucide-react';
+import { useQueryClient } from "@tanstack/react-query";
 import { useGithubAnalysis } from "../../hooks/useAnalyzer.js";
 import { useAuthStore } from '../../store/export.js';
 import { useProfileLinks } from '../../hooks/useProfiles.js';
@@ -12,6 +13,7 @@ const GithubAnalyse = () => {
     const user = useAuthStore((state) => state.user);
     const { data: profile } = useProfileLinks(user?._id);
     const [username, setUsername] = useState(profile?.githubUsername || "");
+    const queryClient = useQueryClient();
 
     const { data: analysisData, isError, error, refetch, isFetching } = useGithubAnalysis(username.trim());
 
@@ -186,6 +188,10 @@ const GithubAnalyse = () => {
             {isError && (
                 <ErrorContainer
                     error={error} onRetry={handleAnalyze} isLoading={isFetching}
+                    onBack={() => {
+                        queryClient.resetQueries({ queryKey: ["githubData", username.trim()] });
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
                     errorAdditionalHelp={["Check if username is correct", "Ensure profile is public", "Try again in a few minutes"]}
                 />
             )}

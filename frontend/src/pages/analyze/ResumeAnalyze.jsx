@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { ErrorContainer, ResumeUploadSection, ResumeAnalysisDisplay } from '../../components/export.js';
 import { useResumeAnalysis } from '../../hooks/useAnalyzer.js';
-import { ALLOWED_FILE_TYPES } from '../../constants/index.js';
 
 const ResumeAnalyse = () => {
     const [jobDescription, setJobDescription] = useState('');
@@ -15,11 +14,16 @@ const ResumeAnalyse = () => {
     const resumeAnalysisMutation = useResumeAnalysis();
     const isLoading = resumeAnalysisMutation.isPending;
 
+    const allowedTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+
     const handleFileChange = (e) => {
         setError('');
         const file = e.target.files && e.target.files[0];
         if (file) {
-            const allowedTypes = ALLOWED_FILE_TYPES;
             if (allowedTypes.includes(file.type)) {
                 setResumeFile(file);
                 setFileName(file.name);
@@ -80,6 +84,7 @@ const ResumeAnalyse = () => {
             <ErrorContainer
                 error={error}
                 onRetry={handleAnalyze}
+                onBack={() => setError('')}
                 isLoading={isLoading}
                 errorAdditionalHelp={[
                     "Check your internet connection.",

@@ -4,6 +4,11 @@ import { PROFILE_VIEW_COOLDOWN_TIME } from "../constants/index.js"
 
 const addProfileView = async (vieweeId, viewerId, viewerDeviceToken) => {
     try {
+        // Prevent users from adding views to their own profile
+        if (viewerId && viewerId.toString() === vieweeId.toString()) {
+            return null;
+        }
+
         let query;
         let viewerType;
         let generatedDeviceToken;

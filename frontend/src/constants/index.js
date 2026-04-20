@@ -1,12 +1,6 @@
-import { Github, Linkedin, Code2, FileText, LayoutDashboard, Sparkles } from "lucide-react";
+import { Github, Linkedin, Code2, FileText, LayoutDashboard, Sparkles, UserPlus, Database, LineChart, Target, Quote, TrendingUp, Users, Activity, LogInIcon, Code, Webhook } from "lucide-react";
 
 const LANGUAGE_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#6366f1', '#ef4444', '#a21caf', '#14b8a6', '#eab308', '#64748b', '#db2777', '#0ea5e9', '#22d3ee'];
-
-const ALLOWED_FILE_TYPES = [
-    'application/pdf',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-];
 
 const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -31,33 +25,22 @@ const LANDING_FEATURES = [
         icon: Github,
         title: "GitHub Analysis",
         description:
-            "Analyze your repository contributions, code quality, and project diversity to showcase your development expertise.",
+            "Analyze your repository contributions, work consistency and project diversity to showcase your development expertise.",
         items: [
             "Contribution patterns",
             "Language proficiency",
-            "Project impact assessment",
-        ],
-    },
-    {
-        icon: Linkedin,
-        title: "LinkedIn Optimization",
-        description:
-            "Enhance your professional profile with insights on network growth, engagement metrics, and keyword optimization.",
-        items: [
-            "Profile completeness score",
-            "Network quality analysis",
-            "Skill endorsement strategy",
+            "Performance score",
         ],
     },
     {
         icon: Code2,
-        title: "Coding Platforms",
+        title: "Centralized Dashboard",
         description:
-            "Track your problem-solving progress across LeetCode, GeeksForGeeks, and other competitive programming platforms.",
+            "Track your problem-solving progress across LeetCode, GeeksForGeeks, and other competitive programming platforms in a single place.",
         items: [
             "Problem-solving patterns",
             "Difficulty progression",
-            "Skill gap identification",
+            "Shareable public link",
         ],
     },
     {
@@ -72,27 +55,36 @@ const LANDING_FEATURES = [
         ],
     },
     {
-        icon: LayoutDashboard,
-        title: "Unified Dashboard",
+        icon: Sparkles,
+        title: "Customizable themes",
         description:
-            "Access all your profile metrics in one comprehensive dashboard with progress tracking and goal setting.",
+            "Customize the theme for this application so that it matches your personality and preferences.",
         items: [
-            "Cross-platform analytics",
-            "Progress visualization",
-            "Customizable widgets",
+            "Theme customization",
+            "Color scheme options",
+            "Dark/Light mode",
         ],
     },
     {
-        icon: Sparkles,
-        title: "AI Recommendations",
-        description:
-            "Receive personalized career advice and skill development recommendations based on your complete profile analysis.",
+        icon: Webhook,
+        title: "Public APIs",
+        description: "Use Codefolio public APIs to get your coding data in your own applications.",
         items: [
-            "Skill gap analysis",
-            "Career path suggestions",
-            "Learning resource curation",
+            "Coding data availability",
+            "Daily 100 API Points per project",
+            "Easy Integration using API Key",
         ],
     },
+    {
+        icon: Code,
+        title: "LeetCode Analysis",
+        description: "Analyze your leetcode profile, and get detailed feedback on your problem-solving skills.",
+        items: [
+            "Problem-solving patterns",
+            "Difficulty progression",
+            "Performance score",
+        ],
+    }
 ];
 
 const HACKERRANK_ICONS = {
@@ -109,12 +101,74 @@ const HACKERRANK_ICONS = {
     "default": "/Images/Default/badge.png",
 }
 
+const HOW_IT_WORKS_STEPS = [
+    {
+        icon: LogInIcon,
+        title: "Authentication",
+        description: "Create an account or login in out platform."
+    },
+    {
+        icon: UserPlus,
+        title: "Connect Profiles",
+        description: "Go to links section and enter your usernames for GitHub, LeetCode, HackerRank, GeeksforGeeks and other major platforms."
+    },
+    {
+        icon: Database,
+        title: "We Analyze Data",
+        description: "Our secure engine fetches, aggregates, and processes your publicly available coding statistics."
+    },
+    {
+        icon: LineChart,
+        title: "Get Insights",
+        description: "View your unified dashboard, and share it using a public link."
+    }
+];
+
+const TESTIMONIALS = [
+    {
+        name: "Ashok Bhatt",
+        role: "Aspiring Software Engineer",
+        avatar: "/Images/Testimonials/Ashok_Bhatt.png",
+        quote: "CodeFolio Insights is a great platforms, I really loved especially that centralized coding dashboard with public link. I can share my profile with anyone using this.",
+        rating: 5,
+    },
+    {
+        name: "Vrajesh Pandya",
+        role: "Full Stack AI Engineer",
+        avatar: "https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=100",
+        quote: "The analyzers in CodeFolio are very accurate. I reguarly see the analytics for my GitHub profile and Resume. It helps me to improve my profile and get more opportunities.",
+        rating: 5,
+    },
+    {
+        name: "Shivam Patel",
+        role: "Software Engineer",
+        avatar: "https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=100",
+        quote: "The personalized AI recommendations actually suggested the exact skill gap I needed to fill to land my current role. Highly recommended starting point! The only thing I would like to suggest is to add more platforms to the list.",
+        rating: 4,
+    },
+    {
+        name: "Kartik Varia",
+        role: "Software Engineer",
+        avatar: "https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=100",
+        quote: "Having my GitHub contributions and LeetCode stats tracked in one beautiful dashboard makes it so simple to share my overall progress with recruiters. However, it would have been great if the statistics for Codeforces was added too.",
+        rating: 4,
+    },
+    {
+        name: "Priyansh Dabhi",
+        role: "Mobile Application Developer",
+        avatar: "https://images.unsplash.com/photo-1529665253569-6d01c0eaf7b6?w=100",
+        quote: "Great platform, excellent user interface and features. I really liked the centralized coding dashboard with public link.",
+        rating: 5,
+    },
+];
+
 export {
     LANGUAGE_COLORS,
-    ALLOWED_FILE_TYPES,
     MONTH_NAMES,
     PLATFORMS_CONFIG,
     DEFAULT_USERS,
     LANDING_FEATURES,
     HACKERRANK_ICONS,
+    HOW_IT_WORKS_STEPS,
+    TESTIMONIALS,
 };

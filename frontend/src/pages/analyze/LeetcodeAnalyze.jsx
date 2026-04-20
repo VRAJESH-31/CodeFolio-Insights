@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { CheckCircle, Target, Zap, Award, Rocket, BarChart3, TrendingUp, AlertCircle } from 'lucide-react';
+import { useQueryClient } from "@tanstack/react-query";
 import { getRandomHexColor } from '../../utils/colors.js';
 import { BadgeCollection, ScoreMeter, TopicStats, ErrorContainer, MemeContainer, UsernameInput } from '../../components/export.js';
 import { StatCard, VideoSuggestionCard, AnalysisCard } from '../../components/card/export.js';
@@ -13,6 +14,7 @@ const LeetcodeAnalyse = () => {
     const user = useAuthStore((state) => state.user);
     const { data: profile } = useProfileLinks(user?._id);
     const [userId, setUserId] = useState(profile?.leetCodeUsername || "");
+    const queryClient = useQueryClient();
 
     const { data: analysisData, isError, error, refetch, isFetching } = useLeetcodeAnalysis(userId.trim());
 
@@ -196,6 +198,10 @@ const LeetcodeAnalyse = () => {
             {isError && (
                 <ErrorContainer
                     error={error} onRetry={handleAnalyze} isLoading={isFetching}
+                    onBack={() => {
+                        queryClient.resetQueries({ queryKey: ["leetcodeData", userId.trim()] });
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
                     errorAdditionalHelp={["Check if username is correct", "Ensure profile is public", "Try again in a few minutes"]}
                 />
             )}

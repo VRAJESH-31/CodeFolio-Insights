@@ -17,9 +17,10 @@ const LandingNavbar = () => {
                     </h1>
                 </div>
                 <div className="hidden md:flex items-center space-x-8 font-black text-xs uppercase tracking-widest text-slate-500">
+                    <a href="#introduction" className="hover:text-indigo-600 transition-colors">Introduction</a>
                     <a href="#features" className="hover:text-indigo-600 transition-colors">Features</a>
                     <a href="#how-it-works" className="hover:text-indigo-600 transition-colors">How it works</a>
-                    <a href="#pricing" className="hover:text-indigo-600 transition-colors">Pricing</a>
+                    <a href="#testimonials" className="hover:text-indigo-600 transition-colors">Testimonials</a>
                     <a href="#faq" className="hover:text-indigo-600 transition-colors">FAQ</a>
                 </div>
                 <div className="flex items-center space-x-4">

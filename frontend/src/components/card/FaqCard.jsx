@@ -4,7 +4,7 @@ const FaqCard = ({ question, answer, icon: Icon, iconClasses, isOpen, onClick })
     return (
         <div
             className={`group border rounded-2xl transition-all duration-300 ${isOpen
-                ? 'border-blue-200 bg-blue-50/30'
+                ? 'border-blue-200 bg-blue-200/30'
                 : 'border-slate-100 bg-white hover:border-slate-200 hover:shadow-md'
                 }`}
         >
