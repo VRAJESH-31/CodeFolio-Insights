@@ -1,4 +1,4 @@
-const Loader = ({ text = "Loading ...", showLoading = false }) => {
+const Loader = ({ text = "Loading ...", showLoading = false, className = "" }) => {
     if (!showLoading) return null;
 
     const animationStyle = `
@@ -12,7 +12,7 @@ const Loader = ({ text = "Loading ...", showLoading = false }) => {
     `;
 
     return (
-        <div className="fixed top-6 right-6 z-50 flex items-center py-2.5 px-5 bg-white/90 backdrop-blur-md rounded-lg shadow-2xl border border-gray-200 overflow-hidden">
+        <div className={`fixed top-6 right-6 z-50 flex items-center py-2.5 px-5 bg-blue-100/90 backdrop-blur-md rounded-lg shadow-2xl border border-2 border-blue-200 overflow-hidden ${className}`}>
             {/* Standard Style Tag */}
             <style>{animationStyle}</style>
 

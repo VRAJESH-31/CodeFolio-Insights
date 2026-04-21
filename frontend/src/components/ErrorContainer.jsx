@@ -2,7 +2,7 @@ import { AlertCircle, RefreshCw } from "lucide-react";
 
 const ErrorContainer = ({ error, onRetry, onBack, isLoading, errorAdditionalHelp = [] }) => {
     return (
-        <div className="w-full flex items-center justify-center py-6">
+        <div className="flex-1 flex items-center justify-center py-6">
             <div className="bg-white p-8 md:p-14 text-center rounded-[2.5rem] border border-blue-100 shadow-xl shadow-blue-500/5 w-full relative overflow-hidden group hover:border-blue-200 transition-all duration-500">
                 {/* Background accents */}
                 <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-500"></div>
@@ -15,7 +15,7 @@ const ErrorContainer = ({ error, onRetry, onBack, isLoading, errorAdditionalHelp
                     </div>
 
                     <h3 className="text-3xl md:text-4xl font-black text-slate-800 mb-4 tracking-tight">Oops! Something went wrong</h3>
-                    <p className="text-slate-500 text-[15px] max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
+                    <p className="text-slate-500 text-[15px] max-w-2xl mx-auto mb-10 leading-relaxed font-medium break-words">
                         {typeof error === 'string' 
                             ? error 
                             : "We encountered an unexpected error while trying to process your request. This might be due to API limitations or server issues."}

@@ -116,7 +116,7 @@ const ResumeAnalyse = () => {
     }
 
     return (
-        <div className="flex-1">
+        <div className="flex flex-col flex-1">
             {content}
         </div>
     );
