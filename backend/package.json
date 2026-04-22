@@ -13,7 +13,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@google/genai": "^1.20.0",
     "@sendgrid/mail": "^8.1.6",
