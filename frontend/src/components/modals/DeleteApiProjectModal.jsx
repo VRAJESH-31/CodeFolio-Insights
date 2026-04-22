@@ -38,7 +38,7 @@ const DeleteApiProjectModal = ({ isOpen, onClose, onDelete, projectName, isPendi
                     {/* Content */}
                     <div className="space-y-4">
                         <p className="text-slate-500 font-medium leading-relaxed">
-                            Are you sure you want to delete <span className="text-slate-900 font-bold">"{projectName}"</span>? This action cannot be undone and all associated API access will be revoked.
+                            Are you sure you want to delete <span className="text-slate-900 font-bold">&quot;{projectName}&quot;</span>? This action cannot be undone and all associated API access will be revoked.
                         </p>
                     </div>
 

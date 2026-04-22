@@ -1,0 +1,24 @@
+# Ignore artifacts and build folders
+node_modules
+dist
+build
+coverage
+.cache
+backend/.cache
+frontend/dist
+backend/dist
+
+# Ignore environment files
+.env
+.env.*
+
+# Ignore lock files
+package-lock.json
+
+# Ignore public assets
+public/
+frontend/public/
+
+# Ignore git
+.git
+.gitignore

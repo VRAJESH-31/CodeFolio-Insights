@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 const TopicAnalysis = ({ data = {}, title = "Topic Analysis", className }) => {
     const [showAll, setShowAll] = useState(false);

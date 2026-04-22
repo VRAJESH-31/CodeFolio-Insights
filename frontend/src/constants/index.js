@@ -1,4 +1,6 @@
-import { Github, Linkedin, Code2, FileText, LayoutDashboard, Sparkles, UserPlus, Database, LineChart, Target, Quote, TrendingUp, Users, Activity, LogInIcon, Code, Webhook } from "lucide-react";
+import { Github, Code2, FileText, Sparkles, UserPlus, Database, LineChart, LogInIcon, Code, Webhook, Layers, Trophy, Bell } from "lucide-react";
+
+const LOGO_URL = "/Images/logo.png";
 
 const LANGUAGE_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#6366f1', '#ef4444', '#a21caf', '#14b8a6', '#eab308', '#64748b', '#db2777', '#0ea5e9', '#22d3ee'];
 
@@ -129,7 +131,7 @@ const TESTIMONIALS = [
         name: "Ashok Bhatt",
         role: "Aspiring Software Engineer",
         avatar: "/Images/Testimonials/Ashok_Bhatt.png",
-        quote: "CodeFolio Insights is a great platforms, I really loved especially that centralized coding dashboard with public link. I can share my profile with anyone using this.",
+        quote: "CodeFolio is a great platforms, I really loved especially that centralized coding dashboard with public link. I can share my profile with anyone using this.",
         rating: 5,
     },
     {
@@ -162,6 +164,35 @@ const TESTIMONIALS = [
     },
 ];
 
+const ROADMAP_ITEMS = [
+    {
+        icon: Layers,
+        title: "New Platforms",
+        description: "We are expanding our data engine to include more competitive programming environments.",
+        items: ["Codeforces & Atcoder", "HackerEarth & TopCoder", "Kaggle Integration"]
+    },
+    {
+        icon: Trophy,
+        title: "Global Board",
+        description: "Compete with the best developers worldwide on our unified public leaderboard.",
+        items: ["Cross-platform Ranking", "Skills Verification", "Community Badges"]
+    },
+    {
+        icon: Bell,
+        title: "Contest Hub",
+        description: "Never miss a competition again with our centralized notification center.",
+        items: ["Real-time Alerts", "Platform Subscriptions", "Calendar Sync"]
+    }
+];
+
+const LANDING_PAGE_NAVBAR_ITEMS = [
+    { label: "Features", href: "#features" },
+    { label: "How it works", href: "#how-it-works" },
+    { label: "Upcoming Changes", href: "#upcoming-changes" },
+    { label: "Testimonials", href: "#testimonials" },
+    { label: "FAQ", href: "#faq" },
+];
+
 export {
     LANGUAGE_COLORS,
     MONTH_NAMES,
@@ -171,4 +202,7 @@ export {
     HACKERRANK_ICONS,
     HOW_IT_WORKS_STEPS,
     TESTIMONIALS,
+    ROADMAP_ITEMS,
+    LOGO_URL,
+    LANDING_PAGE_NAVBAR_ITEMS
 };

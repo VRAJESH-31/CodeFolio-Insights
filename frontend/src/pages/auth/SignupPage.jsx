@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSignUp, useVerifyOTP } from '../../hooks/useUsers.js';
 import conf from '../../config/config.js';
 import { OTPInput } from '../../components/export.js';
+import { GOOGLE_SVG } from '../../constants/svgConstants.js';
 
 const SignupPage = () => {
     const [formData, setFormData] = useState({ name: '', email: '', password: '' });
@@ -104,7 +105,7 @@ const SignupPage = () => {
                             onClick={() => window.location.href = `${conf.SERVER_BASE_URL}/api/auth/google`}
                             className="w-full flex items-center justify-center py-3 px-4 bg-white hover:bg-slate-50 border-2 border-slate-50 rounded-xl text-sm font-bold text-slate-700 transition-all transform hover:scale-[1.02] shadow-sm"
                         >
-                            <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24"><path fill="currentColor" d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z" /></svg>
+                            <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24"><path fill="currentColor" d={GOOGLE_SVG} /></svg>
                             Google
                         </button>
                     </>
@@ -114,7 +115,7 @@ const SignupPage = () => {
                             <label className="block text-sm font-bold text-slate-700 mb-2 text-center">Verification Code</label>
                             <OTPInput value={otp} onChange={(val) => setOtp(val)} />
                             <p className="mt-4 text-xs text-center text-slate-400 italic">
-                                * Check your spam folder if you don't see the email.
+                                * Check your spam folder if you don&apos;t see the email.
                             </p>
                         </div>
 

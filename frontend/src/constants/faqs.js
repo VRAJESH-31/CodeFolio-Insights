@@ -1,4 +1,4 @@
-import { Zap, Shield, CreditCard, Code2, MessageSquare, AlertCircle, Info, Database, UserCheck, Gift, Rocket, Lock, CheckCircle, Fingerprint, Activity, BarChart, Globe, RefreshCcw, Share2, Briefcase } from "lucide-react"
+import { Zap, Shield, CreditCard, Code2, MessageSquare, AlertCircle, Info, Database, UserCheck, Gift, Rocket, Lock, CheckCircle, Fingerprint, Activity, Globe, RefreshCcw, Share2, Briefcase } from "lucide-react"
 
 const PUBLIC_API_FAQS = [
     {
@@ -27,7 +27,7 @@ const PUBLIC_API_FAQS = [
     },
     {
         question: "Do I need an account to use CodeFolio?",
-        answer: "Yes, you need to create an account on CodeFolio Insights to use the service, manage your API keys, and track your usage statistics.",
+        answer: "Yes, you need to create an account on CodeFolio to use the service, manage your API keys, and track your usage statistics.",
         icon: UserCheck,
         iconClasses: "w-5 h-5 text-indigo-500",
     },
@@ -95,8 +95,8 @@ const PUBLIC_API_FAQS = [
 
 const LANDING_FAQS = [
     {
-        question: "What is CodeFolio Insights?",
-        answer: "CodeFolio Insights is a unified platform that aggregates your diverse developer profiles (LeetCode, GitHub, GeeksforGeeks, CodeChef, etc.) to provide comprehensive analysis and actionable insights to boost your career.",
+        question: "What is CodeFolio?",
+        answer: "CodeFolio is a unified platform that aggregates your diverse developer profiles (LeetCode, GitHub, GeeksforGeeks, CodeChef, etc.) to provide comprehensive analysis and actionable insights to boost your career.",
         icon: Globe,
         iconClasses: "w-5 h-5 text-blue-500",
     },
@@ -113,13 +113,13 @@ const LANDING_FAQS = [
         iconClasses: "w-5 h-5 text-emerald-500",
     },
     {
-        question: "Is CodeFolio Insights free to use?",
+        question: "Is CodeFolio free to use?",
         answer: "Yes, the core profile aggregation and analysis features are completely free for developers to use, track their progress, and improve their coding skills.",
         icon: Gift,
         iconClasses: "w-5 h-5 text-rose-500",
     },
     {
-        question: "Can I use CodeFolio Insights to build my resume?",
+        question: "Can I use CodeFolio to build my resume?",
         answer: "Absolutely. We provide AI-powered resume analysis and let you seamlessly showcase your best coding achievements and projects all in one place, making it easier to present to recruiters.",
         icon: Briefcase,
         iconClasses: "w-5 h-5 text-amber-500",
@@ -143,7 +143,7 @@ const LANDING_FAQS = [
         iconClasses: "w-5 h-5 text-teal-500",
     },
     {
-        question: "Does CodeFolio Insights offer an API for developers?",
+        question: "Does CodeFolio offer an API for developers?",
         answer: "Yes, we also offer a powerful Public API that allows developers to programmatically fetch curated, scraped data from coding platforms for their own side projects or portfolios.",
         icon: Activity,
         iconClasses: "w-5 h-5 text-pink-500",

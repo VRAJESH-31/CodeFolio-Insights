@@ -3,6 +3,7 @@ import { Play, Copy, RefreshCcw, Loader2, Info, Shield } from "lucide-react";
 import toast from 'react-hot-toast';
 import { usePublicApiPlayground } from "../hooks/usePublicApi.js";
 import { useAuthStore } from "../store/export.js";
+import { LoaderSpinner } from "./loaders/export.js";
 
 const ApiPlayground = ({ currentEndpoint }) => {
     const { user } = useAuthStore();
@@ -39,7 +40,7 @@ const ApiPlayground = ({ currentEndpoint }) => {
             params.set(name, value);
             url.search = params.toString();
             setSampleApiRequest(decodeURIComponent(url.toString()));
-        } catch (error) {
+        } catch {
             // Silently handle invalid URL during typing
         }
     };
@@ -189,21 +190,31 @@ const ApiPlayground = ({ currentEndpoint }) => {
                     <div className="flex items-center justify-between px-1">
                         <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Response</h4>
                         <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                            <span className="text-[10px] font-bold text-green-600 uppercase tracking-wide">Ready</span>
+                            <div className={`w-2 h-2 rounded-full ${isRunning ? 'bg-amber-500' : 'bg-green-500 animate-pulse'}`} />
+                            <span className={`text-[10px] font-bold uppercase tracking-wide ${isRunning ? 'text-amber-600' : 'text-green-600'}`}>
+                                {isRunning ? "Processing" : "Ready"}
+                            </span>
                         </div>
                     </div>
-                    <div className="bg-white rounded-2xl border border-slate-200 p-6 font-mono text-sm overflow-hidden group relative shadow-inner shadow-slate-50">
-                        <div className="absolute top-0 right-5 p-3 transition-opacity flex items-center gap-2">
+                    <div className="bg-white rounded-2xl border border-slate-200 p-6 font-mono text-sm overflow-hidden group relative shadow-inner shadow-slate-50 min-h-[300px] flex items-center justify-center">
+                        {/* Loading Overlay */}
+                        {isRunning && (
+                            <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/40 backdrop-blur-[2px] transition-all duration-300">
+                                <LoaderSpinner text="Fetching API Data" className="w-12 h-12" />
+                            </div>
+                        )}
+
+                        <div className="absolute top-0 right-5 p-3 transition-opacity flex items-center gap-2 z-10">
                             <button
                                 onClick={handleCopyResponse}
                                 className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
                                 title="Copy Response"
+                                disabled={isRunning}
                             >
                                 <Copy size={20} />
                             </button>
                         </div>
-                        <pre className="text-blue-700 custom-scrollbar max-h-[300px] overflow-auto whitespace-pre-wrap break-all leading-relaxed">
+                        <pre className={`text-blue-700 custom-scrollbar h-[300px] w-full overflow-auto whitespace-pre-wrap break-all leading-relaxed transition-all duration-300 ${isRunning ? 'blur-sm opacity-50' : 'blur-0 opacity-100'}`}>
                             {sampleApiResponse}
                         </pre>
                     </div>

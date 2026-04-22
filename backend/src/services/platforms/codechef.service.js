@@ -70,7 +70,9 @@ const getUserInfo = async (username, includeAchievements, includeContests) => {
                 const starsElement = document.querySelector(".rating-star");
 
                 // Per-contest history from the inline Drupal.settings JS variable
+                // eslint-disable-next-line no-undef
                 const allRatings = (typeof Drupal !== "undefined" && Drupal.settings?.date_versus_rating?.all)
+                    // eslint-disable-next-line no-undef
                     ? Drupal.settings.date_versus_rating.all
                     : [];
 
@@ -148,7 +150,7 @@ const getUserSubmissions = async (username) => {
 
         return getNormalizedCodeChefHeatmap(heatmapData);
 
-    } catch (error) {
+    } catch {
         throw new ApiError(500, "Something went wrong while fetching CodeChef user submissions!");
     } finally {
         if (page) await page.close();

@@ -56,7 +56,7 @@ const PageNotFound = () => {
                 {/* Footer Insight */}
                 <div className="mt-16 text-slate-400 text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2">
                     <div className="w-8 h-[1px] bg-slate-200"></div>
-                    <span>CodeFolio Insights Error Log #404</span>
+                    <span>CodeFolio Error Log #404</span>
                     <div className="w-8 h-[1px] bg-slate-200"></div>
                 </div>
             </div>

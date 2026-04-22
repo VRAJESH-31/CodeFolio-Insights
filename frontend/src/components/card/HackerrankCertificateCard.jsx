@@ -23,7 +23,7 @@ const HackerrankCertificateCard = ({ data, className = "", isExpanded = false })
                 {/* Hover Description Overlay */}
                 <div className="absolute inset-0 bg-emerald-900/90 flex flex-col justify-center p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <p className={`text-white ${isExpanded ? 'text-sm' : 'text-[11px]'} font-medium leading-relaxed italic text-center`}>
-                        "{certificate?.description}"
+                        &quot;{certificate?.description}&quot;
                     </p>
                 </div>
 

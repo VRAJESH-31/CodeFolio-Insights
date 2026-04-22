@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
-import { BarChart2, LayoutDashboard, LogOut } from "lucide-react";
+import { LayoutDashboard, LogOut } from "lucide-react";
 import { useAuthStore } from "../store/export.js";
 import { useLogout } from "../hooks/useUsers.js";
+import { LOGO_URL, LANDING_PAGE_NAVBAR_ITEMS } from "../constants/index.js";
 
 const LandingNavbar = () => {
     const { user } = useAuthStore();
@@ -11,17 +12,18 @@ const LandingNavbar = () => {
         <div className="fixed top-0 left-0 right-0 z-50 w-full px-4 py-4 pointer-events-none">
             <nav className="container mx-auto flex justify-between items-center py-4 bg-white/80 backdrop-blur-md rounded-2xl px-6 shadow-lg border border-white/60 pointer-events-auto">
                 <div className="flex items-center space-x-2 cursor-pointer">
-                    <BarChart2 className="text-3xl text-indigo-600" />
+                    {/* <BarChart2 className="text-3xl text-indigo-600" /> */}
+                    <img src={LOGO_URL} alt="Logo" className="w-10 h-10" />
                     <h1 className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-indigo-800">
-                        CodeFolio Insights
+                        CodeFolio
                     </h1>
                 </div>
                 <div className="hidden md:flex items-center space-x-8 font-black text-xs uppercase tracking-widest text-slate-500">
-                    <a href="#introduction" className="hover:text-indigo-600 transition-colors">Introduction</a>
-                    <a href="#features" className="hover:text-indigo-600 transition-colors">Features</a>
-                    <a href="#how-it-works" className="hover:text-indigo-600 transition-colors">How it works</a>
-                    <a href="#testimonials" className="hover:text-indigo-600 transition-colors">Testimonials</a>
-                    <a href="#faq" className="hover:text-indigo-600 transition-colors">FAQ</a>
+                    {
+                        LANDING_PAGE_NAVBAR_ITEMS.map((item) => (
+                            <a key={item.label} href={item.href} className="hover:text-indigo-600 transition-colors">{item.label}</a>
+                        ))
+                    }
                 </div>
                 <div className="flex items-center space-x-4">
                     {!user ? (

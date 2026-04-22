@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, LayoutDashboard, LogOut, ChartArea, Settings, Webhook, Contact } from 'lucide-react';
 import { useAuthStore, usePreferenceStore } from '../../store/export.js';
 import { useLogout } from '../../hooks/useUsers.js';
+import { LOGO_URL } from '../../constants/index.js';
 
 const MainSidebar = () => {
     const location = useLocation();
@@ -39,7 +40,7 @@ const MainSidebar = () => {
         >
             <div className={`relative flex items-center h-20 border-b border-gray-50 transition-all duration-500 ${isSidebarCollapsed ? 'justify-center pl-4' : 'justify-between pl-6'}`}>
                 <div className="relative flex-shrink-0">
-                    <img src="/Images/logo.png" alt="app logo" className="w-12 h-12" />
+                    <img src={LOGO_URL} alt="app logo" className="w-12 h-12" />
                 </div>
 
                 {/* Toggler to toggle the sidebar */}

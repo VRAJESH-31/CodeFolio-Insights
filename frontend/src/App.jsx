@@ -23,7 +23,7 @@ const App = () => {
         <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/auth/login" element={
-                <ProtectedLayout requiresAuthentication={false}> 
+                <ProtectedLayout requiresAuthentication={false}>
                     <LoginPage />
                 </ProtectedLayout>
             } />
@@ -55,7 +55,7 @@ const App = () => {
                 <Route path="public-apis" element={<PublicApisLayout />}>
                     <Route index element={<Navigate to="documentation" replace />} />
                     <Route path="documentation" element={
-                        <ApiDocumentation />} 
+                        <ApiDocumentation />}
                     />
                     <Route path="projects" element={
                         <ProtectedLayout requiresAuthentication={true}>
@@ -72,7 +72,7 @@ const App = () => {
                             <ProfileSettings />
                         </ProtectedLayout>
                     } />
-                    <Route path="appearance" element={ <AppearanceSettings /> } />
+                    <Route path="appearance" element={<AppearanceSettings />} />
                     <Route path="account" element={
                         <ProtectedLayout requiresAuthentication={true}>
                             <AccountSettings />

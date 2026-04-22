@@ -81,7 +81,7 @@ const getUsers = async (params) => {
         sortQuery = getSortQuery(searchField, searchOrder);
     }
 
-    let query = {};
+    let query;
     if (cursor) {
         const fieldQuery = getSearchQuery(searchField, searchOrder, cursor);
         query = {

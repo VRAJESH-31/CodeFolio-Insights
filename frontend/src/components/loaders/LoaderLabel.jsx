@@ -1,4 +1,4 @@
-const Loader = ({ text = "Loading ...", showLoading = false, className = "" }) => {
+const LoaderLabel = ({ text = "Loading ...", showLoading = false, className = "" }) => {
     if (!showLoading) return null;
 
     const animationStyle = `
@@ -29,4 +29,4 @@ const Loader = ({ text = "Loading ...", showLoading = false, className = "" }) =
     );
 };
 
-export default Loader;
+export default LoaderLabel;

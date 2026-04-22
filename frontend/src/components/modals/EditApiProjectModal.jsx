@@ -47,7 +47,7 @@ const EditApiProjectModal = ({ isOpen, onClose, onUpdate, project, isPending }) 
                                 </h3>
                             </div>
                             <p className="text-sm font-medium text-slate-500 italic ml-1">
-                                Update your project's identity.
+                                Update your project&apos;s identity.
                             </p>
                         </div>
                         <button

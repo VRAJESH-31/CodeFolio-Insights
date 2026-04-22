@@ -10,7 +10,7 @@ const TestimonialCard = ({ name, role, avatar, quote, rating }) => {
                         <Star key={rIdx} className="w-4 h-4 fill-current" />
                     ))}
                 </div>
-                <p className="text-slate-700 font-medium leading-relaxed mb-8 italic">"{quote}"</p>
+                <p className="text-slate-700 font-medium leading-relaxed mb-8 italic">&quot;{quote}&quot;</p>
             </div>
             <div className="flex items-center gap-4 mt-auto">
                 <img src={avatar} alt={name} className="w-12 h-12 rounded-full object-cover shadow-sm border-2 border-white" />

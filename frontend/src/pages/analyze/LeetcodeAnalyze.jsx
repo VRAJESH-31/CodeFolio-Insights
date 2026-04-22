@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { CheckCircle, Target, Zap, Award, Rocket, BarChart3, TrendingUp, AlertCircle, Shield, FileText, Sparkles, Search, Loader2 } from 'lucide-react';
 import { useQueryClient } from "@tanstack/react-query";
 import { getRandomHexColor } from '../../utils/colors.js';
-import { BadgeCollection, ScoreMeter, TopicStats, ErrorContainer, MemeContainer, UsernameInput } from '../../components/export.js';
+import { BadgeCollection, ScoreMeter, TopicStats, ErrorContainer, MemeContainer } from '../../components/export.js';
 import { StatCard, VideoSuggestionCard, AnalysisCard } from '../../components/card/export.js';
 import { SubmissionHeatmap, DistributionChart } from "../../components/charts/export.js"
 import { useAuthStore } from '../../store/export.js';
@@ -23,7 +23,7 @@ const LeetcodeAnalyse = () => {
         refetch();
     };
 
-    const { currentStreak, maxStreak, activeDays, totalContributions } = getStreaksAndActiveDays(analysisData?.multiYearSubmissionCalendar || {});
+    const { currentStreak } = getStreaksAndActiveDays(analysisData?.multiYearSubmissionCalendar || {});
 
     const getLeetcodeDifficultyData = (difficultyData) => [
         { name: 'Easy', value: difficultyData?.[1]?.count, color: '#34D399' },
@@ -193,7 +193,7 @@ const LeetcodeAnalyse = () => {
                                     </div>
                                     <h3 className="text-xl font-bold text-gray-800 mb-2">Analysis Not Available</h3>
                                     <p className="text-gray-500 max-w-md mx-auto">
-                                        We couldn't generate a detailed profile analysis at this time. This might be due to insufficient public activity or API limitations.
+                                        We couldn&apos;t generate a detailed profile analysis at this time. This might be due to insufficient public activity or API limitations.
                                     </p>
                                 </div>
                             )}

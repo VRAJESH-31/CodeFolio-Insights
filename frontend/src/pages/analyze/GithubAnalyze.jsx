@@ -6,7 +6,7 @@ import { useAuthStore } from '../../store/export.js';
 import { useProfileLinks } from '../../hooks/useProfiles.js';
 import { StatCard, AnalysisCard, VideoSuggestionCard } from '../../components/card/export.js';
 import { SubmissionHeatmap, DistributionChart } from '../../components/charts/export.js';
-import { ErrorContainer, ScoreMeter, MemeContainer, BadgeCollection, UsernameInput } from '../../components/export.js';
+import { ErrorContainer, ScoreMeter, MemeContainer, BadgeCollection } from '../../components/export.js';
 import { LANGUAGE_COLORS } from '../../constants/index.js';
 
 const GithubAnalyse = () => {
@@ -178,7 +178,7 @@ const GithubAnalyse = () => {
                                     </div>
                                     <h3 className="text-xl font-bold text-gray-800 mb-2">Analysis Not Available</h3>
                                     <p className="text-gray-500 max-w-md mx-auto">
-                                        We couldn't generate a detailed profile analysis at this time. This might be due to insufficient public activity or API limitations.
+                                        We couldn&apos;t generate a detailed profile analysis at this time. This might be due to insufficient public activity or API limitations.
                                     </p>
                                 </div>
                             )}

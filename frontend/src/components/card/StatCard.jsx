@@ -11,7 +11,7 @@ const StatCard = ({ title, value, change, Icon, color, index }) => {
         }
     };
 
-    const { text, bg, gradient } = getColorClasses(color);
+    const { text, gradient } = getColorClasses(color);
 
     return (
         <div

@@ -1,4 +1,4 @@
-import { UploadCloud, FileText, TrendingUp, Target, Shield, CheckCircle, Sparkles, AlertCircle, TrendingDown, ChevronDown, ChevronUp } from 'lucide-react';
+import { UploadCloud, FileText, TrendingUp, Target, CheckCircle, Sparkles, AlertCircle, TrendingDown, ChevronDown, ChevronUp } from 'lucide-react';
 import { v4 as uuid } from 'uuid';
 import { useState } from 'react';
 import { ScoreMeter, MemeContainer } from './export.js';

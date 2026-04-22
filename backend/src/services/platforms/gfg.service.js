@@ -135,7 +135,7 @@ const getInstitutionTopThreeRankedUsers = async (institution) => {
             });
         });
         return { institution, users: data };
-    } catch (error) {
+    } catch {
         throw new ApiError(500, "Something went wrong while fetching GFG institution top three ranked users!");
     } finally {
         if (page) await page.close();
@@ -158,7 +158,7 @@ const getInstitutionInfo = async (institution) => {
             };
         });
         return { institution, data };
-    } catch (error) {
+    } catch {
         throw new ApiError(500, "Something went wrong while fetching GFG institution info!");
     } finally {
         if (page) await page.close();

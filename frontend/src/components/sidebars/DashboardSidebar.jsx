@@ -87,7 +87,7 @@ const DashboardSidebar = ({ userData }) => {
                     {userData?.headline ? <p className="text-xs text-slate-400 leading-relaxed font-bold mb-8 px-4 italic">{userData?.headline}</p> : null}
 
                     <div className="flex items-center justify-between w-full px-4 mt-4 mb-8 text-slate-400">
-                        {userLinks.map((link, index) => (
+                        {userLinks.map((link) => (
                             <button key={link.name} className="flex items-center gap-2" onClick={() => window.open(link.url, '_blank')} disabled={!link.url}>
                                 {link.icon}
                             </button>

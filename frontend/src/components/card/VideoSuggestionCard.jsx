@@ -10,7 +10,7 @@ const VideoSuggestionCard = ({ suggestedVideo }) => {
             const match = cleanUrl.match(regExp);
             if (match && match[2].length === 11) return `https://www.youtube.com/embed/${match[2]}`;
             return cleanUrl;
-        } catch (error) {
+        } catch {
             return url;
         }
     };

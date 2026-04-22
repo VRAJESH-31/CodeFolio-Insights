@@ -38,7 +38,7 @@ export const sendContactEmail = async (name, email, subject, message) => {
                     </div>
                     
                     <p style="text-align: center; color: #94a3b8; font-size: 11px; margin-top: 30px;">
-                        &copy; 2026 CodeFolio Insights &bull; Automated System
+                        &copy; 2026 CodeFolio &bull; Automated System
                     </p>
                 </div>
             `,
@@ -58,10 +58,10 @@ export const sendOtpEmail = async (email, otp) => {
         const msg = {
             to : email,
             from: EMAIL_FROM,
-            subject: 'Your Verification Code - CodeFolio Insights',
+            subject: 'Your Verification Code - CodeFolio',
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
-                    <h2 style="color: #4f46e5; text-align: center;">CodeFolio Insights</h2>
+                    <h2 style="color: #4f46e5; text-align: center;">CodeFolio</h2>
                     <p>Hello,</p>
                     <p>Use the following code to complete your verification. This code is valid for 10 minutes.</p>
                     <div style="text-align: center; margin: 30px 0;">
@@ -75,7 +75,7 @@ export const sendOtpEmail = async (email, otp) => {
                     </p>
                     <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;">
                     <p style="font-size: 12px; color: #6b7280; text-align: center;">
-                        &copy; 2026 CodeFolio Insights. All rights reserved.
+                        &copy; 2026 CodeFolio. All rights reserved.
                     </p>
                 </div>
             `,

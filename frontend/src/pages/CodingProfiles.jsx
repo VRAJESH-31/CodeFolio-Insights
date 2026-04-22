@@ -28,7 +28,7 @@ const CodingProfiles = () => {
     const competitiveProgrammingProblemsData = useMemo(() => getCompetitiveProgrammingProblemsData(data), [data]);
     const contestAchievements = useMemo(() => getContestAchievements(data), [data]);
     const { activeDays } = useMemo(() => getStreaksAndActiveDays(combinedHeatmapData), [combinedHeatmapData]);
-    const contestCount = useMemo(() => Object.entries(contestData).reduce((total, [key, value]) => total + value.length, 0), [contestData]);
+    const contestCount = useMemo(() => Object.values(contestData).reduce((total, value) => total + value.length, 0), [contestData]);
 
     return (
         <div className="space-y-8 animate-float-in overflow-x-hidden">
