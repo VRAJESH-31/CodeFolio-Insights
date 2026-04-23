@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   PlayCircle,
@@ -9,6 +9,11 @@ import {
   Mail,
   Heart,
   Globe,
+  Code,
+  FileText,
+  Zap,
+  Users,
+  Key,
 } from 'lucide-react';
 import {
   DEFAULT_USERS,
@@ -32,9 +37,109 @@ import {
 import { useHighlights } from '../hooks/useHighlights.js';
 import { LOGO_URL } from '../constants/index.js';
 
+const CountUp = ({ end, duration = 2000 }) => {
+  const [count, setCount] = useState(0);
+  const countRef = useRef(null);
+  const [hasStarted, setHasStarted] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasStarted) {
+          setHasStarted(true);
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    if (countRef.current) observer.observe(countRef.current);
+    return () => observer.disconnect();
+  }, [hasStarted]);
+
+  useEffect(() => {
+    if (!hasStarted) return;
+
+    let startTime;
+    let animationFrame;
+
+    const animate = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const progress = timestamp - startTime;
+      const currentCount = Math.min(
+        Math.floor((progress / duration) * end),
+        end,
+      );
+
+      setCount(currentCount);
+
+      if (progress < duration) {
+        animationFrame = requestAnimationFrame(animate);
+      } else {
+        setCount(end);
+      }
+    };
+
+    animationFrame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [hasStarted, end, duration]);
+
+  return <span ref={countRef}>{count.toLocaleString()}</span>;
+};
+
 export default function App() {
   const { highlights } = useHighlights();
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
+
+  const PLATFORM_STATS = [
+    {
+      label: 'Total Users',
+      value: highlights.totalUsers,
+      icon: Users,
+      color: 'text-blue-600',
+      bg: 'bg-blue-50',
+      border: 'border-blue-100',
+    },
+    {
+      label: 'GitHub Profiles Analyzed',
+      value: highlights.totalGithubProfiles,
+      icon: Github,
+      color: 'text-indigo-600',
+      bg: 'bg-indigo-50',
+      border: 'border-indigo-100',
+    },
+    {
+      label: 'LeetCode Profiles Analyzed',
+      value: highlights.totalLeetcodeProfiles,
+      icon: Code,
+      color: 'text-purple-600',
+      bg: 'bg-purple-50',
+      border: 'border-purple-100',
+    },
+    {
+      label: 'Resumes Scanned',
+      value: highlights.totalResumes,
+      icon: FileText,
+      color: 'text-rose-600',
+      bg: 'bg-rose-50',
+      border: 'border-rose-100',
+    },
+    {
+      label: 'API Keys Issued',
+      value: highlights.totalApiKeys,
+      icon: Key,
+      color: 'text-amber-600',
+      bg: 'bg-amber-50',
+      border: 'border-amber-100',
+    },
+    {
+      label: 'Public API Requests Made',
+      value: highlights.totalPublicApiCalls,
+      icon: Zap,
+      color: 'text-emerald-600',
+      bg: 'bg-emerald-50',
+      border: 'border-emerald-100',
+    },
+  ];
 
   return (
     <div id="webcrumbs">
@@ -50,8 +155,15 @@ export default function App() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div className="space-y-6">
                 <AnimatedLayout>
-                  <h2 className="text-4xl md:text-5xl lg:text-7xl font-black leading-tight text-slate-800 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
-                    CodeFolio
+                  <h2 className="text-4xl md:text-5xl lg:text-7xl font-black leading-tight flex items-center gap-4">
+                    <img
+                      src={LOGO_URL}
+                      alt="CodeFolio Logo"
+                      className="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20"
+                    />
+                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+                      CodeFolio
+                    </span>
                   </h2>
                 </AnimatedLayout>
                 <AnimatedLayout delay={100}>
@@ -114,6 +226,54 @@ export default function App() {
               </AnimatedLayout>
             </div>
           </header>
+
+          {/* Metrics Section */}
+          <section id="metrics" className="container mx-auto py-12">
+            <AnimatedLayout className="text-center mb-16">
+              <h2 className="text-3xl md:text-5xl font-black text-slate-800 mb-6">
+                Our Growing Tech Ecosystem
+              </h2>
+              <p className="text-slate-500 font-bold max-w-2xl mx-auto uppercase tracking-widest text-xs">
+                Real-time insights into how developers are using CodeFolio to
+                analyze profiles and power their technical growth.
+              </p>
+            </AnimatedLayout>
+            <AnimatedLayout delay={400}>
+              <div className="backdrop-blur-sm p-10 rounded-[3rem] shadow-xl shadow-slate-100/50">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-12">
+                  {PLATFORM_STATS.map((stat, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-6 group cursor-default"
+                    >
+                      <div
+                        className={`w-16 h-16 rounded-3xl ${stat.bg} ${stat.border} border flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-sm`}
+                      >
+                        <stat.icon className={`w-8 h-8 ${stat.color}`} />
+                      </div>
+                      <div className="flex flex-col">
+                        <div className="flex items-baseline gap-1">
+                          <span
+                            className={`text-4xl font-black text-slate-800 tracking-tight`}
+                          >
+                            <CountUp end={stat.value || 0} />
+                          </span>
+                          <span
+                            className={`text-4xl   font-bold ${stat.color}`}
+                          >
+                            +
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                          {stat.label}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </AnimatedLayout>
+          </section>
 
           {/* Features Section */}
           <section id="features" className="py-24">

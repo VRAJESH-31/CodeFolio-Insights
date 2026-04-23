@@ -1,4 +1,4 @@
-# CodeFolio
+x# CodeFolio
 **AI-powered developer intelligence platform that unifies coding profiles, analyzes strengths, and exposes reusable public APIs.**
 
 ## Overview
@@ -37,17 +37,12 @@ It also provides a **Public API product** with API keys, project-level usage tra
 - Tooling: ESLint, Prettier, Nodemon
 
 ## Architecture / How It Works
-```mermaid
-flowchart LR
-    U[User] --> FE[React Frontend]
-    FE --> BE[Express API]
-    BE --> DB[(MongoDB)]
-    BE --> R[(Upstash Redis)]
-    BE --> G[Gemini API]
-    BE --> SG[SendGrid]
-    BE --> CL[Cloudinary]
-    BE --> EXT[Coding Platforms + GitHub + LeetCode APIs/Scraping]
-```
+![Architecture Design](docs/designs/codefolio-architecture.png)
+
+## Database Schema (MongoDB)
+The core entities and their relationships are visualized below:
+
+![Database Design](docs/designs/database-design.jpg)
 
 Core backend flow:
 1. `frontend` calls `backend` with cookie/JWT auth where required.
@@ -305,7 +300,9 @@ Base: `GET /api/platform/*`
 - Add background job queue for heavy scraping/analyzer tasks
 - Improve test coverage (unit + integration + e2e)
 - Add Dockerized local setup
-- Add role-based admin panel for support and moderation
+- Make Platform responsive for different screen sizes
+- Add dark modes and multiple themes
+- 
 
 ## Contributing
 1. Fork the repository
