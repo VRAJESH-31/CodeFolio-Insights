@@ -27,7 +27,7 @@ const login = asyncHandler(async (req, res) => {
     if (!requires2FA) {
         const userObject = user.toObject();
         delete userObject.password;
-        if (userObject.hasOwnProperty("googleId")) delete userObject.googleId;
+        if (userObject.googleId) delete userObject.googleId;
 
         const token = generateAuthToken(user._id, res);
         return res.status(200).json({ token, user: userObject });
@@ -52,7 +52,7 @@ const verifyOTP = asyncHandler(async (req, res) => {
     let decoded;
     try {
         decoded = jwt.verify(verificationToken, JWT_SECRET);
-    } catch (err) {
+    } catch {
         return res.status(401).json({ message: 'Invalid or expired verification token' });
     }
 
@@ -62,7 +62,7 @@ const verifyOTP = asyncHandler(async (req, res) => {
 
     const userObject = user.toObject();
     delete userObject.password;
-    if (userObject.hasOwnProperty("googleId")) delete userObject.googleId;
+    if (userObject.googleId) delete userObject.googleId;
 
     const token = generateAuthToken(user._id, res);
     return res.status(200).json({
@@ -72,7 +72,7 @@ const verifyOTP = asyncHandler(async (req, res) => {
     });
 });
 
-const logout = asyncHandler(async (req, res, next) => {
+const logout = asyncHandler(async (req, res) => {
     deleteAuthToken(res);
     return res.status(200).json({ message: 'Logged out successfully' });
 });

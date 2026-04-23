@@ -3,7 +3,7 @@ import { useNavigate, useParams, Outlet } from 'react-router-dom';
 import { DashboardSidebar } from '../components/sidebars/export.js';
 import { useProfileCache, useProfileRefresh } from '../hooks/useProfiles.js';
 import { useUser } from '../hooks/useUsers.js';
-import { Loader } from '../components/loaders/export.js';
+import { LoaderLabel } from '../components/loaders/export.js';
 import { DashboardSkeleton } from '../components/skeletons/export.js';
 import { CircleAlert, Plus } from 'lucide-react';
 import { PageNotFound } from "../pages/export.js"
@@ -46,7 +46,7 @@ const DashboardLayout = () => {
                 <DashboardSidebar userData={userData} />
                 <main className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 bg-slate-50/50">
 
-                    {isRefreshing && <Loader text="Refreshing stats..." showLoading={true} />}
+                    {isRefreshing && <LoaderLabel text="Refreshing stats..." showLoading={true} />}
 
                     <Outlet
                         context={{ data, userData, isLoading: isLoadingCache }}
@@ -72,7 +72,7 @@ const DashboardLayout = () => {
                             <div className="space-y-4">
                                 <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">No Platforms Connected</h2>
                                 <p className="text-slate-500 font-medium leading-relaxed">
-                                    Your dashboard is empty because you haven't linked any problem-solving or development platforms yet. Or maybe the latest data for the coding profiles whose link you attached is not loaded yet.
+                                    Your dashboard is empty because you haven&apos;t linked any problem-solving or development platforms yet. Or maybe the latest data for the coding profiles whose link you attached is not loaded yet.
                                 </p>
                             </div>
 

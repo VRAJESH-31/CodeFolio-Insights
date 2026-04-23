@@ -461,6 +461,15 @@ export const GITHUB_API_QUERIES = {
     }`,
 
     GITHUB_PROFILE_README_QUERY: `
-        query($username: String!) { user(login: $username) { profileReadmeRepo: repository(name: $username) { isPrivate readmeFile: object(expression: \"HEAD:README.md\") { ... on Blob { byteSize } } } } }
+        query($username: String!) { 
+            user(login: $username) { 
+                profileReadmeRepo: repository(name: $username) { 
+                    isPrivate 
+                    readmeFile: object(expression: "HEAD:README.md") { 
+                        ... on Blob { byteSize } 
+                    } 
+                } 
+            } 
+        }
     `,
 }

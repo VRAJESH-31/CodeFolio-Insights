@@ -73,7 +73,7 @@ const ScoreMeter = ({ score, scoreComparison }) => {
                                 <div className="bg-gradient-to-r from-amber-50 to-yellow-50 p-4 rounded-2xl border border-amber-100 flex items-center gap-3">
                                     <Crown className="h-5 w-5 text-amber-500" />
                                     <p className="text-sm font-bold text-amber-700">
-                                        You've achieved the highest score among all {total} entries!
+                                        You&apos;ve achieved the highest score among all {total} entries!
                                     </p>
                                 </div>
                             );

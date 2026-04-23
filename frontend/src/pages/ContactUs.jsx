@@ -3,7 +3,7 @@ import { Mail, User, Send, Zap, ShieldCheck, Lightbulb } from 'lucide-react';
 import { useContactUs } from '../hooks/useEmail.js';
 
 const ContactUs = () => {
-    const { mutate: sendMessage, isPending: isLoading, reset } = useContactUs();
+    const { mutate: sendMessage, isPending: isLoading } = useContactUs();
     const [formData, setFormData] = useState({
         name: '',
         email: '',

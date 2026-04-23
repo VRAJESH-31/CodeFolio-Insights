@@ -87,7 +87,7 @@ const getNormalizedCodeChefHeatmap = (heatmap) => {
   }
   const yearlyData = {};
   for (const key in heatmap) {
-    if (heatmap.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(heatmap, key)) {
       const parts = key.split('-');
       if (parts.length === 3) {
         const year = parseInt(parts[0], 10);
@@ -103,7 +103,7 @@ const getNormalizedCodeChefHeatmap = (heatmap) => {
     }
   }
   for (const year in yearlyData) {
-    if (yearlyData.hasOwnProperty(year)) {
+    if (Object.prototype.hasOwnProperty.call(yearlyData, year)) {
       const sortedDates = {};
       Object.keys(yearlyData[year]).sort().forEach(dateKey => {
         sortedDates[dateKey] = yearlyData[year][dateKey];
@@ -120,7 +120,7 @@ const getNormalizedLeetCodeHeatmap = (heatmap, year) => {
   }
   const completedHeatmap = {};
   for (const timestampKey in heatmap) {
-    if (heatmap.hasOwnProperty(timestampKey)) {
+    if (Object.prototype.hasOwnProperty.call(heatmap, timestampKey)) {
       const timestampSeconds = parseInt(timestampKey, 10);
       const timestampMilliseconds = timestampSeconds * 1000;
       const date = new Date(timestampMilliseconds);
@@ -139,7 +139,7 @@ const getNormalizedLeetCodeHeatmap = (heatmap, year) => {
       const currentMonth = String(currentDate.getUTCMonth() + 1).padStart(2, '0');
       const currentDay = String(currentDate.getUTCDate()).padStart(2, '0');
       const dateKey = `${currentYear}-${currentMonth}-${currentDay}`;
-      if (!completedHeatmap.hasOwnProperty(dateKey)) {
+      if (!Object.prototype.hasOwnProperty.call(completedHeatmap, dateKey)) {
         completedHeatmap[dateKey] = 0;
       }
     }

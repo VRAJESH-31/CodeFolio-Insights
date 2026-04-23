@@ -6,7 +6,7 @@ const ResumeUploadSection = ({ jobDescription, setJobDescription, experience, se
     return (
         <div className="p-6 bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/60 space-y-8 animate-float-in">
             <div className="text-center space-y-2">
-                <Sparkles className="h-10 w-10 text-pink-600 mx-auto" />
+                <Sparkles className="h-10 w-10 text-blue-600 mx-auto" />
                 <h1 className="text-3xl font-black text-gray-800">AI Resume Analyzer</h1>
                 <p className="text-gray-500 max-w-xl mx-auto">Analyze your resume against a job description for data-driven insights.</p>
             </div>
@@ -59,15 +59,15 @@ const ResumeUploadSection = ({ jobDescription, setJobDescription, experience, se
                     <div className="flex items-center gap-2 mb-2"><Sparkles className="h-4 w-4 text-blue-600" /><span className="font-semibold text-blue-800 text-sm">Key Benefits</span></div>
                     <ul className="text-xs text-blue-700 space-y-1"><li>• Metrics evaluation</li><li>• Achievement analysis</li><li>• Formatting checks</li></ul>
                 </div>
-                <div className="bg-amber-50/50 p-4 rounded-2xl border border-amber-100">
-                    <div className="flex items-center gap-2 mb-2"><Target className="h-4 w-4 text-amber-600" /><span className="font-semibold text-amber-800 text-sm">Focus Areas</span></div>
-                    <ul className="text-xs text-amber-700 space-y-1"><li>• Skills matching</li><li>• Quantifiable impact</li><li>• Keyword optimization</li></ul>
+                <div className="bg-purple-50/50 p-4 rounded-2xl border border-purple-100">
+                    <div className="flex items-center gap-2 mb-2"><Target className="h-4 w-4 text-purple-600" /><span className="font-semibold text-purple-800 text-sm">Focus Areas</span></div>
+                    <ul className="text-xs text-purple-700 space-y-1"><li>• Skills matching</li><li>• Quantifiable impact</li><li>• Keyword optimization</li></ul>
                 </div>
             </div>
 
             <button
                 onClick={handleAnalyze} disabled={!isReadyToAnalyze || isLoading}
-                className={`w-full flex items-center justify-center gap-3 font-bold py-4 px-6 rounded-2xl shadow-lg transition-all transform group ${isReadyToAnalyze && !isLoading ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white hover:shadow-xl hover:-translate-y-1' : 'bg-gray-300 text-gray-600 cursor-not-allowed'}`}
+                className={`w-full flex items-center justify-center gap-3 font-bold py-4 px-6 rounded-2xl shadow-lg transition-all transform group ${isReadyToAnalyze && !isLoading ? 'bg-gradient-to-r from-blue-500 to-violet-600 text-white hover:shadow-xl hover:-translate-y-1' : 'bg-gray-300 text-gray-600 cursor-not-allowed'}`}
             >
                 {isLoading ? (
                     <><Loader2 className="h-5 w-5 animate-spin" /><span className="text-lg">Analyzing...</span></>

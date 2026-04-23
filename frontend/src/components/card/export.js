@@ -8,3 +8,4 @@ export { default as HackerrankCertificateCard } from './HackerrankCertificateCar
 export { default as FeatureCard } from './FeatureCard';
 export { default as ProjectCard } from './ProjectCard';
 export { default as FaqCard } from './FaqCard';
+export { default as TestimonialCard } from './TestimonialCard';

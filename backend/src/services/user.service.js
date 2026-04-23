@@ -2,6 +2,8 @@ import UserModel from "../models/user.model.js";
 import ProfileModel from "../models/profile.model.js";
 import ApiProjectModel from "../models/api-project.model.js"
 import ProfileViewModel from "../models/profile-view.model.js";
+import ScoreModel from "../models/score.model.js";
+import ApiPointsModel from "../models/api-points.model.js";
 import { destroyFile, uploadFile } from "../utils/cloudinary.util.js";
 import bcrypt from "bcrypt";
 import { addProfileView } from "./profile-view.service.js";
@@ -81,7 +83,7 @@ const getUsers = async (params) => {
         sortQuery = getSortQuery(searchField, searchOrder);
     }
 
-    let query = {};
+    let query;
     if (cursor) {
         const fieldQuery = getSearchQuery(searchField, searchOrder, cursor);
         query = {
@@ -189,16 +191,31 @@ const toggleProfileVisibility = async (userId) => {
 };
 
 const getUserHighlights = async () => {
-    const totalUsers = await UserModel.countDocuments();
-    const sampleUsersSize = 5;
-    const sampleUsers = await UserModel.find({ profileVisibility: true })
-        .limit(sampleUsersSize)
-        .select("name profile")
-        .lean();
+    const [totalUsers, sampleUsers, totalResumes, totalGithubProfiles, totalLeetcodeProfiles, totalApiKeys, publicApiData] = await Promise.all([
+        UserModel.countDocuments(),
+        UserModel.find({ profileVisibility: true }).limit(5).select("name profile").lean(),
+        ScoreModel.countDocuments({ platform: { $in: ["Generic Resume", "Resume with JD"] } }),
+        ScoreModel.countDocuments({ platform: "Github" }),
+        ScoreModel.countDocuments({ platform: "Leetcode" }),
+        ApiProjectModel.countDocuments(),
+        ApiPointsModel.aggregate([
+            {
+                $group: {
+                    _id: null,
+                    totalRequests: { $sum: "$requestsMade" }
+                }
+            }
+        ])
+    ]);
 
     return {
         totalUsers,
-        sampleUsers
+        sampleUsers,
+        totalResumes,
+        totalGithubProfiles,
+        totalLeetcodeProfiles,
+        totalApiKeys,
+        totalPublicApiCalls: publicApiData.length > 0 ? publicApiData[0].totalRequests : 0
     };
 };
 

@@ -1,1 +1,2 @@
-export { default as Loader } from './Loader';
+export { default as LoaderLabel } from './LoaderLabel';
+export { default as LoaderSpinner } from './LoaderSpinner';

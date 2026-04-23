@@ -2,7 +2,15 @@ import { useState, useEffect } from "react";
 import { axiosInstance } from "../api/export.js";
 
 const useHighlights = () => {
-    const [highlights, setHighlights] = useState({ totalUsers: 0, sampleUsers: [] });
+    const [highlights, setHighlights] = useState({ 
+        totalUsers: 0, 
+        sampleUsers: [], 
+        totalResumes: 0, 
+        totalGithubProfiles: 0, 
+        totalLeetcodeProfiles: 0, 
+        totalApiKeys: 0, 
+        totalPublicApiCalls: 0 
+    });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 

@@ -18,3 +18,4 @@ export { default as DashboardPreview } from './DashboardPreview';
 export { default as LandingNavbar } from './LandingNavbar';
 export { default as OTPInput } from './OTPInput';
 export { default as UsernameInput } from './UsernameInput';
+export { default as StepTimeline } from './StepTimeline';
