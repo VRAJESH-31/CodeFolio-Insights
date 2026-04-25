@@ -1,4 +1,4 @@
-x# CodeFolio
+# CodeFolio
 **AI-powered developer intelligence platform that unifies coding profiles, analyzes strengths, and exposes reusable public APIs.**
 
 ## Overview
@@ -295,6 +295,7 @@ Base: `GET /api/platform/*`
 
 ## Future Improvements
 - Add additional platforms (Codeforces, AtCoder, HackerEarth, TopCoder, Kaggle)
+- Add Leaderboard feature to track the rankings of all public CodeFolio profiles
 - Improve API observability (dashboard + per-endpoint latency monitoring)
 - Introduce API versioning and OpenAPI/Swagger generation
 - Add background job queue for heavy scraping/analyzer tasks
@@ -302,14 +303,9 @@ Base: `GET /api/platform/*`
 - Add Dockerized local setup
 - Make Platform responsive for different screen sizes
 - Add dark modes and multiple themes
-- 
 
 ## Contributing
-1. Fork the repository
-2. Create a feature branch
-3. Commit with clear messages
-4. Run lint/format checks
-5. Open a pull request with description and test notes
+Refer to [CONTRIBUTING.md](CONTRIBUTING.md) file.
 
 Suggested local checks:
 ```bash

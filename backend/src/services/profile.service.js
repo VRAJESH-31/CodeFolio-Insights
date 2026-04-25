@@ -11,11 +11,6 @@ const getProfiles = async (displayName, currentUser) => {
     if (!user) throw new ApiError(404, "User not found.");
 
     const userId = user._id;
-    const isAdmin = !!currentUser && currentUser.isAdmin;
-    const isOwner = !!currentUser && currentUser._id.equals(userId);
-    const isPublic = user.profileVisibility === true;
-
-    if (!isAdmin && !isOwner && !isPublic) throw new ApiError(403, "Profile visibility is set to private.");
 
     const profiles = await ProfileModel.findOneAndUpdate(
         { userId: userId },
@@ -80,11 +75,6 @@ const getProfileCache = async (displayName, currentUser) => {
     if (!user) throw new ApiError(404, "User not found.");
 
     const userId = user._id;
-    const isAdmin = !!currentUser && currentUser.isAdmin;
-    const isOwner = !!currentUser && currentUser._id.equals(userId);
-    const isPublic = user.profileVisibility === true;
-
-    if (!isAdmin && !isOwner && !isPublic) throw new ApiError(403, "Profile visibility is set to private.");
 
     const cachedDataParams = await redisClient.get(`profileData:${userId}`);
     return cachedDataParams || null;
@@ -95,11 +85,6 @@ const refreshProfileData = async (displayName, currentUser) => {
     if (!user) throw new ApiError(404, "User not found.");
 
     const userId = user._id;
-    const isAdmin = currentUser && currentUser.isAdmin;
-    const isOwner = currentUser && currentUser._id.equals(userId);
-    const isPublic = user.profileVisibility === true;
-
-    if (!isAdmin && !isOwner && !isPublic) throw new ApiError(403, "Profile visibility is set to private.");
 
     const profileLinks = await ProfileModel.findOneAndUpdate(
         { userId },

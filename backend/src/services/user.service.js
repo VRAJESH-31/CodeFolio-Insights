@@ -39,11 +39,6 @@ const getUser = async (displayName, currentUser, viewerDeviceToken, viewerSigned
     if (!user) throw new ApiError(404, "User not found.");
 
     const userId = user._id;
-    const isAdmin = !!currentUser && currentUser.isAdmin;
-    const isOwner = !!currentUser && currentUser._id.equals(userId);
-    const isPublic = user.profileVisibility === true;
-
-    if (!isAdmin && !isOwner && !isPublic) throw new ApiError(403, "Profile visibility is set to private.");
 
     if (viewerDeviceToken && !viewerSignedDeviceToken) {
         throw new ApiError(401, "Invalid device token!");
