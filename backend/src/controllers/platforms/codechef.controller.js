@@ -3,11 +3,7 @@ import asyncHandler from '../../utils/async-handler.util.js';
 
 const getUserInfo = asyncHandler(async (req, res) => {
   const { username, includeAchievements, includeContests } = req.query;
-  const data = await CodeChefService.getUserInfo(
-    username,
-    includeAchievements,
-    includeContests,
-  );
+  const data = await CodeChefService.getUserInfo(username, includeAchievements, includeContests);
   return res.status(200).json(data);
 });
 

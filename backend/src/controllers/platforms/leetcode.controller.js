@@ -88,20 +88,4 @@ const getCreatedPublicFavoriteList = asyncHandler(async (req, res) => {
   return res.status(200).json(data);
 });
 
-export {
-  getUserProfile,
-  getLanguageStats,
-  getUserCalendar,
-  getRecentAcSubmissions,
-  getUserBadges,
-  getContestRanking,
-  getSkillStats,
-  getUserProfileQuestionProgressV2,
-  getUserSessionProgress,
-  getContestRatingHistogram,
-  getQuestionOfToday,
-  getCodingChallengeMedal,
-  getUpcomingContests,
-  getGlobalTopRankers,
-  getCreatedPublicFavoriteList,
-};
+export { getUserProfile, getLanguageStats, getUserCalendar, getRecentAcSubmissions, getUserBadges, getContestRanking, getSkillStats, getUserProfileQuestionProgressV2, getUserSessionProgress, getContestRatingHistogram, getQuestionOfToday, getCodingChallengeMedal, getUpcomingContests, getGlobalTopRankers, getCreatedPublicFavoriteList };

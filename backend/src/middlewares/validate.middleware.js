@@ -1,4 +1,5 @@
 import { ZodError } from 'zod';
+import ApiError from '../utils/api-error.util.js';
 
 const validate = (schema) => {
     return async (req, res, next) => {
@@ -17,11 +18,11 @@ const validate = (schema) => {
 
             return next();
         } catch (error) {
-            console.log(error.stack);
+            console.error(error.stack);
             if (error instanceof ZodError) {
-                return res.status(400).json({ message: Object.entries(JSON.parse(error.message))[0][1].message });
+                return next(new ApiError(400, Object.entries(JSON.parse(error.message))[0][1].message));
             }
-            return res.status(500).json({ message: 'Internal Server Error' });
+            return next(new ApiError(500, "Internal Server Error"));
         }
     }
 }

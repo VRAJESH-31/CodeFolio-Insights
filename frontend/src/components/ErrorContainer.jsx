@@ -1,61 +1,71 @@
-import { AlertCircle, RefreshCw } from "lucide-react";
+import React from 'react';
+import { AlertCircle, RefreshCw, ArrowLeft, LifeBuoy } from 'lucide-react';
+import conf from '@/config/config.js';
 
 const ErrorContainer = ({ error, onRetry, onBack, isLoading, errorAdditionalHelp = [] }) => {
-    return (
-        <div className="flex-1 flex items-center justify-center py-6">
-            <div className="bg-white p-8 md:p-14 text-center rounded-[2.5rem] border border-blue-100 shadow-xl shadow-blue-500/5 w-full relative overflow-hidden group hover:border-blue-200 transition-all duration-500">
-                {/* Background accents */}
-                <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-500"></div>
-                <div className="absolute -right-32 -top-32 w-96 h-96 bg-blue-50 rounded-full blur-[80px] opacity-60 pointer-events-none group-hover:bg-blue-100 transition-colors duration-700"></div>
-                <div className="absolute -left-32 -bottom-32 w-96 h-96 bg-indigo-50 rounded-full blur-[80px] opacity-60 pointer-events-none group-hover:bg-indigo-100 transition-colors duration-700"></div>
+  return (
+    <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-6 animate-float-in relative w-full group">
+      {/* Background Decorative Glows - Provide depth and modern aesthetic */}
+      <div className="absolute -top-12 -left-12 w-64 h-64 bg-blue-500/10 rounded-full blur-[100px] group-hover:bg-blue-500/20 transition-all duration-1000"></div>
+      <div className="absolute -bottom-12 -right-12 w-64 h-64 bg-indigo-500/10 rounded-full blur-[100px] group-hover:bg-indigo-500/20 transition-all duration-1000"></div>
 
-                <div className="relative z-10 flex flex-col items-center w-full max-w-4xl mx-auto">
-                    <div className="w-24 h-24 bg-blue-50 rounded-[2rem] border border-blue-100 flex items-center justify-center mb-8 shadow-sm group-hover:scale-110 transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]">
-                        <AlertCircle className="w-10 h-10 text-blue-500" />
-                    </div>
+      {/* Main Glassmorphism Card */}
+      <div className="relative bg-white/70 backdrop-blur-2xl border border-white/50 rounded-[2.5rem] p-8 md:p-10 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] overflow-hidden transition-all duration-500 hover:border-blue-200/50 max-w-xl w-full">
+        {/* Subtle top accent line */}
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500/30 to-transparent"></div>
 
-                    <h3 className="text-3xl md:text-4xl font-black text-slate-800 mb-4 tracking-tight">Oops! Something went wrong</h3>
-                    <p className="text-slate-500 text-[15px] max-w-2xl mx-auto mb-10 leading-relaxed font-medium break-words">
-                        {typeof error === 'string' 
-                            ? error 
-                            : "We encountered an unexpected error while trying to process your request. This might be due to API limitations or server issues."}
-                    </p>
-
-                    {errorAdditionalHelp && errorAdditionalHelp.length > 0 && (
-                        <div className="bg-slate-50 rounded-[2rem] p-8 md:p-10 border border-slate-100 w-full text-left mb-10">
-                            <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">Troubleshooting Steps</h4>
-                            <ul className="space-y-4">
-                                {errorAdditionalHelp.map((point, i) => (
-                                    <li key={i} className="flex items-start text-slate-600 font-medium">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 mr-4 shrink-0 shadow-sm shadow-blue-200"></div>
-                                        <span className="leading-relaxed">{point}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-
-                    <div className="flex flex-col sm:flex-row justify-center items-center w-full gap-4">
-                        <button
-                            onClick={onBack}
-                            className="w-full sm:w-auto px-10 py-4 bg-white border-2 border-slate-200 hover:border-slate-300 text-slate-600 hover:text-slate-800 font-black text-xs uppercase tracking-[0.15em] rounded-full transition-all flex items-center justify-center space-x-3 shadow-md hover:-translate-y-1 hover:shadow-lg disabled:opacity-50"
-                        >
-                            <span>Go Back</span>
-                        </button>
-                        
-                        <button
-                            onClick={onRetry} 
-                            disabled={isLoading}
-                            className="w-full sm:w-auto px-10 py-4 bg-slate-900 hover:bg-slate-800 text-white font-black text-xs uppercase tracking-[0.15em] rounded-full transition-all flex items-center justify-center space-x-3 shadow-xl shadow-slate-200 hover:-translate-y-1 hover:shadow-2xl hover:shadow-slate-300 disabled:opacity-50 disabled:cursor-not-allowed group/btn"
-                        >
-                            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : 'group-hover/btn:rotate-180 transition-transform duration-500'}`} />
-                            <span>{isLoading ? 'Retrying...' : 'Try Again'}</span>
-                        </button>
-                    </div>
-                </div>
+        <div className="relative z-10 flex flex-col items-center">
+          {/* Layered Animated Icon - High visual impact */}
+          <div className="relative mb-6">
+            <div className="absolute inset-0 bg-blue-500/20 rounded-2xl blur-xl animate-pulse"></div>
+            <div className="relative w-16 h-16 bg-white rounded-2xl shadow-lg border border-blue-50/50 flex items-center justify-center transform group-hover:scale-105 group-hover:rotate-3 transition-all duration-500 ease-out">
+              <AlertCircle className="w-8 h-8 text-blue-500" />
             </div>
+          </div>
+
+          {/* Typography Section - Clear hierarchy */}
+          <div className="text-center space-y-3 mb-8">
+            <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight leading-tight uppercase">
+              Something went <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500">unexpected.</span>
+            </h3>
+            <p className="text-slate-500 font-medium text-sm md:text-base max-w-sm mx-auto leading-relaxed">{typeof error === 'string' && conf.ENV === 'development' ? error : 'We encountered a temporary issue while processing your request. Please try again.'}</p>
+          </div>
+
+          {/* Troubleshooting Section - Modern "Card-in-Card" layout */}
+          {errorAdditionalHelp && errorAdditionalHelp.length > 0 && (
+            <div className="w-full bg-slate-50/50 rounded-2xl p-6 border border-slate-100/50 mb-8">
+              <div className="flex items-center gap-2 mb-4">
+                <LifeBuoy className="w-3.5 h-3.5 text-blue-500" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Recovery Steps</span>
+              </div>
+              <div className="grid gap-4">
+                {errorAdditionalHelp.map((step, i) => (
+                  <div key={i} className="flex gap-4 items-start group/step">
+                    <div className="w-5 h-5 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 text-[10px] font-black text-slate-400 group-hover/step:border-blue-400 group-hover/step:text-blue-500 transition-colors duration-300">{i + 1}</div>
+                    <p className="text-xs text-slate-600 font-medium pt-0.5 leading-relaxed">{step}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons - Distinct primary/secondary styles */}
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full justify-center">
+            <button onClick={onBack} className="w-full sm:w-auto px-8 py-3 bg-white border border-slate-200 hover:border-slate-300 text-slate-600 hover:text-slate-900 font-black text-[11px] uppercase tracking-[0.12em] rounded-xl transition-all hover:shadow-md active:scale-95 flex items-center justify-center gap-2">
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Go Back</span>
+            </button>
+
+            <button onClick={onRetry} disabled={isLoading} className="w-full sm:w-auto px-8 py-3 bg-slate-900 hover:bg-slate-800 text-white font-black text-[11px] uppercase tracking-[0.12em] rounded-xl transition-all shadow-xl shadow-slate-900/20 hover:shadow-slate-900/30 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`} />
+              <span>{isLoading ? 'Retrying...' : 'Try Again'}</span>
+            </button>
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
 export default ErrorContainer;

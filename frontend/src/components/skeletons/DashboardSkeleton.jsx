@@ -17,10 +17,7 @@ const DashboardSkeleton = () => {
 
           <div className="flex justify-between w-full px-4 mb-8">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div
-                key={i}
-                className="w-6 h-6 bg-slate-100 animate-pulse rounded-full"
-              ></div>
+              <div key={i} className="w-6 h-6 bg-slate-100 animate-pulse rounded-full"></div>
             ))}
           </div>
 
@@ -29,10 +26,7 @@ const DashboardSkeleton = () => {
 
         <div className="mt-4 px-4 space-y-4">
           {[1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className="h-12 w-full bg-slate-50 animate-pulse rounded-2xl"
-            ></div>
+            <div key={i} className="h-12 w-full bg-slate-50 animate-pulse rounded-2xl"></div>
           ))}
         </div>
 
@@ -50,10 +44,7 @@ const DashboardSkeleton = () => {
             <div className="space-y-8">
               <div className="grid grid-cols-2 gap-4">
                 {[1, 2].map((i) => (
-                  <div
-                    key={i}
-                    className="h-36 bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm"
-                  >
+                  <div key={i} className="h-36 bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm">
                     <div className="h-3 w-24 bg-slate-100 rounded-full mb-4" />
                     <div className="h-8 w-16 bg-slate-200 rounded-lg" />
                   </div>
@@ -64,10 +55,7 @@ const DashboardSkeleton = () => {
                 <div className="h-4 w-32 bg-slate-200 rounded-full mb-10" />
                 <div className="flex justify-around items-center pt-4">
                   {[1, 2].map((i) => (
-                    <div
-                      key={i}
-                      className="flex flex-col items-center space-y-4"
-                    >
+                    <div key={i} className="flex flex-col items-center space-y-4">
                       <div className="w-24 h-24 bg-slate-100 rounded-2xl rotate-45" />
                       <div className="h-3 w-20 bg-slate-100 rounded-full" />
                     </div>
@@ -92,19 +80,13 @@ const DashboardSkeleton = () => {
             {/* Right Column Layout */}
             <div className="space-y-8">
               {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-sm min-h-[280px]"
-                >
+                <div key={i} className="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-sm min-h-[280px]">
                   <div className="h-5 w-40 bg-slate-200 rounded-full mx-auto mb-8" />
                   <div className="flex items-center justify-center gap-12">
                     <div className="w-32 h-32 border-[12px] border-slate-100 rounded-full" />
                     <div className="space-y-4">
                       {[1, 2, 3].map((j) => (
-                        <div
-                          key={j}
-                          className="h-3 w-32 bg-slate-100 rounded-full"
-                        />
+                        <div key={j} className="h-3 w-32 bg-slate-100 rounded-full" />
                       ))}
                     </div>
                   </div>

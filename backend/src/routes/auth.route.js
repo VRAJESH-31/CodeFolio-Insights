@@ -3,7 +3,6 @@ import passport from "passport";
 import { signup, login, verifyOTP, logout, checkAuth } from "../controllers/auth.controller.js";
 import { signupValidationSchema, loginValidationSchema, otpValidationSchema } from "../validators/auth.validate.js";
 import { getAnalytics } from "../middlewares/analytics.middleware.js";
-import { protectRoute } from "../middlewares/auth.middleware.js";
 import { CORS_ORIGIN } from "../config/env.config.js"
 import { generateAuthToken } from "../utils/token.util.js"
 import { validate } from "../middlewares/validate.middleware.js";
@@ -12,37 +11,36 @@ import { loginRateLimiter } from "../middlewares/rate-limiter.middleware.js";
 const router = express.Router();
 
 router.post(
-    '/signup', 
-    getAnalytics, 
-    validate(signupValidationSchema), 
-    signup
+  '/signup',
+  getAnalytics,
+  validate(signupValidationSchema),
+  signup
 );
 
 router.post(
-    '/login', 
-    getAnalytics, 
-    loginRateLimiter, 
-    validate(loginValidationSchema), 
-    login
+  '/login',
+  getAnalytics,
+  loginRateLimiter,
+  validate(loginValidationSchema),
+  login
 );
 
 router.post(
-    '/verify-otp', 
-    getAnalytics, 
-    validate(otpValidationSchema),
-    verifyOTP
+  '/verify-otp',
+  getAnalytics,
+  validate(otpValidationSchema),
+  verifyOTP
 );
 
 router.get(
-    "/check", 
-    checkAuth
+  "/check",
+  checkAuth
 );
 
 router.post(
-    '/logout', 
-    getAnalytics, 
-    protectRoute, 
-    logout
+  '/logout',
+  getAnalytics,
+  logout
 );
 
 router.get('/google',

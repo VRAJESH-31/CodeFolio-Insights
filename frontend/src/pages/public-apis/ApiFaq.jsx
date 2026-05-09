@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HelpCircle } from 'lucide-react';
-import { PUBLIC_API_FAQS } from '../../constants/faqs.js';
-import { FaqCard } from '../../components/card/export.js';
+import { PUBLIC_API_FAQS } from '@/constants/faqs.js';
+import { FaqCard } from '@/components/cards/export.js';
 
 const ApiFaq = () => {
   const navigate = useNavigate();
@@ -19,23 +19,13 @@ const ApiFaq = () => {
           <div className="p-2 bg-blue-100 text-blue-600 rounded-xl">
             <HelpCircle className="w-6 h-6" />
           </div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-            Frequently Asked Questions
-          </h1>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">Frequently Asked Questions</h1>
         </div>
-        <p className="text-slate-500 mb-10 ml-12">
-          Everything you need to know about our Public APIs, rate limits, and
-          integrations.
-        </p>
+        <p className="text-slate-500 mb-10 ml-12">Everything you need to know about our Public APIs, rate limits, and integrations.</p>
 
         <div className="space-y-4">
           {PUBLIC_API_FAQS.map((faq, index) => (
-            <FaqCard
-              key={index}
-              {...faq}
-              isOpen={openIndex === index}
-              onClick={() => toggleFaq(index)}
-            />
+            <FaqCard key={index} {...faq} isOpen={openIndex === index} onClick={() => toggleFaq(index)} />
           ))}
         </div>
 
@@ -44,17 +34,9 @@ const ApiFaq = () => {
             <HelpCircle size={200} />
           </div>
 
-          <h2 className="text-2xl font-bold mb-3 relative z-10">
-            Still have questions?
-          </h2>
-          <p className="text-blue-100 mb-6 relative z-10 max-w-md">
-            Can't find the answer you're looking for? Please reach out to our
-            friendly team.
-          </p>
-          <button
-            onClick={() => navigate('/contact-us')}
-            className="px-6 py-3 bg-white text-blue-600 font-semibold rounded-xl hover:bg-blue-50 transition-colors relative z-10"
-          >
+          <h2 className="text-2xl font-bold mb-3 relative z-10">Still have questions?</h2>
+          <p className="text-blue-100 mb-6 relative z-10 max-w-md">Can't find the answer you're looking for? Please reach out to our friendly team.</p>
+          <button onClick={() => navigate('/contact-us')} className="px-6 py-3 bg-white text-blue-600 font-semibold rounded-xl hover:bg-blue-50 transition-colors relative z-10">
             Submit a Request
           </button>
         </div>

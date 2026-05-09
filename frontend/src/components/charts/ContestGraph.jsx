@@ -1,14 +1,5 @@
 import { useMemo, useState, useCallback, useEffect } from 'react';
-import {
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Area,
-  ComposedChart,
-} from 'recharts';
+import { Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, ComposedChart } from 'recharts';
 
 const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
@@ -18,20 +9,13 @@ const CustomTooltip = ({ active, payload }) => {
         <p className="font-bold text-amber-600 mb-1">{contest.title}</p>
         <div className="space-y-0.5 text-xs text-gray-500">
           <p>
-            Date:{' '}
-            <span className="text-gray-700 font-semibold">{contest.date}</span>
+            Date: <span className="text-gray-700 font-semibold">{contest.date}</span>
           </p>
           <p>
-            Rating:{' '}
-            <span className="text-gray-700 font-black">
-              {contest.rating.toFixed(0)}
-            </span>
+            Rating: <span className="text-gray-700 font-black">{contest.rating.toFixed(0)}</span>
           </p>
           <p>
-            Rank:{' '}
-            <span className="text-gray-700 font-semibold">
-              {contest.ranking}
-            </span>
+            Rank: <span className="text-gray-700 font-semibold">{contest.ranking}</span>
           </p>
         </div>
       </div>
@@ -42,11 +26,8 @@ const CustomTooltip = ({ active, payload }) => {
 
 const ContestGraph = ({ contestData }) => {
   const { sortedData, latestContest } = useMemo(() => {
-    if (!contestData || contestData.length === 0)
-      return { sortedData: [], latestContest: null };
-    const data = [...contestData].sort(
-      (a, b) => new Date(a.date) - new Date(b.date),
-    );
+    if (!contestData || contestData.length === 0) return { sortedData: [], latestContest: null };
+    const data = [...contestData].sort((a, b) => new Date(a.date) - new Date(b.date));
     const cleanedData = data.map((item) => ({
       ...item,
       rating: parseFloat(item.rating) || 0,
@@ -68,11 +49,7 @@ const ContestGraph = ({ contestData }) => {
 
   const handleMouseMove = useCallback(
     (state) => {
-      if (
-        state &&
-        state.activeTooltipIndex !== undefined &&
-        state.isTooltipActive
-      ) {
+      if (state && state.activeTooltipIndex !== undefined && state.isTooltipActive) {
         const contestIndex = parseInt(state.activeTooltipIndex);
         if (sortedData[contestIndex]) {
           const contest = {
@@ -107,23 +84,13 @@ const ContestGraph = ({ contestData }) => {
     <div className="p-8 bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl flex flex-col border border-gray-100 hover:shadow-2xl transition-all group">
       <div className="flex justify-between items-start mb-8 border-b pb-6 border-gray-50">
         <div>
-          <h3 className="text-xs uppercase font-black text-gray-400 tracking-widest mb-1">
-            Rating
-          </h3>
-          <p className="text-5xl font-black text-[#155DFC]">
-            {currentContest?.rating?.toFixed(0) || 'N/A'}
-          </p>
+          <h3 className="text-xs uppercase font-black text-gray-400 tracking-widest mb-1">Rating</h3>
+          <p className="text-5xl font-black text-[#155DFC]">{currentContest?.rating?.toFixed(0) || 'N/A'}</p>
         </div>
         <div className="text-right">
-          <h3 className="text-xs uppercase font-black text-gray-400 tracking-widest mb-1">
-            {currentContest?.date || 'N/A'}
-          </h3>
-          <p className="text-xl font-black text-gray-800 truncate max-w-[300px]">
-            {currentContest?.title || 'No Data'}
-          </p>
-          <p className="text-sm font-bold text-gray-500">
-            Rank: {currentContest?.ranking || 'N/A'}
-          </p>
+          <h3 className="text-xs uppercase font-black text-gray-400 tracking-widest mb-1">{currentContest?.date || 'N/A'}</h3>
+          <p className="text-xl font-black text-gray-800 truncate max-w-[300px]">{currentContest?.title || 'No Data'}</p>
+          <p className="text-sm font-bold text-gray-500">Rank: {currentContest?.ranking || 'N/A'}</p>
         </div>
       </div>
 
@@ -132,7 +99,12 @@ const ContestGraph = ({ contestData }) => {
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
               data={sortedData}
-              margin={{ top: 10, right: 30, left: 10, bottom: 5 }}
+              margin={{
+                top: 10,
+                right: 30,
+                left: 10,
+                bottom: 5,
+              }}
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
             >
@@ -142,18 +114,18 @@ const ContestGraph = ({ contestData }) => {
                   <stop offset="95%" stopColor="#155DFC" stopOpacity={0.05} />
                 </linearGradient>
               </defs>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                vertical={false}
-                stroke="#f3f4f6"
-              />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
               <XAxis dataKey="date" hide={true} />
               <YAxis
                 domain={[domainMin, domainMax]}
                 tickCount={5}
                 axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 12, fill: '#94a3b8', fontWeight: 'bold' }}
+                tick={{
+                  fontSize: 12,
+                  fill: '#94a3b8',
+                  fontWeight: 'bold',
+                }}
               />
               <Tooltip
                 cursor={{
@@ -163,13 +135,7 @@ const ContestGraph = ({ contestData }) => {
                 }}
                 content={<CustomTooltip />}
               />
-              <Area
-                type="monotone"
-                dataKey="rating"
-                stroke="none"
-                fill="url(#colorRating)"
-                animationDuration={1000}
-              />
+              <Area type="monotone" dataKey="rating" stroke="none" fill="url(#colorRating)" animationDuration={1000} />
               <Line
                 type="monotone"
                 dataKey="rating"
@@ -192,9 +158,7 @@ const ContestGraph = ({ contestData }) => {
             </ComposedChart>
           </ResponsiveContainer>
         ) : (
-          <div className="flex items-center justify-center h-full text-gray-400 font-bold">
-            Please provide at least two entries.
-          </div>
+          <div className="flex items-center justify-center h-full text-gray-400 font-bold">Please provide at least two entries.</div>
         )}
       </div>
     </div>

@@ -1,16 +1,16 @@
-import sgMail from "@sendgrid/mail"
-import { SENDGRID_API_KEY, EMAIL_FROM } from "../config/env.config.js"
+import sgMail from '@sendgrid/mail';
+import { SENDGRID_API_KEY, EMAIL_FROM } from '../config/env.config.js';
 
 sgMail.setApiKey(SENDGRID_API_KEY);
 
 export const sendContactEmail = async (name, email, subject, message) => {
-    try {
-        const msg = {
-            to : EMAIL_FROM,
-            from: EMAIL_FROM,
-            replyTo: email,
-            subject: `[Contact Form] ${subject} - from ${name}`,
-            html: `
+  try {
+    const msg = {
+      to: EMAIL_FROM,
+      from: EMAIL_FROM,
+      replyTo: email,
+      subject: `[Contact Form] ${subject} - from ${name}`,
+      html: `
                 <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; color: #334155;">
                     <div style="background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); padding: 30px; border-radius: 20px 20px 0 0; text-align: center;">
                         <h2 style="color: white; margin: 0; text-transform: uppercase; letter-spacing: 2px; font-size: 20px;">New Contact Inquiry</h2>
@@ -42,24 +42,24 @@ export const sendContactEmail = async (name, email, subject, message) => {
                     </p>
                 </div>
             `,
-        }
+    };
 
-        await sgMail.send(msg);
-        return true;
-    } catch (error) {
-        console.error("Error sending email:", error);
-        console.log(error?.response?.data ? JSON.stringify(error?.response?.data, null, 2) : error);
-        return false;
-    }
-}
+    await sgMail.send(msg);
+    return true;
+  } catch (error) {
+    console.error('Error sending email:', error);
+    console.log(error?.response?.data ? JSON.stringify(error?.response?.data, null, 2) : error);
+    return false;
+  }
+};
 
 export const sendOtpEmail = async (email, otp) => {
-    try {
-        const msg = {
-            to : email,
-            from: EMAIL_FROM,
-            subject: 'Your Verification Code - CodeFolio',
-            html: `
+  try {
+    const msg = {
+      to: email,
+      from: EMAIL_FROM,
+      subject: 'Your Verification Code - CodeFolio',
+      html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
                     <h2 style="color: #4f46e5; text-align: center;">CodeFolio</h2>
                     <p>Hello,</p>
@@ -79,13 +79,13 @@ export const sendOtpEmail = async (email, otp) => {
                     </p>
                 </div>
             `,
-        }
+    };
 
-        await sgMail.send(msg);
-        return true;
-    } catch (error) {
-        console.error("Error sending email:", error);
-        console.log(error?.response?.data ? JSON.stringify(error?.response?.data, null, 2) : error);
-        return false;
-    }
-}
+    await sgMail.send(msg);
+    return true;
+  } catch (error) {
+    console.error('Error sending email:', error);
+    console.log(error?.response?.data ? JSON.stringify(error?.response?.data, null, 2) : error);
+    return false;
+  }
+};

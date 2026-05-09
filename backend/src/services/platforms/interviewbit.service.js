@@ -7,18 +7,11 @@ import ApiError from '../../utils/api-error.util.js';
 const getUserInfo = async (username) => {
   try {
     const [profileRes, problemsRes, submissionAnalysisRes] = await Promise.all([
-      axios.get(
-        `https://www.interviewbit.com/v2/profile/username?id=${username}`,
-        { headers: INTERVIEWBIT_HEADERS },
-      ),
-      axios.get(
-        `https://www.interviewbit.com/v2/problem_list/problems_solved_overview_count?username=${username}`,
-        { headers: INTERVIEWBIT_HEADERS },
-      ),
-      axios.get(
-        `https://www.interviewbit.com/v2/profile/username/submission-analysis/?id=${username}`,
-        { headers: INTERVIEWBIT_HEADERS },
-      ),
+      axios.get(`https://www.interviewbit.com/v2/profile/username?id=${username}`, {
+        headers: INTERVIEWBIT_HEADERS,
+      }),
+      axios.get(`https://www.interviewbit.com/v2/problem_list/problems_solved_overview_count?username=${username}`, { headers: INTERVIEWBIT_HEADERS }),
+      axios.get(`https://www.interviewbit.com/v2/profile/username/submission-analysis/?id=${username}`, { headers: INTERVIEWBIT_HEADERS }),
     ]);
 
     const profileData = profileRes.data;
@@ -43,10 +36,7 @@ const getUserInfo = async (username) => {
 };
 
 const getUserSubmissions = async (username, year) => {
-  const response = await axios.get(
-    `https://www.interviewbit.com/v2/profile/username/daily-user-submissions/${year}/?id=${username}`,
-    { headers: INTERVIEWBIT_HEADERS },
-  );
+  const response = await axios.get(`https://www.interviewbit.com/v2/profile/username/daily-user-submissions/${year}/?id=${username}`, { headers: INTERVIEWBIT_HEADERS });
   const data = response.data;
 
   const heatmapData = {};
@@ -62,31 +52,15 @@ const getUserBadges = async (username) => {
   let page;
 
   try {
-    page = await configBrowserPage(
-      url,
-      'domcontentloaded',
-      '.recharts-surface',
-      30000,
-      30000,
-    );
+    page = await configBrowserPage(url, 'domcontentloaded', '.recharts-surface', 30000, 30000);
 
     const data = await page.evaluate(() => {
       const getText = (element) => element?.textContent || 'NA';
 
-      const badges = Array.from(
-        document.querySelectorAll('.profile-badge-progress-tile'),
-      ).map((badge) => ({
-        title: getText(
-          badge.querySelector('.profile-badge-progress-tile__title'),
-        ),
-        date: getText(
-          badge.querySelector('.profile-badge-progress-tile__sub-title'),
-        ),
-        image: badge
-          .querySelector('.profile-badge-progress-tile__badge-img')
-          ?.getAttribute('style')
-          ?.split('"')[1]
-          ?.replace('\\', ''),
+      const badges = Array.from(document.querySelectorAll('.profile-badge-progress-tile')).map((badge) => ({
+        title: getText(badge.querySelector('.profile-badge-progress-tile__title')),
+        date: getText(badge.querySelector('.profile-badge-progress-tile__sub-title')),
+        image: badge.querySelector('.profile-badge-progress-tile__badge-img')?.getAttribute('style')?.split('"')[1]?.replace('\\', ''),
       }));
 
       return badges;
@@ -94,10 +68,7 @@ const getUserBadges = async (username) => {
 
     return data;
   } catch {
-    throw new ApiError(
-      500,
-      'Something went wrong while fetching InterviewBit badges!',
-    );
+    throw new ApiError(500, 'Something went wrong while fetching InterviewBit badges!');
   } finally {
     if (page) await page.close();
   }

@@ -1,18 +1,9 @@
 import { useState } from 'react';
-import { Plus, LayoutGrid, AlertCircle } from 'lucide-react';
-import {
-  useProjects,
-  useCreateProject,
-  useDeleteProject,
-  useUpdateProject,
-} from '../../hooks/useApiProjects.js';
-import { ProjectCard } from '../../components/card/export.js';
-import {
-  CreateApiProjectModal,
-  DeleteApiProjectModal,
-  EditApiProjectModal,
-} from '../../components/modals/export.js';
-import { ApiProjectSkeleton } from '../../components/skeletons/export.js';
+import { Plus, LayoutGrid, AlertCircle, Edit } from 'lucide-react';
+import { useProjects, useCreateProject, useDeleteProject, useUpdateProject } from '@/hooks/useApiProjects.js';
+import { ApiProjectCard } from '@/components/cards/export.js';
+import { CreateModal, DeleteModal, EditModal } from '@/components/modals/export.js';
+import { ApiProjectSkeleton } from '@/components/skeletons/export.js';
 
 const ApiProjects = () => {
   const { data: projects, isLoading, isError } = useProjects();
@@ -23,16 +14,22 @@ const ApiProjects = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState(null);
   const [projectToEdit, setProjectToEdit] = useState(null);
+  const [projectName, setProjectName] = useState('');
+  const [updatedProjectName, setUpdatedProjectName] = useState(projectToEdit?.name);
 
   const handleCreateProject = (data) => {
     createProject(data, {
       onSuccess: () => setIsCreateModalOpen(false),
     });
+    setProjectName('');
   };
 
   const handleUpdateProject = (data) => {
     updateProject(data, {
-      onSuccess: () => setProjectToEdit(null),
+      onSuccess: () => {
+        setUpdatedProjectName(null);
+        setProjectToEdit(null);
+      },
     });
   };
 
@@ -54,18 +51,10 @@ const ApiProjects = () => {
           <AlertCircle className="w-10 h-10 text-red-500" />
         </div>
         <div className="space-y-2">
-          <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">
-            Failed to Load Projects
-          </h3>
-          <p className="text-slate-500 font-medium leading-relaxed">
-            Something went wrong while fetching your projects. Please try
-            refreshing the page.
-          </p>
+          <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">Failed to Load Projects</h3>
+          <p className="text-slate-500 font-medium leading-relaxed">Something went wrong while fetching your projects. Please try refreshing the page.</p>
         </div>
-        <button
-          onClick={() => window.location.reload()}
-          className="px-8 py-3.5 bg-slate-900 text-white font-black text-[10px] uppercase tracking-widest rounded-2xl hover:bg-slate-800 transition-all shadow-lg"
-        >
+        <button onClick={() => window.location.reload()} className="px-8 py-3.5 bg-slate-900 text-white font-black text-[10px] uppercase tracking-widest rounded-2xl hover:bg-slate-800 transition-all shadow-lg">
           Retry Connection
         </button>
       </div>
@@ -82,16 +71,11 @@ const ApiProjects = () => {
               <div className="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20">
                 <LayoutGrid className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-3xl font-black text-slate-800 uppercase tracking-tight">
-                My Projects
-              </h1>
+              <h1 className="text-3xl font-black text-slate-800 uppercase tracking-tight">My Projects</h1>
             </div>
           </div>
 
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-black px-8 py-4 rounded-2xl shadow-xl shadow-blue-500/20 hover:shadow-blue-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all transform uppercase tracking-widest text-[10px]"
-          >
+          <button onClick={() => setIsCreateModalOpen(true)} className="flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-black px-8 py-4 rounded-2xl shadow-xl shadow-blue-500/20 hover:shadow-blue-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all transform uppercase tracking-widest text-[10px]">
             <Plus className="w-4 h-4" />
             Create New Project
           </button>
@@ -101,12 +85,7 @@ const ApiProjects = () => {
         {projects?.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-float-in">
             {projects.map((project) => (
-              <ProjectCard
-                key={project._id}
-                project={project}
-                onDeleteRequest={() => setProjectToDelete(project)}
-                onEditRequest={() => setProjectToEdit(project)}
-              />
+              <ApiProjectCard key={project._id} project={project} onDeleteRequest={() => setProjectToDelete(project)} onEditRequest={() => setProjectToEdit(project)} />
             ))}
           </div>
         ) : (
@@ -115,46 +94,21 @@ const ApiProjects = () => {
               <LayoutGrid className="w-10 h-10 text-blue-400" />
             </div>
             <div className="space-y-2">
-              <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">
-                No Projects Found
-              </h3>
-              <p className="text-slate-500 font-medium max-w-sm mx-auto">
-                You haven't created any API projects yet. Create your first
-                project to get an API key and start integrating!
-              </p>
+              <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">No Projects Found</h3>
+              <p className="text-slate-500 font-medium max-w-sm mx-auto">You haven't created any API projects yet. Create your first project to get an API key and start integrating!</p>
             </div>
-            <button
-              onClick={() => setIsCreateModalOpen(true)}
-              className="px-10 py-4 bg-blue-50 text-blue-600 font-black text-[10px] uppercase tracking-widest rounded-2xl border border-blue-100 hover:bg-blue-100 transition-all"
-            >
+            <button onClick={() => setIsCreateModalOpen(true)} className="px-10 py-4 bg-blue-50 text-blue-600 font-black text-[10px] uppercase tracking-widest rounded-2xl border border-blue-100 hover:bg-blue-100 transition-all">
               Get Started Now
             </button>
           </div>
         )}
 
         {/* Modals */}
-        <CreateApiProjectModal
-          isOpen={isCreateModalOpen}
-          onClose={() => setIsCreateModalOpen(false)}
-          onCreate={handleCreateProject}
-          isPending={isCreating}
-        />
+        <CreateModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onSubmit={() => handleCreateProject({ name: projectName })} isPending={isCreating} title="New API Project" description="Create a dedicated API key for your next app." inputLabel="Project Name" inputPlaceholder="e.g. Portfolio Website" submitText="Create Project" loadingText="Creating..." cancelText="Cancel" projectName={projectName} setProjectName={setProjectName} icon={Plus} />
 
-        <DeleteApiProjectModal
-          isOpen={!!projectToDelete}
-          onClose={() => setProjectToDelete(null)}
-          onDelete={handleDeleteProject}
-          projectName={projectToDelete?.name}
-          isPending={isDeleting}
-        />
+        <DeleteModal isOpen={!!projectToDelete} onClose={() => setProjectToDelete(null)} onDelete={handleDeleteProject} isPending={isDeleting} title="Delete API Project" description={`Are you sure you want to delete ${projectToDelete?.name}?`} cancelText="Cancel" submitText="Delete Project" loadingText="Deleting..." icon={LayoutGrid} />
 
-        <EditApiProjectModal
-          isOpen={!!projectToEdit}
-          onClose={() => setProjectToEdit(null)}
-          onUpdate={handleUpdateProject}
-          project={projectToEdit}
-          isPending={isUpdating}
-        />
+        <EditModal isOpen={!!projectToEdit} onClose={() => setProjectToEdit(null)} onSubmit={() => handleUpdateProject({ projectId: projectToEdit._id, name: updatedProjectName })} initialValue={projectToEdit?.name} isPending={isUpdating} title="Edit API Project" description="Update your API project name." inputLabel="Project Name" inputPlaceholder="e.g. Portfolio Website" submitText="Update Project" loadingText="Updating..." cancelText="Cancel" updatedProjectName={updatedProjectName} setUpdatedProjectName={setUpdatedProjectName} icon={Edit} />
       </div>
     </div>
   );

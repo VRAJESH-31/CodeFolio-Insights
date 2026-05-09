@@ -7,6 +7,7 @@ import { checkAdmin } from "../middlewares/admin.middleware.js";
 import validate from "../middlewares/validate.middleware.js";
 import { usersQueryValidationSchema, userInfoUpdateValidationSchema, changePasswordValidationSchema, displayNameValidationSchema, displayNameUpdateValidationSchema } from "../validators/user.validate.js";
 import { apiKeyBodyValidationSchema } from "../validators/common.validate.js"
+import { checkProfileVisibility } from "../middlewares/profile-visibility.middleware.js";
 
 const router = express.Router();
 
@@ -30,6 +31,7 @@ router.get(
     getAnalytics, 
     optionalAuth, 
     validate(displayNameValidationSchema), 
+    checkProfileVisibility,
     getUser
 );
 

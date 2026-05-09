@@ -1,9 +1,9 @@
 import React from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useMemo } from 'react';
-import { getStreaksAndActiveDays } from '../../utils/calendar.js';
-import { StatCard, ProblemsCard } from '../../components/card/export.js';
-import { SubmissionHeatmap } from '../../components/charts/export.js';
+import { getStreaksAndActiveDays } from '@/utils/calendar.js';
+import { StatCard, ProblemsCard } from '@/components/cards/export.js';
+import { SubmissionHeatmap } from '@/components/charts/export.js';
 
 const GFG = () => {
   const { data } = useOutletContext();
@@ -47,46 +47,21 @@ const GFG = () => {
     [platformData],
   );
 
-  const { activeDays } = useMemo(
-    () => getStreaksAndActiveDays(platformData?.submission || {}),
-    [platformData],
-  );
-  const totalProblems = useMemo(
-    () => platformData?.profile?.totalProblemsSolved || 0,
-    [platformData],
-  );
+  const { activeDays } = useMemo(() => getStreaksAndActiveDays(platformData?.submission || {}), [platformData]);
+  const totalProblems = useMemo(() => platformData?.profile?.totalProblemsSolved || 0, [platformData]);
 
   return (
     <div className="space-y-8 animate-float-in">
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-        <StatCard
-          title="Total Problems"
-          value={totalProblems}
-          color="blue"
-          index={0}
-        />
+        <StatCard title="Total Problems" value={totalProblems} color="blue" index={0} />
 
-        <StatCard
-          title="Active Days"
-          value={activeDays}
-          color="green"
-          index={1}
-        />
+        <StatCard title="Active Days" value={activeDays} color="green" index={1} />
 
-        <ProblemsCard
-          title="Fundamentals Problems"
-          problemsData={platformFundamentalsProblemsData}
-        />
+        <ProblemsCard title="Fundamentals Problems" problemsData={platformFundamentalsProblemsData} />
 
-        <ProblemsCard
-          title="DSA Problems"
-          problemsData={platformDsaProblemsData}
-        />
+        <ProblemsCard title="DSA Problems" problemsData={platformDsaProblemsData} />
 
-        <SubmissionHeatmap
-          calendar={platformData?.submission}
-          className="xl:col-span-2"
-        />
+        <SubmissionHeatmap calendar={platformData?.submission} className="xl:col-span-2" />
       </div>
     </div>
   );

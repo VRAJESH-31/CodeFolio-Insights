@@ -1,9 +1,9 @@
-import { asyncWrapper } from "../api/export.js";
+import { asyncWrapper } from "@/api/export.js";
 import axios from "axios";
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
-const usePublicApiPlayground = () => {
+export const usePublicApiPlayground = () => {
     return useMutation({
         mutationFn: asyncWrapper(async (url) => {
             const response = await axios.get(url);
@@ -15,5 +15,3 @@ const usePublicApiPlayground = () => {
         }
     });
 };
-
-export { usePublicApiPlayground };

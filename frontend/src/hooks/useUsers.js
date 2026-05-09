@@ -1,10 +1,10 @@
-import { axiosInstance, asyncWrapper } from "../api/export.js";
+import { axiosInstance, asyncWrapper } from "@/api/export.js";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { useAuthStore } from "../store/export.js";
+import { useAuthStore } from "@/store/export.js";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
-const useCheckAuth = () => {
+export const useCheckAuth = () => {
     return useQuery({
         queryKey: ["checkAuth"],
         retry: 3,
@@ -18,7 +18,7 @@ const useCheckAuth = () => {
     })
 }
 
-const useLogin = () => {
+export const useLogin = () => {
     return useMutation({
         mutationFn: asyncWrapper(async (formData) => {
             const response = await axiosInstance.post("/api/auth/login", formData);
@@ -38,7 +38,7 @@ const useLogin = () => {
     })
 }
 
-const useSignUp = () => {
+export const useSignUp = () => {
     return useMutation({
         mutationFn: asyncWrapper(async (formData) => {
             const response = await axiosInstance.post("/api/auth/signup", formData);
@@ -58,7 +58,7 @@ const useSignUp = () => {
     })
 }
 
-const useVerifyOTP = () => {
+export const useVerifyOTP = () => {
     return useMutation({
         mutationFn: asyncWrapper(async (otpData) => {
             const response = await axiosInstance.post("/api/auth/verify-otp", otpData);
@@ -74,7 +74,7 @@ const useVerifyOTP = () => {
     })
 }
 
-const useUser = (displayName) => {
+export const useUser = (displayName) => {
     return useQuery({
         queryKey: ["user", displayName],
         retry: 3,
@@ -86,7 +86,7 @@ const useUser = (displayName) => {
     })
 }
 
-const useUpdateUser = () => {
+export const useUpdateUser = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: asyncWrapper(async (formData) => {
@@ -106,7 +106,7 @@ const useUpdateUser = () => {
     })
 }
 
-const useChangePassword = () => {
+export const useChangePassword = () => {
     return useMutation({
         mutationFn: asyncWrapper(async (passwordData) => {
             const response = await axiosInstance.patch("/api/user/password", passwordData);
@@ -121,7 +121,7 @@ const useChangePassword = () => {
     })
 }
 
-const useToggle2FA = () => {
+export const useToggle2FA = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: asyncWrapper(async () => {
@@ -138,7 +138,7 @@ const useToggle2FA = () => {
     });
 };
 
-const useLogout = () => {
+export const useLogout = () => {
     const navigate = useNavigate();
     return useMutation({
         mutationFn: asyncWrapper(async () => {
@@ -153,7 +153,7 @@ const useLogout = () => {
     })
 }
 
-const useUsers = (params) => {
+export const useUsers = (params) => {
     return useQuery({
         queryKey: ["users", params],
         queryFn: asyncWrapper(async () => {
@@ -164,7 +164,7 @@ const useUsers = (params) => {
     })
 }
 
-const useToggleProfileVisibility = () => {
+export const useToggleProfileVisibility = () => {
     return useMutation({
         mutationFn: asyncWrapper(async () => {
             const response = await axiosInstance.patch("/api/user/visibility", {});
@@ -179,7 +179,7 @@ const useToggleProfileVisibility = () => {
     })
 }
 
-const useUpdateApiKey = () => {
+export const useUpdateApiKey = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: asyncWrapper(async (apiKeyData) => {
@@ -195,19 +195,4 @@ const useUpdateApiKey = () => {
             toast.error(error.response?.data?.message || "Failed to update API Key");
         }
     });
-};
-
-export {
-    useCheckAuth,
-    useLogin,
-    useSignUp,
-    useVerifyOTP,
-    useUser,
-    useUpdateUser,
-    useChangePassword,
-    useToggle2FA,
-    useLogout,
-    useUsers,
-    useToggleProfileVisibility,
-    useUpdateApiKey,
 };

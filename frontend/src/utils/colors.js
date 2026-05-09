@@ -1,4 +1,4 @@
-const getRandomHexColor = () => {
+export const getRandomHexColor = () => {
     const randomColorInt = Math.floor(Math.random() * 16777215);
     let hexColor = randomColorInt.toString(16);
 
@@ -7,8 +7,4 @@ const getRandomHexColor = () => {
     }
 
     return "#" + hexColor;
-};
-
-export {
-    getRandomHexColor,
 };

@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from "lucide-react";
-import { BadgeCard } from "./card/export.js";
-import { useResponsiveCount } from '../hooks/useResponsiveCount.js';
+import { BadgeCard } from "@/components/cards/export.js";
+import { useResponsiveCount } from '@/hooks/useResponsiveCount.js';
+import { EmptyState } from '@/components/export.js';
 
 const BadgeCollection = ({ badges, title = "Awards", className = "" }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -56,9 +57,12 @@ const BadgeCollection = ({ badges, title = "Awards", className = "" }) => {
                         )}
                     </div>
                 ) : (
-                    <div className="text-center py-8">
-                        <p className="text-gray-400">No badges earned yet</p>
-                    </div>
+                    <EmptyState 
+                        title="No Badges" 
+                        message="No badges earned yet" 
+                        isCard={false} 
+                        height="py-8"
+                    />
                 )}
             </div>
 

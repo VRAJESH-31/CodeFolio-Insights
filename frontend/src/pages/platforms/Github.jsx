@@ -1,39 +1,22 @@
-import React, { useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import {
-  LanguageStats,
-  GithubStats,
-  BadgeCollection,
-} from '../../components/export.js';
-import { SubmissionHeatmap } from '../../components/charts/export.js';
-import {
-  FolderGit,
-  GitCommitHorizontal,
-  GitPullRequest,
-  Ban,
-  Star,
-  GitFork,
-  Users,
-  UserPlus,
-  GitMerge,
-  Lock,
-} from 'lucide-react';
+import { BadgeCollection } from '@/components/export.js';
+import { StatsListCard, DistributionCard } from '@/components/cards/export.js';
+import { SubmissionHeatmap } from '@/components/charts/export.js';
+import { FolderGit, GitCommitHorizontal, GitPullRequest, Ban, Star, GitFork, Users, UserPlus, GitMerge, Lock } from 'lucide-react';
+import { getGithubLanguageStats } from '@/utils/codingData.js';
 
 const Github = () => {
   const { data } = useOutletContext();
 
   const githubData = data?.github;
 
-  const badges = useMemo(
-    () =>
-      githubData?.badges?.map((badge) => ({
-        icon: badge.icon,
-        name: badge.name,
-        subTitle: null,
-        subTitleIcon: null,
-      })) || [],
-    [githubData],
-  );
+  const badges =
+    githubData?.badges?.map((badge) => ({
+      icon: badge.icon,
+      name: badge.name,
+      subTitle: null,
+      subTitleIcon: null,
+    })) || [];
 
   const githubContributionStats = [
     {
@@ -91,24 +74,20 @@ const Github = () => {
     },
   ];
 
+  const languageData = getGithubLanguageStats(githubData?.languageStats, 5);
+
   return (
     <div className="space-y-8 animate-float-in">
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-        <LanguageStats languageStats={githubData?.languageStats} />
+        <DistributionCard title="Languages" stats={languageData} />
 
         <BadgeCollection title="Badges" badges={badges} />
 
-        <GithubStats
-          title="Contribution Stats"
-          statsArray={githubContributionStats}
-        />
+        <StatsListCard title="Contribution Stats" statsArray={githubContributionStats} />
 
-        <GithubStats title="Profile Stats" statsArray={githubProfileStats} />
+        <StatsListCard title="Profile Stats" statsArray={githubProfileStats} />
 
-        <SubmissionHeatmap
-          calendar={githubData?.calendar}
-          className="xl:col-span-2"
-        />
+        <SubmissionHeatmap calendar={githubData?.calendar} className="xl:col-span-2" />
       </div>
     </div>
   );

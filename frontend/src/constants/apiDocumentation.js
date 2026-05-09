@@ -1,4 +1,4 @@
-import conf from "../config/config.js";
+import conf from "@/config/config.js";
 
 const { SERVER_BASE_URL } = conf;
 

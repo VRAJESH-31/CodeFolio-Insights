@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../store/export.js';
+import { useAuthStore } from '@/store/export.js';
 import { Lock, ArrowRight } from 'lucide-react';
 
 const ProtectedLayout = ({ children, requiresAuthentication = true }) => {

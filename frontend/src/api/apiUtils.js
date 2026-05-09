@@ -1,11 +1,11 @@
-const asyncWrapper = (fn) => async (...args) => {
+const asyncWrapper =
+  (fn) =>
+  async (...args) => {
     try {
-    return await fn(...args);
+      return await fn(...args);
     } catch (error) {
-        throw error;
+      throw error;
     }
-};
+  };
 
-export {
-    asyncWrapper,
-};
+export { asyncWrapper };

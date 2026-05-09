@@ -3,13 +3,14 @@ import ApiProjectModel from "../models/api-project.model.js";
 import { getApiCost } from "../utils/api-cost.util.js";
 import asyncHandler from "../utils/async-handler.util.js";
 import rateLimit from "express-rate-limit";
+import ApiError from "../utils/api-error.util.js";
 
 const publicApiRateLimiter = asyncHandler(async (req, res, next) => {
     const { apiKey } = req.query;
-    if (!apiKey) return res.status(401).json({ message: "API Key required" });
+    if (!apiKey) throw new ApiError(401, "API Key is required!");
 
     const project = await ApiProjectModel.findOne({ apiKey });
-    if (!project) return res.status(401).json({ message: "Invalid API Key" });
+    if (!project) throw new ApiError(401, "Invalid API Key!");
 
     const apiCost = getApiCost(req.originalUrl);
     const date = new Date().toISOString().split("T")[0];
@@ -24,10 +25,10 @@ const publicApiRateLimiter = asyncHandler(async (req, res, next) => {
             requestsMade: 1,
         })
 
-        if (!apiPoint) return res.status(400).json({ message: "Something went wrong!" });
+        if (!apiPoint) throw new ApiError(400, "Something went wrong!");
         next();
     } else if (apiPoint.apiPointsUsed >= project.apiPointsDailyLimit) {
-        return res.status(429).json({ message: "Rate limit exceeded" });
+        throw new ApiError(429, "Rate limit exceeded!");
     } else {
         apiPoint.apiPointsUsed += apiCost;
         apiPoint.requestsMade += 1;

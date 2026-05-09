@@ -6,26 +6,16 @@ const getGithubBadges = async (username) => {
   let page;
 
   try {
-    page = await configBrowserPage(
-      url,
-      'networkidle2',
-      '.achievement-card',
-      30000,
-      30000,
-    );
+    page = await configBrowserPage(url, 'networkidle2', '.achievement-card', 30000, 30000);
 
     const data = await page.evaluate(() => {
       const getText = (element) => element?.textContent || 'NA';
-      const githubBadgesElement = Array.from(
-        document.querySelectorAll('.achievement-card'),
-      );
+      const githubBadgesElement = Array.from(document.querySelectorAll('.achievement-card'));
 
       return githubBadgesElement.map((badgeElement) => {
         const iconElement = badgeElement.querySelector('img');
         const nameElement = badgeElement.querySelector('.ws-normal');
-        const countElement = badgeElement.querySelector(
-          '.achievement-tier-label',
-        );
+        const countElement = badgeElement.querySelector('.achievement-tier-label');
 
         const icon = iconElement ? iconElement.getAttribute('src') : 'NA';
         const name = getText(nameElement);
@@ -41,10 +31,7 @@ const getGithubBadges = async (username) => {
 
     return data;
   } catch {
-    throw new ApiError(
-      500,
-      'Something went wrong while fetching Github badges!',
-    );
+    throw new ApiError(500, 'Something went wrong while fetching Github badges!');
   } finally {
     if (page) await page.close();
   }

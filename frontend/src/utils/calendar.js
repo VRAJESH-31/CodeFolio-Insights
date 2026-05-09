@@ -1,11 +1,13 @@
-const formatDate = (d) => {
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+export const formatDate = (d) => {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
 };
 
-const getStreaksAndActiveDays = (calendar) => {
+export const getStreaksAndActiveDays = (calendar) => {
 
   const allDates = Object.values(calendar)
     .flatMap(yearData => Object.keys(yearData))
@@ -47,7 +49,7 @@ const getStreaksAndActiveDays = (calendar) => {
   };
 };
 
-const getFirstActiveYear = (calendar) => {
+export const getFirstActiveYear = (calendar) => {
   const years = Object.keys(calendar).map(Number).sort((a, b) => a - b);
   for (const year of years) {
     if (Object.values(calendar[year]).some(count => count > 0)) return year;
@@ -55,7 +57,7 @@ const getFirstActiveYear = (calendar) => {
   return new Date().getFullYear();
 };
 
-const getCombinedHeatmap = (...heatmaps) => {
+export const getCombinedHeatmap = (...heatmaps) => {
   const combinedHeatmap = {};
 
   for (const heatmap of heatmaps) {
@@ -83,12 +85,12 @@ const getCombinedHeatmap = (...heatmaps) => {
   return combinedHeatmap;
 };
 
-const normalizeDayOfWeek = (date) => {
+export const normalizeDayOfWeek = (date) => {
   const day = date.getDay();
   return day === 0 ? 6 : day - 1;
 };
 
-const generateCalendarData = (calendarData, startDate, endDate) => {
+export const generateCalendarData = (calendarData, startDate, endDate) => {
   const days = [];
 
   for (let d = startDate; d <= endDate; d.setDate(d.getDate() + 1)) {
@@ -103,14 +105,13 @@ const generateCalendarData = (calendarData, startDate, endDate) => {
   return days;
 };
 
-const groupDataByMonth = (days) => {
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+export const groupDataByMonth = (days) => {
     const months = [];
     let currentMonth = { name: '', weeks: [] };
     let currentWeek = Array(7).fill(null);
 
     days.forEach((dayObj) => {
-        const monthName = monthNames[dayObj.date.getMonth()];
+        const monthName = MONTH_NAMES[dayObj.date.getMonth()];
         const dayOfWeek = dayObj.date.getDay() === 0 ? 6 : dayObj.date.getDay() - 1;
 
         if (monthName !== currentMonth.name) {
@@ -129,7 +130,7 @@ const groupDataByMonth = (days) => {
     return months;
 };
 
-const getEnrichedCalendar = (calendar) => {
+export const getEnrichedCalendar = (calendar) => {
     if (!calendar) return null;
     const currentYear = String(new Date().getFullYear());
     const previousYear = String(Number(currentYear) - 1);
@@ -157,14 +158,3 @@ const getEnrichedCalendar = (calendar) => {
 
     return enriched;
 };
-
-export {
-  getStreaksAndActiveDays,
-  getCombinedHeatmap,
-  normalizeDayOfWeek,
-  generateCalendarData,
-  groupDataByMonth,
-  formatDate,
-  getFirstActiveYear,
-  getEnrichedCalendar,
-}
