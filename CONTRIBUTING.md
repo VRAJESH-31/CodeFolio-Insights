@@ -9,6 +9,7 @@ Please take a moment to review these guidelines before you start contributing.
 ## 📌 Ways to Contribute
 
 You can help us in several ways:
+
 - **Reporting Bugs:** Find a bug? Report it with clear steps to reproduce.
 - **Feature Requests:** Have an idea for a new feature? Share it with us!
 - **Code Contributions:** Fix bugs, refactor code, or implement new features.
@@ -32,21 +33,24 @@ Ensure you have the following installed on your machine:
 ### Installation Steps
 
 1. **Fork & Clone:**
+
    ```bash
    git clone https://github.com/your-username/CodeFolio-Insights.git
    cd CodeFolio-Insights
    ```
 
 2. **Install Root Dependencies:**
+
    ```bash
    npm install
    ```
 
 3. **Install Sub-project Dependencies:**
+
    ```bash
    # Install backend dependencies
    cd backend && npm install
-   
+
    # Install frontend dependencies
    cd ../frontend && npm install
    ```
@@ -57,14 +61,16 @@ Ensure you have the following installed on your machine:
 
 5. **Start Development Servers:**
    Open two terminals:
-   
+
    **Terminal 1 (Backend):**
+
    ```bash
    cd backend
    npm run dev
    ```
-   
+
    **Terminal 2 (Frontend):**
+
    ```bash
    cd frontend
    npm run dev
@@ -80,6 +86,7 @@ We follow a simple branching model:
 - `develop`: The integration branch for new features and fixes.
 
 **Guidelines:**
+
 - Always create a new branch from `develop`.
 - Use descriptive branch names:
   - `feature/your-feature-name`
@@ -96,6 +103,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) for clear an
 **Format:** `<type>: <description>`
 
 **Examples:**
+
 - `feat: add Google Gemini analysis for LeetCode`
 - `fix: resolve responsive issues on dashboard`
 - `docs: update installation steps in CONTRIBUTING.md`
@@ -107,11 +115,13 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) for clear an
 ## 🎨 Development Standards
 
 ### Tech Stack Constraints
+
 - **Frontend:** React 19, Tailwind CSS v4 (utilize `@theme` blocks, not v3 legacy config), Framer Motion for animations.
 - **Backend:** Node.js, Express, Mongoose, Zod for validation.
 - **AI:** Google Gemini (`@google/genai`).
 
 ### Code Style
+
 - **Linting:** We use ESLint. Run `npm run lint` from the root before committing.
 - **Formatting:** We use Prettier. Run `npm run format` from the root to fix formatting.
 - **Components:** Keep React components modular and functional. Use hooks for state and side effects.

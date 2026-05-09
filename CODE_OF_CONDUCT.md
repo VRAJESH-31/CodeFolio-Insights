@@ -41,6 +41,7 @@ Project maintainers have the right and responsibility to remove, edit, or reject
 This Code of Conduct applies within all project spaces and also applies when an individual is officially representing the project in public spaces.
 
 Examples include:
+
 - GitHub repositories
 - Issues and pull requests
 - Discussions and community forums

@@ -5,10 +5,6 @@ import { usernameValidationSchema } from '../../validators/user.validate.js';
 
 const router = express.Router();
 
-router.get(
-  '/user/badges',
-  validate(usernameValidationSchema),
-  GithubController.getGithubBadges,
-);
+router.get('/user/badges', validate(usernameValidationSchema), GithubController.getGithubBadges);
 
 export default router;

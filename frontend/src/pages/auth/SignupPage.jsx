@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useSignUp, useVerifyOTP } from '../../hooks/useUsers.js';
-import conf from '../../config/config.js';
-import { OTPInput } from '../../components/export.js';
-import { GOOGLE_SVG } from '../../constants/svgConstants.js';
+import { User, Mail, Lock, ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
+import { useSignUp } from '@/hooks/useUsers.js';
+import { GoogleLoginButton } from '@/components/buttons/export.js';
 
 const SignupPage = () => {
   const [formData, setFormData] = useState({
@@ -11,24 +10,26 @@ const SignupPage = () => {
     email: '',
     password: '',
   });
-  const [otp, setOtp] = useState('');
-  const [isOTPMode, setIsOTPMode] = useState(false);
+  const [focusedInput, setFocusedInput] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const { mutate: signup, isPending: isSigningUp } = useSignUp();
-  const { mutate: verifyOTP, isPending: isVerifying } = useVerifyOTP();
   const navigate = useNavigate();
 
   const { name, email, password } = formData;
 
   const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
 
   const handleSubmit = (e) => {
     e.preventDefault();
     signup(formData, {
       onSuccess: (data) => {
         if (data.requires2FA) {
-          setIsOTPMode(true);
+          navigate('/auth/verify-otp', { state: { email } });
         } else {
           navigate(`/dashboard/${data.user.displayName}`);
         }
@@ -36,165 +37,88 @@ const SignupPage = () => {
     });
   };
 
-  const handleVerifyOTP = (e) => {
-    e.preventDefault();
-    verifyOTP(
-      { otp },
-      {
-        onSuccess: (data) => {
-          navigate(`/dashboard/${data.user.displayName}`);
-        },
-      },
-    );
-  };
-
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 to-indigo-100 px-4">
-      <div className="w-full max-w-md p-8 bg-white/80 backdrop-blur-md rounded-2xl border border-white shadow-2xl">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-slate-800">
-            {isOTPMode ? 'Verify OTP' : 'Sign up'}
-          </h2>
-          {!isOTPMode && (
-            <p className="mt-2 text-sm text-slate-500">
-              Already have an account?{' '}
-              <Link
-                to="/auth/login"
-                className="font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
-              >
-                Login
-              </Link>
-            </p>
-          )}
-          {isOTPMode && (
-            <p className="mt-2 text-sm text-slate-500">
-              Enter the 6-digit code sent to {email}
-            </p>
-          )}
+    <>
+      <div className="mb-6 text-center">
+        <h1 className="text-2xl font-black text-slate-900 tracking-tight">Create an account</h1>
+        <p className="text-slate-500 text-md">Join CodeFolio to track and showcase your coding journey.</p>
+      </div>
+
+      <>
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          <div className="space-y-1 relative">
+            <label htmlFor="name" className={`block text-sm font-bold transition-colors ${focusedInput === 'name' ? 'text-indigo-600' : 'text-slate-700'}`}>
+              Full Name
+            </label>
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <User size={18} className={`transition-colors ${focusedInput === 'name' ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-500'}`} />
+              </div>
+              <input id="name" name="name" type="text" value={name} onChange={handleChange} onFocus={() => setFocusedInput('name')} onBlur={() => setFocusedInput(null)} required className="w-full pl-11 pr-4 py-3.5 bg-slate-50/50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all duration-300 font-medium" placeholder="John Doe" />
+            </div>
+          </div>
+
+          <div className="space-y-1 relative">
+            <label htmlFor="email" className={`block text-sm font-bold transition-colors ${focusedInput === 'email' ? 'text-indigo-600' : 'text-slate-700'}`}>
+              Email Address
+            </label>
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <Mail size={18} className={`transition-colors ${focusedInput === 'email' ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-500'}`} />
+              </div>
+              <input id="email" name="email" type="email" value={email} onChange={handleChange} onFocus={() => setFocusedInput('email')} onBlur={() => setFocusedInput(null)} required className="w-full pl-11 pr-4 py-3.5 bg-slate-50/50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all duration-300 font-medium" placeholder="name@company.com" />
+            </div>
+          </div>
+
+          <div className="space-y-1 relative">
+            <label htmlFor="password" className={`block text-sm font-bold transition-colors ${focusedInput === 'password' ? 'text-indigo-600' : 'text-slate-700'}`}>
+              Password
+            </label>
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <Lock size={18} className={`transition-colors ${focusedInput === 'password' ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-500'}`} />
+              </div>
+              <input id="password" name="password" type={showPassword ? 'text' : 'password'} value={password} onChange={handleChange} onFocus={() => setFocusedInput('password')} onBlur={() => setFocusedInput(null)} required className="w-full pl-11 pr-12 py-3.5 bg-slate-50/50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all duration-300 font-medium" placeholder="••••••••" />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors">
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" disabled={isSigningUp || !name || !email || !password} className="w-full mt-4 flex items-center justify-center gap-2 py-3.5 px-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl shadow-xl shadow-slate-900/20 hover:shadow-slate-900/30 transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+            {isSigningUp ? (
+              <>
+                <Loader2 size={20} className="animate-spin" />
+                Creating account...
+              </>
+            ) : (
+              <>
+                Create account
+                <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
+              </>
+            )}
+          </button>
+        </form>
+
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-slate-200" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-4 bg-white text-slate-400 font-bold uppercase tracking-wider text-[11px]">Or continue with</span>
+          </div>
         </div>
 
-        {!isOTPMode ? (
-          <>
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-slate-600 mb-1"
-                >
-                  Full Name
-                </label>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  value={name}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                  placeholder="John Doe"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-slate-600 mb-1"
-                >
-                  Email address
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={email}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                  placeholder="you@example.com"
-                />
-              </div>
+        <GoogleLoginButton />
 
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-slate-600 mb-1"
-                >
-                  Password
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  value={password}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                  placeholder="••••••••"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={isSigningUp}
-                className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transform hover:scale-[1.02] transition-all disabled:opacity-50"
-              >
-                {isSigningUp ? 'Creating account...' : 'Sign up'}
-              </button>
-            </form>
-
-            <div className="relative my-8">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-100" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-slate-400 font-bold uppercase tracking-widest text-[10px]">
-                  Or continue with
-                </span>
-              </div>
-            </div>
-
-            <button
-              onClick={() =>
-                (window.location.href = `${conf.SERVER_BASE_URL}/api/auth/google`)
-              }
-              className="w-full flex items-center justify-center py-3 px-4 bg-white hover:bg-slate-50 border-2 border-slate-50 rounded-xl text-sm font-bold text-slate-700 transition-all transform hover:scale-[1.02] shadow-sm"
-            >
-              <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
-                <path fill="currentColor" d={GOOGLE_SVG} />
-              </svg>
-              Google
-            </button>
-          </>
-        ) : (
-          <form className="space-y-6" onSubmit={handleVerifyOTP}>
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2 text-center">
-                Verification Code
-              </label>
-              <OTPInput value={otp} onChange={(val) => setOtp(val)} />
-              <p className="mt-4 text-xs text-center text-slate-400 italic">
-                * Check your spam folder if you don&apos;t see the email.
-              </p>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isVerifying}
-              className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transform hover:scale-[1.02] transition-all disabled:opacity-50"
-            >
-              {isVerifying ? 'Verifying...' : 'Verify Code'}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setIsOTPMode(false)}
-              className="w-full text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors"
-            >
-              Back to Sign up
-            </button>
-          </form>
-        )}
-      </div>
-    </div>
+        <p className="mt-6 text-center text-sm text-slate-600 font-medium">
+          Already have an account?{' '}
+          <Link to="/auth/login" className="text-indigo-600 font-bold hover:text-indigo-700 hover:underline transition-all">
+            Sign in
+          </Link>
+        </p>
+      </>
+    </>
   );
 };
 

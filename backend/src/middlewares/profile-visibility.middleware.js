@@ -1,5 +1,6 @@
 import UserModel from "../models/user.model.js";
 import asyncHandler from '../utils/async-handler.util.js';
+import ApiError from "../utils/api-error.util.js";
 
 const checkProfileVisibility = asyncHandler(async (req, res, next) => {
     const viewerUser = req.user || null;
@@ -12,11 +13,11 @@ const checkProfileVisibility = asyncHandler(async (req, res, next) => {
     } else if (displayName) {
         profileUser = await UserModel.findOne({ displayName });
     } else {
-        return res.status(403).json({ message: "Not specified which user info is required" });
+        throw new ApiError(403, "Not specified which user info is required");
     }
 
     if (!profileUser) {
-        return res.status(404).json({ message: "Invalid user demanded!" });
+        throw new ApiError(404, "Invalid user demanded!");
     }
 
     const isOwner = viewerUser && profileUser._id.equals(viewerUser._id);
@@ -24,7 +25,7 @@ const checkProfileVisibility = asyncHandler(async (req, res, next) => {
     const isPublic = profileUser.profileVisibility;
 
     if (!isPublic && !isOwner && !isAdmin) {
-        return res.status(403).json({ message: "This profile is private." });
+        throw new ApiError(403, "This profile is private.");
     }
 
     next();

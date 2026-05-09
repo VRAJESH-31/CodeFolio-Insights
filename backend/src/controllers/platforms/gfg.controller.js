@@ -42,12 +42,4 @@ const getMonthlyPotds = asyncHandler(async (req, res) => {
   return res.status(200).json(data);
 });
 
-export {
-  getUserInfo,
-  getUserSubmissions,
-  getQuestionOfToday,
-  getUserProblemsSolved,
-  getInstitutionTopThreeRankedUsers,
-  getInstitutionInfo,
-  getMonthlyPotds,
-};
+export { getUserInfo, getUserSubmissions, getQuestionOfToday, getUserProblemsSolved, getInstitutionTopThreeRankedUsers, getInstitutionInfo, getMonthlyPotds };

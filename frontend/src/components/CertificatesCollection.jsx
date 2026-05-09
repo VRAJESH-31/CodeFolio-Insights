@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from "lucide-react";
-import { HackerrankCertificateCard } from "./card/export.js";
-import { useResponsiveCount } from '../hooks/useResponsiveCount.js';
+import { HackerrankCertificateCard } from "@/components/cards/export.js";
+import { useResponsiveCount } from '@/hooks/useResponsiveCount.js';
+import { EmptyState } from '@/components/export.js';
 
 const CertificatesCollection = ({ certificates = [], title = "Certificates", className = "" }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -60,9 +61,12 @@ const CertificatesCollection = ({ certificates = [], title = "Certificates", cla
                         )}
                     </div>
                 ) : (
-                    <div className="text-center py-8">
-                        <p className="text-gray-400">No certificates earned yet</p>
-                    </div>
+                    <EmptyState 
+                        title="No Certificates" 
+                        message="No certificates earned yet" 
+                        isCard={false} 
+                        height="py-8"
+                    />
                 )}
             </div>
 

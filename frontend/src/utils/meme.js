@@ -1,4 +1,4 @@
-const getMemeForScore = (score) => {
+export const getMemeForScore = (score) => {
     if (score <= 10) return {
         text: "Tera khel katam hai ab!",
         meme: "https://media1.tenor.com/m/KHzXXOA0vsoAAAAC/mera-khel-khatam-hai.gif",
@@ -140,8 +140,4 @@ const getMemeForScore = (score) => {
         colorName: "green"
     };
     return { text: "", meme: "", comment: "", bg: "", border: "", scoreColor: "", scoreText: "", progressColor: "", borderColor: "", gradient: "", scoreClasses: "", colorName: "" };
-};
-
-export {
-    getMemeForScore,
 };

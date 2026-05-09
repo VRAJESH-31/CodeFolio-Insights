@@ -3,10 +3,7 @@ import asyncHandler from '../../utils/async-handler.util.js';
 
 const getUserInfo = asyncHandler(async (req, res) => {
   const { username, includeContests } = req.query;
-  const data = await Code360Service.getUserInfo(
-    username,
-    includeContests === 'true',
-  );
+  const data = await Code360Service.getUserInfo(username, includeContests === 'true');
   return res.status(200).json(data);
 });
 

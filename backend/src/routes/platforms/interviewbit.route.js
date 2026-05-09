@@ -6,20 +6,10 @@ import { usernameAndYearQueryValidationSchema } from '../../validators/common.va
 
 const router = express.Router();
 
-router.get(
-  '/user/profile',
-  validate(usernameValidationSchema),
-  InterviewBitController.getUserInfo,
-);
-router.get(
-  '/user/submissions',
-  validate(usernameAndYearQueryValidationSchema),
-  InterviewBitController.getUserSubmissions,
-);
-router.get(
-  '/user/badges',
-  validate(usernameValidationSchema),
-  InterviewBitController.getUserBadges,
-);
+router.get('/user/profile', validate(usernameValidationSchema), InterviewBitController.getUserInfo);
+
+router.get('/user/submissions', validate(usernameAndYearQueryValidationSchema), InterviewBitController.getUserSubmissions);
+
+router.get('/user/badges', validate(usernameValidationSchema), InterviewBitController.getUserBadges);
 
 export default router;

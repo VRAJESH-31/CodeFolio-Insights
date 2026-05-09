@@ -6,3 +6,4 @@ export { default as AnimatedLayout } from './AnimatedLayout';
 export { default as SettingsLayout } from './SettingsLayout';
 export { default as ProtectedLayout } from './ProtectedLayout';
 export { default as InfoLayout } from './InfoLayout';
+export { default as AuthLayout } from './AuthLayout';

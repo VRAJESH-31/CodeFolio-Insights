@@ -1,12 +1,6 @@
-import {
-  githubGraphQlQuery,
-  githubRestApiQuery,
-} from '../../api/axiosInstance.js';
+import { githubGraphQlQuery, githubRestApiQuery } from '../../api/axiosInstance.js';
 import { getGithubBadges } from '../../services/platforms/github.service.js';
-import {
-  GITHUB_API_QUERIES,
-  GITHUB_REPO_DATA_PAGE_SIZE,
-} from '../../constants/index.js';
+import { GITHUB_API_QUERIES, GITHUB_REPO_DATA_PAGE_SIZE } from '../../constants/index.js';
 import { getNormalizedGithubHeatmap } from '../calendar.util.js';
 
 const getUserProfileData = async (username) => {
@@ -17,19 +11,20 @@ const getUserProfileData = async (username) => {
 
 const getCommitsPerRepo = async (reponame, username) => {
   const query = GITHUB_API_QUERIES.GITHUB_REPO_TOTAL_COMMITS_COUNT_QUERY;
-  const commitCount = await githubGraphQlQuery(query, { username, reponame });
+  const commitCount = await githubGraphQlQuery(query, {
+    username,
+    reponame,
+  });
   if (commitCount == null) return 0;
   return commitCount;
 };
 
 const getGithubPinnedRepos = async (username) => {
   const query = GITHUB_API_QUERIES.GITHUB_PINNED_REPOS_QUERY;
-  const pinnedRepoData = await githubGraphQlQuery(query, { username });
-  if (
-    pinnedRepoData == null ||
-    pinnedRepoData['data']['user']['pinnedItems']['nodes'] == null
-  )
-    return [];
+  const pinnedRepoData = await githubGraphQlQuery(query, {
+    username,
+  });
+  if (pinnedRepoData == null || pinnedRepoData['data']['user']['pinnedItems']['nodes'] == null) return [];
   return pinnedRepoData['data']['user']['pinnedItems']['nodes'];
 };
 
@@ -58,24 +53,15 @@ const getMultiYearContributionCount = async (username, startYear, endYear) => {
   const end = parseInt(endYear);
 
   for (let year = start; year <= end; year++) {
-    const yearlyContributions = await getYearlyContributionCount(
-      username,
-      year,
-    );
+    const yearlyContributions = await getYearlyContributionCount(username, year);
     if (!yearlyContributions) continue;
 
-    contributionCount.pullRequestsCount +=
-      yearlyContributions.pullRequestContributions?.totalCount || 0;
-    contributionCount.issuesCount +=
-      yearlyContributions.issueContributions?.totalCount || 0;
-    contributionCount.commitsCount +=
-      yearlyContributions.totalCommitContributions || 0;
-    contributionCount.pullRequestReviewsCount +=
-      yearlyContributions.pullRequestReviewContributions?.totalCount || 0;
-    contributionCount.repositoriesCount +=
-      yearlyContributions.repositoryContributions?.totalCount || 0;
-    contributionCount.restrictedContributionCount +=
-      yearlyContributions.restrictedContributionsCount || 0;
+    contributionCount.pullRequestsCount += yearlyContributions.pullRequestContributions?.totalCount || 0;
+    contributionCount.issuesCount += yearlyContributions.issueContributions?.totalCount || 0;
+    contributionCount.commitsCount += yearlyContributions.totalCommitContributions || 0;
+    contributionCount.pullRequestReviewsCount += yearlyContributions.pullRequestReviewContributions?.totalCount || 0;
+    contributionCount.repositoriesCount += yearlyContributions.repositoryContributions?.totalCount || 0;
+    contributionCount.restrictedContributionCount += yearlyContributions.restrictedContributionsCount || 0;
   }
   return contributionCount;
 };
@@ -86,12 +72,7 @@ const getLastYearContributionCalendar = async (username) => {
     username,
   });
   if (contributionCalendarData == null) return {};
-  else
-    return getNormalizedGithubHeatmap(
-      contributionCalendarData['data']['user']['contributionsCollection'][
-        'contributionCalendar'
-      ]['weeks'],
-    );
+  else return getNormalizedGithubHeatmap(contributionCalendarData['data']['user']['contributionsCollection']['contributionCalendar']['weeks']);
 };
 
 const getYearlyContributionCalendar = async (username, year) => {
@@ -102,27 +83,16 @@ const getYearlyContributionCalendar = async (username, year) => {
     to: `${year}-12-31T23:59:59Z`,
   });
   if (contributionCalendarData == null) return {};
-  return getNormalizedGithubHeatmap(
-    contributionCalendarData['data']['user']['contributionsCollection'][
-      'contributionCalendar'
-    ]['weeks'],
-  );
+  return getNormalizedGithubHeatmap(contributionCalendarData['data']['user']['contributionsCollection']['contributionCalendar']['weeks']);
 };
 
-const getMultiYearContributionCalendar = async (
-  username,
-  startYear,
-  endYear,
-) => {
+const getMultiYearContributionCalendar = async (username, startYear, endYear) => {
   let contributionCalendar = {};
   const start = parseInt(startYear);
   const end = parseInt(endYear);
 
   for (let year = start; year <= end; year++) {
-    contributionCalendar[year] = await getYearlyContributionCalendar(
-      username,
-      year,
-    );
+    contributionCalendar[year] = await getYearlyContributionCalendar(username, year);
   }
   return contributionCalendar;
 };
@@ -131,9 +101,7 @@ const getUserRepos = async (username, repoCount) => {
   let userReposStat = [];
 
   for (let i = 0; i < Math.ceil(repoCount / 100); i++) {
-    const userRepoData = await githubRestApiQuery(
-      `/users/${username}/repos?per_page=${GITHUB_REPO_DATA_PAGE_SIZE}&page=${i + 1}`,
-    );
+    const userRepoData = await githubRestApiQuery(`/users/${username}/repos?per_page=${GITHUB_REPO_DATA_PAGE_SIZE}&page=${i + 1}`);
     if (userRepoData != null) {
       for (let j = 0; j < userRepoData.length; j++) {
         const repoData = userRepoData[j];
@@ -157,9 +125,7 @@ const getGithubContributionBadges = async (username) => {
 };
 
 const getRepoLanguages = async (username, repoName) => {
-  const data = await githubRestApiQuery(
-    `/repos/${username}/${repoName}/languages`,
-  );
+  const data = await githubRestApiQuery(`/repos/${username}/${repoName}/languages`);
   if (data == null) return {};
   return data;
 };
@@ -171,28 +137,19 @@ const getUserLanguageStats = async (username) => {
 
     const userReposStat = await getUserRepos(username, repoCount);
 
-    const userReposLanguageStats = await Promise.all(
-      userReposStat.map((repoData) =>
-        getRepoLanguages(username, repoData.name),
-      ),
-    );
+    const userReposLanguageStats = await Promise.all(userReposStat.map((repoData) => getRepoLanguages(username, repoData.name)));
 
     const languageUsageInBytes = {};
 
     for (let i = 0; i < userReposLanguageStats.length; i++) {
       Object.keys(userReposLanguageStats[i]).forEach((language) => {
-        languageUsageInBytes[language] =
-          (languageUsageInBytes[language] || 0) +
-          userReposLanguageStats[i][language];
+        languageUsageInBytes[language] = (languageUsageInBytes[language] || 0) + userReposLanguageStats[i][language];
       });
     }
 
     return languageUsageInBytes;
   } catch (error) {
-    console.log(
-      'Error occurred while fetching github language stats: ',
-      error.message,
-    );
+    console.log('Error occurred while fetching github language stats: ', error.message);
     console.log(error.stack);
     return [];
   }
@@ -201,11 +158,7 @@ const getUserLanguageStats = async (username) => {
 const getProfileReadme = async (username) => {
   const query = GITHUB_API_QUERIES.GITHUB_PROFILE_README_QUERY;
   const profileReadmeData = await githubGraphQlQuery(query, { username });
-  if (
-    profileReadmeData == null ||
-    profileReadmeData['data']['user']['profileReadmeRepo'] == null
-  )
-    return null;
+  if (profileReadmeData == null || profileReadmeData['data']['user']['profileReadmeRepo'] == null) return null;
   return profileReadmeData['data']['user']['profileReadmeRepo'];
 };
 
@@ -215,9 +168,7 @@ const getUserStarsAndForks = async (username) => {
   const repoCount = (await getUserProfileData(username))?.public_repos;
 
   for (let i = 0; i < Math.ceil(repoCount / GITHUB_REPO_DATA_PAGE_SIZE); i++) {
-    const userRepoData = await githubRestApiQuery(
-      `/users/${username}/repos?per_page=${GITHUB_REPO_DATA_PAGE_SIZE}&page=${i + 1}`,
-    );
+    const userRepoData = await githubRestApiQuery(`/users/${username}/repos?per_page=${GITHUB_REPO_DATA_PAGE_SIZE}&page=${i + 1}`);
     if (userRepoData != null) {
       for (let j = 0; j < userRepoData.length; j++) {
         const repoData = userRepoData[j];
@@ -230,18 +181,4 @@ const getUserStarsAndForks = async (username) => {
   return { starsCount, forksCount };
 };
 
-export {
-  getCommitsPerRepo,
-  getUserProfileData,
-  getUserRepos,
-  getRepoLanguages,
-  getGithubContributionBadges,
-  getUserLanguageStats,
-  getProfileReadme,
-  getYearlyContributionCalendar,
-  getMultiYearContributionCalendar,
-  getGithubPinnedRepos,
-  getUserStarsAndForks,
-  getMultiYearContributionCount,
-  getLastYearContributionCalendar,
-};
+export { getCommitsPerRepo, getUserProfileData, getUserRepos, getRepoLanguages, getGithubContributionBadges, getUserLanguageStats, getProfileReadme, getYearlyContributionCalendar, getMultiYearContributionCalendar, getGithubPinnedRepos, getUserStarsAndForks, getMultiYearContributionCount, getLastYearContributionCalendar };

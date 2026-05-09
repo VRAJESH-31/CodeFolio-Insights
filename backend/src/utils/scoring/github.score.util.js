@@ -15,8 +15,7 @@ const getRepoCountScore = (repoCount) => {
 const getFollowersCountScore = (followersCount) => {
   // Combination of Logarithmic (ln) and Square Root for strong non-linear growth
   // Formula: 20 * ln(C+1) + 10 * sqrt(C)
-  const value =
-    20 * Math.log(followersCount + 1) + 10 * Math.sqrt(followersCount);
+  const value = 20 * Math.log(followersCount + 1) + 10 * Math.sqrt(followersCount);
   return Math.min(100, value);
 };
 
@@ -92,10 +91,7 @@ const getPinnedReposScore = (pinnedRepos) => {
     if (pinnedRepo.readmeFile) pinnedRepoScore = pinnedRepoScore + 30;
     if (pinnedRepo.description) pinnedRepoScore = pinnedRepoScore + 5;
     if (pinnedRepo.license) pinnedRepoScore = pinnedRepoScore + 10;
-    if (pinnedRepo.repositoryTopics?.nodes)
-      pinnedRepoScore =
-        pinnedRepoScore +
-        Math.min(pinnedRepo.repositoryTopics?.nodes.length, 10) / 2;
+    if (pinnedRepo.repositoryTopics?.nodes) pinnedRepoScore = pinnedRepoScore + Math.min(pinnedRepo.repositoryTopics?.nodes.length, 10) / 2;
 
     score += pinnedRepoScore / 6;
   }
@@ -113,37 +109,15 @@ const getStreakScore = (maxStreak, currentStreak, activeDays) => {
   // Add a small linear component for current streak, capped at 10 points
   const currentStreakWeight = 50 * Math.log10(currentStreak + 1);
 
-  const value =
-    activeDaysWeight * 0.7 + maxStreakWeight * 0.2 + currentStreakWeight * 0.1;
+  const value = activeDaysWeight * 0.7 + maxStreakWeight * 0.2 + currentStreakWeight * 0.1;
   return Math.min(100, value);
 };
 
 const getCommitsQualityScore = (commitsQualityReport) => {
   // This is often a ratio-based metric, so keeping the linear scaling seems appropriate.
   // It is effectively (Average Quality Score / 10) * 100
-  const value =
-    (commitsQualityReport.reduce(
-      (totalQualityScore, commitQuality) => totalQualityScore + commitQuality,
-      0,
-    ) /
-      GITHUB_TOTAL_COMMITS_LIMIT) *
-    10;
+  const value = (commitsQualityReport.reduce((totalQualityScore, commitQuality) => totalQualityScore + commitQuality, 0) / GITHUB_TOTAL_COMMITS_LIMIT) * 10;
   return Math.min(100, value);
 };
 
-export {
-  getRepoCountScore,
-  getFollowersCountScore,
-  getFollowingRatioScore,
-  getLanguagesCountScore,
-  getStarsCountScore,
-  getForksCountScore,
-  getTotalCommitsScore,
-  getRestrictedContributionCountScore,
-  getProfileReadmeScore,
-  getPullRequestsCountScore,
-  getIssuesCountScore,
-  getStreakScore,
-  getCommitsQualityScore,
-  getPinnedReposScore,
-};
+export { getRepoCountScore, getFollowersCountScore, getFollowingRatioScore, getLanguagesCountScore, getStarsCountScore, getForksCountScore, getTotalCommitsScore, getRestrictedContributionCountScore, getProfileReadmeScore, getPullRequestsCountScore, getIssuesCountScore, getStreakScore, getCommitsQualityScore, getPinnedReposScore };

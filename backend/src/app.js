@@ -15,7 +15,6 @@ import { SESSION_SECRET, CORS_ORIGIN } from './config/env.config.js';
 import cookieParser from "cookie-parser";
 import { publicApiRateLimiter } from './middlewares/rate-limiter.middleware.js';
 import { getAnalytics } from './middlewares/analytics.middleware.js';
-import { verifyApiKey } from './middlewares/api-key.middleware.js';
 
 const app = express();
 
@@ -65,13 +64,24 @@ app.use('/api/score', ScoreRouter);
 app.use('/api/analytics', AnalyticsRouter);
 app.use('/api/project', ApiProjectRouter);
 app.use('/api/email', EmailRouter);
-app.use('/api/platform', cors(publicRoutesConfiguration), verifyApiKey, publicApiRateLimiter, getAnalytics, PlatformRouter);
+app.use('/api/platform', cors(publicRoutesConfiguration), publicApiRateLimiter, getAnalytics, PlatformRouter);
 
 // Global Error Handler
 app.use((err, req, res, next) => {
     console.error(err.stack);
-    const statusCode = err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+
+    let statusCode = err.statusCode || 500;
+    let message = err.message || "Internal Server Error";
+
+    // Handle JWT specific errors if they bubble up
+    if (err.name === 'TokenExpiredError') {
+        statusCode = 401;
+        message = 'Token expired, please login again';
+    } else if (err.name === 'JsonWebTokenError') {
+        statusCode = 401;
+        message = 'Invalid token, unauthenticated';
+    }
+
     return res.status(statusCode).json({ message });
 });
 

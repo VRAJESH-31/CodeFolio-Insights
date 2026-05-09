@@ -1,4 +1,4 @@
-import InfoTooltip from '../components/InfoTooltip';
+import { InfoTooltip } from '@/components/export.js';
 
 const placements = {
     'top-left':     'items-start justify-start',

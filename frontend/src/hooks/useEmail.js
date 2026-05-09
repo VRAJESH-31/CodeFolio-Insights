@@ -1,8 +1,8 @@
-import { axiosInstance, asyncWrapper } from "../api/export.js";
+import { axiosInstance, asyncWrapper } from "@/api/export.js";
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
-const useContactUs = () => {
+export const useContactUs = () => {
     return useMutation({
         mutationFn: asyncWrapper(async (contactData) => {
             const response = await axiosInstance.post("/api/email/contact-us", contactData);
@@ -16,5 +16,3 @@ const useContactUs = () => {
         },
     });
 };
-
-export { useContactUs };

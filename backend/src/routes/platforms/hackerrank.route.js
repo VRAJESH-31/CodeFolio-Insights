@@ -5,10 +5,6 @@ import { usernameValidationSchema } from '../../validators/user.validate.js';
 
 const router = express.Router();
 
-router.get(
-  '/user/profile',
-  validate(usernameValidationSchema),
-  HackerRankController.getUserInfo,
-);
+router.get('/user/profile', validate(usernameValidationSchema), HackerRankController.getUserInfo);
 
 export default router;

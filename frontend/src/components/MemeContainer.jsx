@@ -1,4 +1,4 @@
-import { getMemeForScore } from "../utils/meme.js";
+import { getMemeForScore } from "@/utils/meme.js";
 import { Quote, Star, Zap } from "lucide-react";
 
 const MemeContainer = ({ score, className = "" }) => {

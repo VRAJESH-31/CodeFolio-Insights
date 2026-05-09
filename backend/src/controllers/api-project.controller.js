@@ -12,7 +12,7 @@ const getProjectById = asyncHandler(async (req, res) => {
     const userId = req.user._id;
 
     const project = await apiProjectService.getProjectById(projectId, userId);
-    if (!project) return res.status(404).json({ message: "Project not found." });
+    if (!project) throw new ApiError(404, "Project not found");
     return res.status(200).json(project);
 });
 
@@ -29,7 +29,7 @@ const updateProject = asyncHandler(async (req, res) => {
     const userId = req.user._id;
 
     const project = await apiProjectService.updateProject(projectId, name, userId);
-    if (!project) return res.status(404).json({message: "Project not found or no permission.",});
+    if (!project) throw new ApiError(404, "Project not found or you are not authorized to update the poject.");
     return res.status(200).json({message: "Project name updated", project: project});
 });
 

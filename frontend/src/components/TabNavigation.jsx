@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 
 const TabNavigation = ({ tabs, className = "" }) => {
     return (
-        <div className={`bg-white border-b border-gray-100 flex-shrink-0 ${className}`}>
+        <div className={`bg-white border-b border-gray-100 flex-shrink-0 px-16 ${className}`}>
             <div className="max-w-7xl mx-auto flex items-center gap-2 px-4 py-2 overflow-x-auto no-scrollbar">
                 {tabs.map((tab) => {
                     const Icon = tab.Icon;

@@ -6,15 +6,8 @@ import { usernameAndYearQueryValidationSchema } from '../../validators/common.va
 
 const router = express.Router();
 
-router.get(
-  '/user/profile',
-  validate(usernameValidationSchema),
-  Code360Controller.getUserInfo,
-);
-router.get(
-  '/user/submissions',
-  validate(usernameAndYearQueryValidationSchema),
-  Code360Controller.getUserSubmissions,
-);
+router.get('/user/profile', validate(usernameValidationSchema), Code360Controller.getUserInfo);
+
+router.get('/user/submissions', validate(usernameAndYearQueryValidationSchema), Code360Controller.getUserSubmissions);
 
 export default router;

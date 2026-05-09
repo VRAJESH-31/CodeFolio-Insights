@@ -37,13 +37,17 @@ const getNormalizedGithubHeatmap = (githubData) => {
 };
 
 const getStreaksAndActiveDays = (calendar) => {
-
   const allDates = Object.values(calendar)
-    .flatMap(yearData => Object.keys(yearData))
+    .flatMap((yearData) => Object.keys(yearData))
     .sort((a, b) => new Date(a) - new Date(b));
 
   if (allDates.length === 0) {
-    return { currentStreak: 0, maxStreak: 0, activeDays: 0, totalContributions: 0 };
+    return {
+      currentStreak: 0,
+      maxStreak: 0,
+      activeDays: 0,
+      totalContributions: 0,
+    };
   }
 
   let maxStreak = 0;
@@ -69,17 +73,19 @@ const getStreaksAndActiveDays = (calendar) => {
     currentStreak,
     maxStreak,
     activeDays,
-    totalContributions
+    totalContributions,
   };
 };
 
 const getSortedHeatmap = (heatmap) => {
   const finalSortedHeatmap = {};
-  Object.keys(heatmap).sort().forEach(key => {
-    finalSortedHeatmap[key] = heatmap[key];
-  });
+  Object.keys(heatmap)
+    .sort()
+    .forEach((key) => {
+      finalSortedHeatmap[key] = heatmap[key];
+    });
   return finalSortedHeatmap;
-}
+};
 
 const getNormalizedCodeChefHeatmap = (heatmap) => {
   if (!heatmap || typeof heatmap !== 'object' || Array.isArray(heatmap)) {
@@ -105,9 +111,11 @@ const getNormalizedCodeChefHeatmap = (heatmap) => {
   for (const year in yearlyData) {
     if (Object.prototype.hasOwnProperty.call(yearlyData, year)) {
       const sortedDates = {};
-      Object.keys(yearlyData[year]).sort().forEach(dateKey => {
-        sortedDates[dateKey] = yearlyData[year][dateKey];
-      });
+      Object.keys(yearlyData[year])
+        .sort()
+        .forEach((dateKey) => {
+          sortedDates[dateKey] = yearlyData[year][dateKey];
+        });
       yearlyData[year] = sortedDates;
     }
   }
@@ -166,7 +174,7 @@ const getNormalizedInterviewBitHeatmap = (heatmap, year) => {
   };
   const allDates = getAllDatesInYear(year);
   const normalizedHeatmap = {};
-  allDates.forEach(date => {
+  allDates.forEach((date) => {
     normalizedHeatmap[date] = heatmap[date] || 0;
   });
   return getSortedHeatmap(normalizedHeatmap);
@@ -191,11 +199,11 @@ const getNormalizedCode360Heatmap = (heatmap, year) => {
   };
   const allDates = getAllDatesInYear(year);
   const normalizedHeatmap = {};
-  allDates.forEach(date => {
+  allDates.forEach((date) => {
     normalizedHeatmap[date] = heatmap[date]?.total || 0;
   });
   return getSortedHeatmap(normalizedHeatmap);
-}
+};
 
 const getNormalizedGfgHeatmap = (heatmap, year) => {
   if (!heatmap || typeof heatmap !== 'object' || Array.isArray(heatmap) || typeof year !== 'number' || year < 1900) {
@@ -216,19 +224,10 @@ const getNormalizedGfgHeatmap = (heatmap, year) => {
   };
   const allDates = getAllDatesInYear(year);
   const normalizedHeatmap = {};
-  allDates.forEach(date => {
+  allDates.forEach((date) => {
     normalizedHeatmap[date] = heatmap[date] || 0;
   });
   return getSortedHeatmap(normalizedHeatmap);
-}
-
-export {
-  getStreaksAndActiveDays,
-  getSortedHeatmap,
-  getNormalizedGithubHeatmap,
-  getNormalizedCodeChefHeatmap,
-  getNormalizedLeetCodeHeatmap,
-  getNormalizedInterviewBitHeatmap,
-  getNormalizedCode360Heatmap,
-  getNormalizedGfgHeatmap,
 };
+
+export { getStreaksAndActiveDays, getSortedHeatmap, getNormalizedGithubHeatmap, getNormalizedCodeChefHeatmap, getNormalizedLeetCodeHeatmap, getNormalizedInterviewBitHeatmap, getNormalizedCode360Heatmap, getNormalizedGfgHeatmap };

@@ -18,10 +18,7 @@ const ApiProjectSkeleton = () => {
       {/* Content Grid Skeleton */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div
-            key={i}
-            className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm space-y-5"
-          >
+          <div key={i} className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm space-y-5">
             {/* Card Header Skeleton */}
             <div className="flex justify-between items-start">
               <div className="space-y-2">

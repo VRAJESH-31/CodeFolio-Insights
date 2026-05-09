@@ -1,17 +1,29 @@
 # CodeFolio
+
 **AI-powered developer intelligence platform that unifies coding profiles, analyzes strengths, and exposes reusable public APIs.**
 
 ## Overview
-CodeFolio Insights helps developers and recruiters evaluate technical growth from one place.  
-Instead of manually checking LeetCode, GitHub, GeeksforGeeks, CodeChef, InterviewBit, Code360, and HackerRank separately, this project aggregates profile data, visualizes progress, computes scores, and generates AI feedback for:
 
-- Coding profile performance
-- GitHub portfolio quality
-- Resume quality and job-description alignment
+CodeFolio Insights is a powerful platform that helps developers evaluate technical growth from one place by combining a centralized dashboard with intelligent AI analyzers.
 
-It also provides a **Public API product** with API keys, project-level usage tracking, and daily point-based quotas.
+### 📊 Centralized Profile Dashboard
+
+Instead of manually checking platforms separately, this project aggregates profile data and visualizes progress across LeetCode, GitHub, GeeksforGeeks, CodeChef, InterviewBit, Code360, and HackerRank.
+
+### 🤖 AI-Powered Analyzers
+
+Leverage AI to generate actionable feedback and deep insights for:
+
+- **LeetCode:** Evaluate problem-solving consistency and skill performance.
+- **GitHub :** Assess activity, contributions, and projects.
+- **Resumes:** Analyze overall quality and alignment with specific job descriptions.
+
+### 🔌 Public API Product
+
+It also provides a robust **Public API** featuring API keys, project-level usage tracking, and daily point-based quotas for developers building their own developer tools.
 
 ## Features
+
 - Unified dashboard for multi-platform coding activity
 - Profile link management for supported platforms
 - AI-driven LeetCode and GitHub analysis with score breakdowns
@@ -27,6 +39,7 @@ It also provides a **Public API product** with API keys, project-level usage tra
 - Redis-backed caching for expensive profile/analysis fetches
 
 ## Tech Stack
+
 - Frontend: React 19, React Router, Vite, Tailwind CSS v4, Zustand, React Query, Axios, Recharts, Framer Motion
 - Backend: Node.js, Express, Mongoose, Zod, Passport (Google OAuth), JWT, Multer, Puppeteer
 - AI: Google Gemini (`@google/genai`)
@@ -37,14 +50,17 @@ It also provides a **Public API product** with API keys, project-level usage tra
 - Tooling: ESLint, Prettier, Nodemon
 
 ## Architecture / How It Works
+
 ![Architecture Design](docs/designs/codefolio-architecture.png)
 
 ## Database Schema (MongoDB)
+
 The core entities and their relationships are visualized below:
 
 ![Database Design](docs/designs/database-design.jpg)
 
 Core backend flow:
+
 1. `frontend` calls `backend` with cookie/JWT auth where required.
 2. Backend validates request using Zod middleware.
 3. For public platform APIs, request passes through:
@@ -56,6 +72,7 @@ Core backend flow:
 6. Results are returned for dashboard visualizations and reports.
 
 ## Folder Structure
+
 ```text
 CodeFolio-Insights/
 ├── backend/
@@ -91,6 +108,7 @@ CodeFolio-Insights/
 ## Installation & Setup
 
 ### Prerequisites
+
 - Node.js 20+ recommended
 - npm
 - MongoDB instance
@@ -102,6 +120,7 @@ CodeFolio-Insights/
 - Google OAuth credentials (for social login)
 
 ### 1. Clone & Install
+
 ```bash
 git clone <your-repo-url>
 cd CodeFolio-Insights
@@ -111,6 +130,7 @@ cd ../frontend && npm install
 ```
 
 ### 2. Backend Environment (`backend/.env`)
+
 ```env
 PORT=8080
 MONGO_CONN=mongodb+srv://<user>:<pass>@<cluster>/<db>
@@ -154,12 +174,14 @@ PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome
 ```
 
 ### 3. Frontend Environment (`frontend/.env`)
+
 ```env
 VITE_SERVER_BASE_URL=http://localhost:8080
 VITE_ENV=development
 ```
 
 ### 4. Run in Development
+
 Open two terminals:
 
 ```bash
@@ -176,6 +198,7 @@ Frontend: `http://localhost:5173`
 Backend health check: `http://localhost:8080/health`
 
 ### 5. Production Build
+
 ```bash
 cd frontend
 npm run build
@@ -188,6 +211,7 @@ npm start
 ```
 
 ## Usage
+
 1. Sign up or log in (email/password + OTP, or Google OAuth).
 2. Add platform usernames in **Settings → Manage Links**.
 3. Open dashboard to view combined coding metrics, badges, and heatmaps.
@@ -199,6 +223,7 @@ npm start
 ## API Documentation (Key Endpoints)
 
 ### Auth & User
+
 - `POST /api/auth/signup`
 - `POST /api/auth/login`
 - `POST /api/auth/verify-otp`
@@ -214,18 +239,22 @@ npm start
 - `PATCH /api/user/api-key`
 
 ### Profile & Dashboard
+
 - `GET /api/profile/:displayName`
 - `GET /api/profile/cache/:displayName`
 - `GET /api/profile/fetch/:displayName`
 - `PATCH /api/profile/platform`
 
 ### Analyzers
+
 - `GET /api/analyze/leetcode?username=...`
 - `GET /api/analyze/github?username=...`
 - `POST /api/analyze/resume` (`multipart/form-data`, `resume` PDF field)
 
 ### Public Platform APIs (API key required via `?apiKey=...`)
+
 Base: `GET /api/platform/*`
+
 - LeetCode: profile, language stats, calendar, badges, contests, POTD, rankings, etc.
 - GFG: profile, submissions, problems, POTD, monthly POTD
 - CodeChef: profile, submissions
@@ -235,6 +264,7 @@ Base: `GET /api/platform/*`
 - GitHub: contribution badges
 
 ### API Key Project Management
+
 - `GET /api/project/all`
 - `GET /api/project/:projectId`
 - `POST /api/project`
@@ -242,6 +272,7 @@ Base: `GET /api/platform/*`
 - `DELETE /api/project/:projectId`
 
 ### Analytics
+
 - `GET /api/analytics/daily-usage`
 - `GET /api/analytics/api-requests-data`
 
@@ -294,6 +325,7 @@ Base: `GET /api/platform/*`
 </table>
 
 ## Future Improvements
+
 - Add additional platforms (Codeforces, AtCoder, HackerEarth, TopCoder, Kaggle)
 - Add Leaderboard feature to track the rankings of all public CodeFolio profiles
 - Improve API observability (dashboard + per-endpoint latency monitoring)
@@ -305,13 +337,16 @@ Base: `GET /api/platform/*`
 - Add dark modes and multiple themes
 
 ## Contributing
+
 Refer to [CONTRIBUTING.md](CONTRIBUTING.md) file.
 
 Suggested local checks:
+
 ```bash
 npm run lint
 npm run format
 ```
 
 ## License
+
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for more details.

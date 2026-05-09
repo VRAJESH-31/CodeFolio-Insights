@@ -23,7 +23,7 @@ const TopicStats = ({ topicData }) => {
                 </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 max-h-[550px] overflow-y-auto">
                 {topicData.map((topic) => {
                     const masteryLevel = getMasteryLevel(topic.mastery);
                     return (

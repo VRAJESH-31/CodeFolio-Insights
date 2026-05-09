@@ -5,15 +5,8 @@ import { usernameValidationSchema } from '../../validators/user.validate.js';
 
 const router = express.Router();
 
-router.get(
-  '/user/profile',
-  validate(usernameValidationSchema),
-  CodeChefController.getUserInfo,
-);
-router.get(
-  '/user/submissions',
-  validate(usernameValidationSchema),
-  CodeChefController.getUserSubmissions,
-);
+router.get('/user/profile', validate(usernameValidationSchema), CodeChefController.getUserInfo);
+
+router.get('/user/submissions', validate(usernameValidationSchema), CodeChefController.getUserSubmissions);
 
 export default router;

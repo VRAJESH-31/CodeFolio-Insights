@@ -1,9 +1,9 @@
-import { axiosInstance, asyncWrapper } from "../api/export.js";
+import { axiosInstance, asyncWrapper } from "@/api/export.js";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import toast from "react-hot-toast";
 
 // Hook for Cache
-const useProfileCache = (displayName) => {
+export const useProfileCache = (displayName) => {
     return useQuery({
         queryKey: ["profileCache", displayName],
         queryFn: asyncWrapper(async () => {
@@ -17,7 +17,7 @@ const useProfileCache = (displayName) => {
 }
 
 // Hook for Refresh
-const useProfileRefresh = (displayName) => {
+export const useProfileRefresh = (displayName) => {
     return useQuery({
         queryKey: ["profileRefresh", displayName],
         queryFn: asyncWrapper(async () => {
@@ -30,7 +30,7 @@ const useProfileRefresh = (displayName) => {
 }
 
 // Hook for general profile data
-const useProfileLinks = (displayName) => {
+export const useProfileLinks = (displayName) => {
     return useQuery({
         queryKey: ["profileLinks", displayName],
         queryFn: asyncWrapper(async () => {
@@ -43,7 +43,7 @@ const useProfileLinks = (displayName) => {
 };
 
 
-const useUpdateProfileLink = () => {
+export const useUpdateProfileLink = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
@@ -62,11 +62,4 @@ const useUpdateProfileLink = () => {
             toast.error(error.response?.data?.message || "Couldn't update the link");
         }
     });
-};
-
-export {
-    useProfileCache,
-    useProfileRefresh,
-    useProfileLinks,
-    useUpdateProfileLink,
 };

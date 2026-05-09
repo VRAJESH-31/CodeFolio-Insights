@@ -4,14 +4,14 @@ import * as AnalyzeService from "../services/analyze.service.js";
 const analyzeGithub = asyncHandler(async (req, res) => {
     const { username } = req.query;
     const response = await AnalyzeService.analyzeGithub(username);
-    if (!response) return res.status(404).json({ message: "User not found" });
+    if (!response) throw new ApiError(404, "User not found");
     return res.status(200).json(response);
 });
 
 const analyzeLeetCode = asyncHandler(async (req, res) => {
     const { username } = req.query;
     const response = await AnalyzeService.analyzeLeetCode(username);
-    if (!response) return res.status(404).json({ message: "User not found" });
+    if (!response) throw new ApiError(404, "User not found");
     return res.status(200).json(response);
 });
 

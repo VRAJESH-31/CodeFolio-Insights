@@ -1,6 +1,6 @@
 // frontend/src/api/axiosInstance.js
 import axios from "axios";
-import conf from "../config/config.js"
+import conf from "@/config/config.js"
 
 const axiosInstance = axios.create({
     baseURL: conf.SERVER_BASE_URL,

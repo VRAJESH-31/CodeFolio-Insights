@@ -15,7 +15,9 @@ const usePreferenceStore = create(
             },
 
             setColorMode: (colorMode) => set({ colorMode }),
+
             toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
+            
             setThemeVariant: (themeVariant) => set({ themeVariant }),
 
             setPageView: (pageName, viewType) => set((state) => {

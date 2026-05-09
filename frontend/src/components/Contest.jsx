@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ContestGraph } from './charts/export.js';
+import { ContestGraph } from '@/components/charts/export.js';
 
 const Contest = ({ data }) => {
     const platforms = Object.keys(data || {});

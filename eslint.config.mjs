@@ -8,15 +8,7 @@ import prettier from 'eslint-config-prettier';
 export default [
   // 🚫 Global ignores
   {
-    ignores: [
-      '**/node_modules/**',
-      'frontend/build/**',
-      'frontend/dist/**',
-      'backend/dist/**',
-      '**/dist/**',
-      '**/.cache/**',
-      'vite.config.js',
-    ],
+    ignores: ['**/node_modules/**', 'frontend/build/**', 'frontend/dist/**', 'backend/dist/**', '**/dist/**', '**/.cache/**', 'vite.config.js'],
   },
 
   // ✅ Base JavaScript Recommended
@@ -74,6 +66,7 @@ export default [
       ...pluginReact.configs.recommended.rules,
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
+      'react/jsx-max-props-per-line': 'off',
     },
   },
 
