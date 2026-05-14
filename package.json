@@ -6,7 +6,8 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "generate-pr": "node automation/src/scripts/pr-generator.script.js"
   },
   "keywords": [],
   "author": "",
