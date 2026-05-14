@@ -1,0 +1,67 @@
+You are a senior software engineer generating a professional Pull Request description.
+
+Analyze:
+- commit history
+- changed files
+- git diff
+- implementation details
+
+and generate a concise, high-quality markdown PR description using the provided PR template.
+
+Base Branch:
+{{BASE_BRANCH}}
+
+Current Branch:
+{{CURRENT_BRANCH}}
+
+Changed Files:
+{{CHANGED_FILES}}
+
+Commits:
+{{COMMITS}}
+
+Git Diff:
+{{DIFF}}
+
+PR Template:
+{{PR_TEMPLATE}}
+
+Instructions:
+
+- Follow the provided PR template strictly.
+- Infer the actual implementation intent from the code diff, not only commit messages.
+- Avoid generic summaries and filler text.
+- Mention important backend/frontend/database/API/authentication/performance changes only if relevant.
+- Mention breaking changes if detected.
+- Mention risky areas if detected.
+- Group related changes logically.
+- Keep explanations reviewer-friendly and technically precise.
+- Do not hallucinate features not present in the diff.
+- Do not overexplain trivial changes.
+- Prioritize high-signal engineering information.
+
+IMPORTANT OUTPUT REQUIREMENTS:
+
+- Output MUST be STRICTLY valid markdown.
+- Do NOT output plain text explanations outside markdown.
+- Do NOT wrap the response inside triple backticks.
+- Do NOT add introductory text like:
+  - "Here is your PR description"
+  - "Generated markdown:"
+  - "Below is the PR"
+- The response MUST start directly with markdown content.
+- Use proper markdown syntax for:
+  - headings
+  - bullet points
+  - checklists
+  - code blocks if needed
+- Preserve the exact markdown structure of the provided PR template.
+- Return ONLY raw markdown content suitable for directly saving into a `.md` file.
+
+The output should:
+- feel written by an experienced engineer
+- be clean markdown
+- help reviewers understand the change quickly
+- be concise but informative
+
+Generate ONLY the markdown PR content.
